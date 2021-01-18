@@ -6,7 +6,7 @@
   "mixins": [
   ],
   "client": [
-    "ExampleMixin"
+    "net.hellomouse.kontrol.mixin.ExampleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "kontrol",
   "version": "${version}",
 
-  "name": "Example Mod",
+  "name": "Kontrol",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
     "Me!"
@@ -14,16 +14,18 @@
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/kontrol/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "net.hellomouse.kontrol.Kontrol"
+    ],
+    "client": [
+      "net.hellomouse.kontrol.KontrolClient"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
   ],
 
   "depends": {
