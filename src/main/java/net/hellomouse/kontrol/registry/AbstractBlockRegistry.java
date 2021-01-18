@@ -2,23 +2,17 @@ package net.hellomouse.kontrol.registry;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.hellomouse.kontrol.Kontrol;
-import net.hellomouse.kontrol.blocks.electrical.screen.BoxScreenHandler;
-import net.hellomouse.kontrol.entity.electrical.FurnaceGeneratorEntity;
-import net.hellomouse.kontrol.entity.electrical.WireBlockEntity;
+import net.hellomouse.kontrol.registry.util.BlockWrapper;
+import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 
@@ -67,14 +61,24 @@ public abstract class AbstractBlockRegistry {
         }
     }
 
-    public static Block getBlock(String name) {
-        for (BlockWrapper x : blocks) {
-            if (x.getName().equals(name))
-                return x.getBlock();
-        }
-        return null;
-    }
-
+    /**
+     * Register a BlockEntity, returns the BlocksEntityType for assignment.
+     * You will need to cast, ie:
+     *
+     * <pre>
+     * {@code
+     * MY_BLOCK_ENTITY = (BlockEntityType<MyBlockEntity>)getRegisteredBlockEntity(
+     *      "my_block", "my_block_entity", MyBlockEntity::new);
+     * }
+     * </pre>
+     *
+     * @param blockEntityName Non-namespaced identifier string for block entity (ie, "furnace_generator")
+     * @param blockEntityKey Unique key used in blockEntityMap when adding
+     * @param supplier YourBlockEntity::new
+     * @param <T> BlockEntity
+     * @see BlockWrapper#blockEntityName(String)
+     * @return Registered BlockEntityType
+     */
     public static <T extends BlockEntity> BlockEntityType<? extends T> getRegisteredBlockEntity(String blockEntityName, String blockEntityKey, Supplier<? extends T> supplier) {
         return Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(Kontrol.MOD_ID, blockEntityName),
             BlockEntityType.Builder.create(supplier, blockEntityMap.get(blockEntityKey).toArray(new Block[0])).build(null));
@@ -85,22 +89,6 @@ public abstract class AbstractBlockRegistry {
      * @see ModInitializer#onInitialize()
      */
     public static void register() {
-
-
-        // Block entities
-        // TODO it block entity way
-        // TODO turn tis into a method
-//        FURNACE_GENERATOR_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(Kontrol.MOD_ID, "furnace_generator"),
-//                BlockEntityType.Builder.create(FurnaceGeneratorEntity::new, blocks.get("furnace_generator").getBlock()).build(null));
-//
-//        WIRE_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(Kontrol.MOD_ID, "wire_block"),
-//                BlockEntityType.Builder.create(WireBlockEntity::new, blockEntityMap.get("wire_block_entity").toArray(new Block[0])).build(null));
-//
-//        // Screen Handlers
-//        BOX_SCREEN_HANDLER = ScreenHandlerRegistry.registerSimple(new Identifier(Kontrol.MOD_ID, "box_block"), BoxScreenHandler::new);
-
-
-        // Process all items and blocks in the map
         for (BlockWrapper wrapper : blocks) {
             String name = wrapper.getName();
             Registry.register(Registry.BLOCK, new Identifier(Kontrol.MOD_ID, name), wrapper.getBlock());

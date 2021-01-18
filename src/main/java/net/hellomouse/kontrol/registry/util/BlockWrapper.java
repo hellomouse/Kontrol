@@ -1,4 +1,4 @@
-package net.hellomouse.kontrol.registry;
+package net.hellomouse.kontrol.registry.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
@@ -31,7 +31,7 @@ import net.minecraft.item.ItemGroup;
  * @author Bowserinator
  * @version 1.0
  */
-class BlockWrapper {
+public class BlockWrapper {
     /* Saved properties - should have getter & setter */
     private Block block = null;
     private BlockItem item = null;
@@ -64,7 +64,7 @@ class BlockWrapper {
 
     /**
      * Does this block have a color property set?
-     * @see #color()
+     * @see #color(ColorData.COLOR_STRING)
      * @return Is a color set?
      */
     public boolean hasColor() { return this.color != null; }
@@ -111,7 +111,7 @@ class BlockWrapper {
      * done using fabric's ColorProviderRegistry and is client side. The
      * color name is not automatically appended, so call .name() accordingly
      *
-     * @see #name()
+     * @see #name(String)
      * @param color Color enum variant to create
      * @return this
      */

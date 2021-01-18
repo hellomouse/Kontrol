@@ -1,9 +1,15 @@
-package net.hellomouse.kontrol.registry;
+package net.hellomouse.kontrol.registry.util;
 
 import net.minecraft.block.MaterialColor;
 
 import java.util.HashMap;
 
+
+/**
+ * Dye color helpers
+ * @author Bowserinator
+ * @version 1.0
+ */
 public class ColorData {
     public enum COLOR_STRING {
         WHITE("white"),
@@ -52,23 +58,30 @@ public class ColorData {
         DYEABLE_COLORS.put(COLOR_STRING.BLACK, 0x191919);
     }
 
-    public static MaterialColor nameToMaterialColor(String color) {
-        if (color.equals("white")) return MaterialColor.WHITE;
-        if (color.equals("red")) return MaterialColor.RED;
-        if (color.equals("orange")) return MaterialColor.ORANGE;
-        if (color.equals("pink")) return MaterialColor.PINK;
-        if (color.equals("yellow")) return MaterialColor.YELLOW;
-        if (color.equals("lime")) return MaterialColor.LIME;
-        if (color.equals("green")) return MaterialColor.GREEN;
-        if (color.equals("light_blue")) return MaterialColor.LIGHT_BLUE;
-        if (color.equals("cyan")) return MaterialColor.CYAN;
-        if (color.equals("blue")) return MaterialColor.BLUE;
-        if (color.equals("magenta")) return MaterialColor.MAGENTA;
-        if (color.equals("purple")) return MaterialColor.PURPLE;
-        if (color.equals("brown")) return MaterialColor.BROWN;
-        if (color.equals("gray")) return MaterialColor.GRAY;
-        if (color.equals("light_gray")) return MaterialColor.LIGHT_GRAY;
-        if (color.equals("black")) return MaterialColor.BLACK;
+    /**
+     * Maps a COLOR_STRING => MaterialColor
+     * @param color Color string
+     * @return MaterialColor
+     */
+    public static MaterialColor nameToMaterialColor(COLOR_STRING color) {
+        switch(color) {
+            case WHITE: return MaterialColor.WHITE;
+            case RED: return MaterialColor.RED;
+            case ORANGE: return MaterialColor.ORANGE;
+            case PINK: return MaterialColor.PINK;
+            case YELLOW: return MaterialColor.YELLOW;
+            case LIME: return MaterialColor.LIME;
+            case GREEN: return MaterialColor.GREEN;
+            case LIGHT_BLUE: return MaterialColor.LIGHT_BLUE;
+            case CYAN: return MaterialColor.CYAN;
+            case BLUE: return MaterialColor.BLUE;
+            case MAGENTA: return MaterialColor.MAGENTA;
+            case PURPLE: return MaterialColor.PURPLE;
+            case BROWN: return MaterialColor.BROWN;
+            case GRAY: return MaterialColor.GRAY;
+            case LIGHT_GRAY: return MaterialColor.LIGHT_GRAY;
+            case BLACK: return MaterialColor.BLACK;
+        }
         throw new IllegalStateException("Color is invalid: received " + color + ", but doesn't exist.");
     }
 }
