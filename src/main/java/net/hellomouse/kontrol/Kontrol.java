@@ -1,8 +1,8 @@
 package net.hellomouse.kontrol;
 
 import net.fabricmc.api.ModInitializer;
+import net.hellomouse.kontrol.config.KontrolConfig;
 import net.hellomouse.kontrol.registry.ElectricalBlockRegistry;
-import net.hellomouse.kontrol.logic.circuit.CircuitManager;
 
 
 /*
@@ -52,13 +52,11 @@ class MyBlock extends Block {
 }*/
 
 public class Kontrol implements ModInitializer {
-    public final static String MOD_ID = "kontrol";
+    public static final String MOD_ID = "kontrol";
+    public static final String MOD_NAME = "Kontrol";
 
-//    public static final ItemGroup KONTROL_ITEM_GROUP = FabricItemGroupBuilder.build(
-//            new Identifier(MODID, "Kontrol"),
-//            () -> new ItemStack(Blocks.COBBLESTONE));
+    public static final KontrolConfig CONFIG = KontrolConfig.getConfig();
 
-    public static final CircuitManager circuitManager = new CircuitManager();
 
     @Override
     public void onInitialize() {
