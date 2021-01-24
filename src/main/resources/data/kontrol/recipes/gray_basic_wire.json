@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "###",
+        "RRR",
+        "###"
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:gray_carpet"
+        },
+        "R": {
+            "item": "minecraft:redstone"
+        }
+    },
+    "result": {
+        "item": "kontrol:gray_basic_wire",
+        "count": 8
+    },
+    "group": "basic_wire"
+}

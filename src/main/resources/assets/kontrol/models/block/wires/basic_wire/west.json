@@ -1,0 +1,21 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "kontrol:block/wires/basic_wire",
+		"particle": "kontrol:block/wires/basic_wire"
+	},
+	"elements": [
+		{
+			"from": [0, 7, 7],
+			"to": [7, 9, 9],
+			"faces": {
+				"north": {"uv": [0, 0, 8, 16], "rotation": 90, "texture": "#0", "tintindex": 0},
+				"east": {"uv": [8, 0, 16, 8], "rotation": 270, "texture": "#0"},
+				"south": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0},
+				"west": {"uv": [8, 0, 16, 8], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0},
+				"down": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0}
+			}
+		}
+	]
+}

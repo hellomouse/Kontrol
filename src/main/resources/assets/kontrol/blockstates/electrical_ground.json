@@ -1,0 +1,31 @@
+{
+    "multipart": [
+        {
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/none" }
+        },
+        {
+            "when":{ "attach_up": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/up" }
+        },
+        {
+            "when":{ "attach_down": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/down" }
+        },
+        {
+            "when":{ "attach_north": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/north" }
+        },
+        {
+            "when":{ "attach_south": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/south" }
+        },
+        {
+            "when":{ "attach_west": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/west" }
+        },
+        {
+            "when":{ "attach_east": "true" },
+            "apply":{ "model":"kontrol:block/wires/electrical_ground/east" }
+        }
+    ]
+}

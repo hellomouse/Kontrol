@@ -1,0 +1,7 @@
+{
+	"multipart": [
+        {
+            "apply":{ "model": "kontrol:block/basic_capacitor/state_1" }
+        }
+	]
+}
