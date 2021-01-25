@@ -9,7 +9,18 @@ import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.E
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-class PolarityTest {
+/**
+ * Checks polarity of all elements are implemented correctly.
+ * @author Bowserinator
+ */
+class PolarityTests {
+    /**
+     * Node1 = positive terminal
+     * Node2 = negative terminal
+     *
+     * Thus, node1 voltage > node2 voltage. If node2 is grounded,
+     * node1 voltage should equal voltage source value.
+     */
     @Test
     @DisplayName("Voltage source behaves with correct polarity")
     void test1() {
@@ -26,8 +37,14 @@ class PolarityTest {
         assertEquals(10.0, circuit.getNodalVoltage(1), EPSILON);
     }
 
+    /**
+     * Get current through computes current flowing from node1 to node2 as positive.
+     * This test verifies that, as well as components inserted with reversed node order
+     * like V1 below have correct current polarity as well (for V1, current should be opposite
+     * of current through 0 to 1 as it was inserted 1 to 0)
+     */
     @Test
-    @DisplayName("Currents are correct polarity")
+    @DisplayName("Currents are correct polarity - getCurrentThrough")
     void test2() {
         VirtualCircuit circuit = new VirtualCircuit();
 
@@ -44,6 +61,14 @@ class PolarityTest {
         assertEquals(V1.getCurrent(), -circuit.getCurrentThrough(0, 1), EPSILON); // V1 nodes in opposite order = opposite current
     }
 
+    /**
+     * Node1 = positive terminal
+     * Node2 = negative terminal
+     *
+     * Thus a diode from 0 to 1 will allow current to flow from 0 to 1, but not 1 to 0.
+     * We verify a simple diode-resistor circuit below has correct current flowing through
+     * the resistor.
+     */
     @Test
     @DisplayName("Diodes facing correct way")
     void test3() {
@@ -64,6 +89,10 @@ class PolarityTest {
         assertEquals(-(9.3) / 101, R1.getCurrent(), EPSILON);
     }
 
+    /**
+     * Same as test3, but reversing the direction of the diode.
+     * No current should flow now.
+     */
     @Test
     @DisplayName("Diodes facing wrong way")
     void test4() {
@@ -84,6 +113,12 @@ class PolarityTest {
         assertEquals(0.0, R1.getCurrent(), EPSILON);
     }
 
+    /**
+     * Current sources create current from node1 to node2
+     * Note: R1.getCurrent() returns -1 * (current from 2 to 3). This is because
+     * resistors compute current from voltage, which going from node1 to node2 is
+     * negative (because resistors drop voltage).
+     */
     @Test
     @DisplayName("Current sources have correct polarity")
     void test5() {

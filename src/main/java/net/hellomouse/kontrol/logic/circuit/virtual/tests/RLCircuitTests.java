@@ -10,11 +10,19 @@ import org.junit.jupiter.api.Test;
 
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.DT;
 import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.EPSILON;
+import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.ONE_TAU;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// See ResistorTests for resistor and voltage polarities
 
-class RLCircuitTest {
+/**
+ * RL circuit tests. See PolarityTests for polarities.
+ * @author Bowserinator
+ */
+class RLCircuitTests {
+    /**
+     * Initially inductor is open circuit, check if no current across
+     * resistors and all voltage drop is across the inductor.
+     */
     @Test
     @DisplayName("1k ohm in series 10 V, 1 ohm and 10 H inductor - initial state")
     void test1() {
@@ -34,12 +42,18 @@ class RLCircuitTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        // Initially inductor is closed
+        // Initially inductor is open circuit
         assertEquals(-10.0, L1.getVoltage(), EPSILON);
         assertEquals(0.0, R1.getVoltage(), EPSILON);
         assertEquals(0.0, R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * At steady state inductor is short, verify no voltage across inductor and
+     * proper currents through resistors.
+     *
+     * RL time constant is ~0.01s, so we simulate for 1 second to reach steady state.
+     */
     @Test
     @DisplayName("1k ohm in series 10 V, 1 ohm and 10 H inductor - steady state")
     void test2() {
@@ -57,17 +71,22 @@ class RLCircuitTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1 / DT; i++) {
             circuit.tick();
             circuit.solve();
         }
 
-        // Finally inductor is open
+        // Finally inductor is short
         assertEquals(0.0, L1.getVoltage(), EPSILON);
         assertEquals(-10.0 * 1000 / 1001, R1.getVoltage(), EPSILON);
         assertEquals(-10.0 / 1001, R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * Uses a 1 ohm and 0.001 H inductor so RL time constant is 0.001s, much
+     * smaller than a single integration time step. The circuit should skip to
+     * steady state values instead of blowing up to infinite voltages.
+     */
     @Test
     @DisplayName("1 ohm in series 10 V, 1 ohm and 0.001 H inductor - divergence test")
     void test3() {
@@ -85,17 +104,23 @@ class RLCircuitTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1 / DT; i++) {
             circuit.tick();
             circuit.solve();
         }
 
-        // Finally inductor is open
+        // Finally inductor is short
         assertEquals(0.0, L1.getVoltage(), EPSILON);
         assertEquals(-5.0, R1.getVoltage(), EPSILON);
         assertEquals(-5.0, R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * Time constant is 100 s, so we simulate the circuit for 100 s (1 time
+     * constant) and verify current reaches 63.2% of steady state value.
+     *
+     * There is extra allowance in the epsilon to allow for minor integration error.
+     */
     @Test
     @DisplayName("1 ohm in series 10 V, 1 ohm and 100 H inductor - 1 time constant")
     void test4() {
@@ -121,11 +146,17 @@ class RLCircuitTest {
         }
 
         // Inductor should reach ~63.2% of final current of 2 A
-        assertEquals(-2 * 0.63212055882, L1.getVoltage(), 0.1);
+        assertEquals(-2 * ONE_TAU, L1.getVoltage(), 0.1);
     }
 
+    /**
+     * Same as test4, but using 2 150 H inductors for equivalent inductance
+     * of 300 H for 1 time constant of 100 s.
+     *
+     * @see EdgeCaseTests#test9()
+     */
     @Test
-    @DisplayName("1 ohm in series 10 V, 2 1 ohm and 2 150 H capacitor - 1 time constant")
+    @DisplayName("1 ohm in series 10 V, 2 1 ohm and 2 150 H inductor - 1 time constant")
     void test5() {
         VirtualCircuit circuit = new VirtualCircuit();
 
@@ -139,26 +170,11 @@ class RLCircuitTest {
         circuit.addComponent(V1, 1, 0);
         circuit.addComponent(R1, 1, 2);
 
-//        circuit.addComponent(new VirtualResistor(0.0001), 2, 3);
-//        circuit.addComponent(L1, 3, 4);
-//        circuit.addComponent(new VirtualResistor(0.0001), 4, 5);
-//        circuit.addComponent(new VirtualResistor(1e12), 2, 5);
-//
-//        circuit.addComponent(R2, 5, 6);
-//
-//        circuit.addComponent(new VirtualResistor(0.0001), 6, 7);
-//        circuit.addComponent(L2, 7, 8);
-//        circuit.addComponent(new VirtualResistor(0.0001), 8, 9);
-//        circuit.addComponent(new VirtualResistor(1e12), 6, 9);
-//
-//        circuit.addComponent(R3, 9, 0);
-
-        // TODO dont hardcode 1e9
         circuit.addComponent(L1, 2, 3);
-        circuit.addComponent(new VirtualResistor(1e2), 2, 3);
+        circuit.addComponent(new VirtualResistor(1e3), 2, 3);
         circuit.addComponent(R2, 3, 4);
         circuit.addComponent(L2, 4, 5);
-        circuit.addComponent(new VirtualResistor(1e2), 4, 5);
+        circuit.addComponent(new VirtualResistor(1e3), 4, 5);
         circuit.addComponent(R3, 5, 0);
 
         circuit.addComponent(new VirtualGround(), 0, 0);
@@ -168,27 +184,20 @@ class RLCircuitTest {
         // RL time constant = 300 / 3 = 100s, divide by DT to tick that many times
         int iterations = (int)(100.0 / DT);
         for (int i = 0; i < iterations; i++) { // iterations
-//            if (i < 5) {
-//                System.out.println("");
-//                System.out.println(L1.getVoltage() + " | " + L2.getVoltage() +", " + L1.getCurrent() + ", " + L2.getCurrent());
-//                for (int j = 0; j < 5; j++)
-//                    System.out.print(circuit.getNodalVoltage(j) + ", ");
-//                System.out.println("\n---\n\n");
-//            }
             circuit.tick();
             circuit.solve();
         }
 
-        // Inductors dont share impedance in series :(
-
-        System.out.println(L1.getCurrent());
-
         // (Combined) Inductor should reach ~63.2% of final current of 10 / 3 A
-        assertEquals(-10 / 3.0 * 0.63212055882, R1.getCurrent(), 0.2);
+        assertEquals(-10 / 3.0 * ONE_TAU, R1.getCurrent(), 0.2);
     }
 
+    /**
+     * Same as test4, but using 2 200 H inductors for equivalent inductance
+     * of 100 H for 1 time constant, should be same result as test4
+     */
     @Test
-    @DisplayName("1 ohm in series 10 V, 1 ohm and (2 200 H capacitor in parallel) - 1 time constant")
+    @DisplayName("1 ohm in series 10 V, 1 ohm and (2 200 H inductor in parallel) - 1 time constant")
     void test6() {
         VirtualCircuit circuit = new VirtualCircuit();
 
@@ -226,6 +235,6 @@ class RLCircuitTest {
         }
 
         // R1 should reach ~63.2% of final current
-        assertEquals(-0.63212055882 * 5.0, R1.getCurrent(), 0.2);
+        assertEquals(-ONE_TAU * 5.0, R1.getCurrent(), 0.2);
     }
 }

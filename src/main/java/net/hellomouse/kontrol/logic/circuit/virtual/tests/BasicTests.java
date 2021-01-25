@@ -11,7 +11,26 @@ import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.E
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-class BasicTest {
+/**
+ * Tests for basic functionality, like getVoltage(),
+ * getEnergy(), etc...
+ * @author Bowserinator
+ */
+class BasicTests {
+    /**
+     * A circuit consisting of a:
+     * - Voltage source (10 V)
+     * - Resistor (1 kilo-ohm)
+     * - Capacitor (1 mF)
+     * - Inductor (1 mH)
+     * - Diode (V_Fwd = 0.7)
+     * in series. There should be no current, so the only voltage
+     * is across the inductor and voltage source = 10 V.
+     *
+     * getVoltage() for most components uses the nodal voltages, so this
+     * is a test of solving accuracy. Voltage sources and capacitors return the
+     * voltage value of the source. At initial state the capacitor = 0 V.
+     */
     @Test
     @DisplayName("getVoltage() works properly")
     void test1() {
@@ -42,8 +61,13 @@ class BasicTest {
         assertEquals(D1.getVoltage(), 0.0, EPSILON);
     }
 
+    /**
+     * A simple test of getPower(), where P = VI. This formula is
+     * used for all components, so if it doesn't work in this simple
+     * resistor case, it won't work at all.
+     */
     @Test
-    @DisplayName("Resistor getEnergy() works properly")
+    @DisplayName("Resistor getPower() works properly")
     void test2() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualResistor R1 = new VirtualResistor(1000);
@@ -54,27 +78,21 @@ class BasicTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        assertEquals(10 * 10 / 1000.0, R1.getEnergy(), EPSILON);
+        assertEquals(10 * 10 / 1000.0, R1.getPower(), EPSILON); // P = V^2 / R = VI
     }
 
-    @Test
-    @DisplayName("Resistor getEnergy() works properly")
-    void test3() {
-        VirtualCircuit circuit = new VirtualCircuit();
-        VirtualResistor R1 = new VirtualResistor(1000);
-        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
-
-        circuit.addComponent(V1, 1, 0);
-        circuit.addComponent(R1, 1, 0);
-        circuit.addComponent(new VirtualGround(), 0, 0);
-        circuit.solve();
-
-        assertEquals(10 * 10 / 1000.0, R1.getEnergy(), EPSILON);
-    }
-
+    /**
+     * Capacitor energy is 1/2 CV^2, where C is capacitance and
+     * V is voltage across capacitor.
+     *
+     * The circuit below has a time constant
+     * of 1 ohm * 0.01 F = 0.01s. We simulate the circuit for 0.5s, which is 50x
+     * the RC constant to make sure the capacitor has reached steady state
+     * where it behaves like a open circuit, so it's voltage = 10 V
+     */
     @Test
     @DisplayName("Capacitor getEnergy() works properly")
-    void test4() {
+    void test3() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualResistor R1 = new VirtualResistor(1);
         VirtualCapacitor C1 = new VirtualCapacitor(0.01);
@@ -87,16 +105,25 @@ class BasicTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 0.5 / DT; i++) {
             circuit.tick();
             circuit.solve();
         }
         assertEquals(0.5 * 0.01 * 10 * 10, C1.getEnergy(), EPSILON);
     }
 
+    /**
+     * Inductor energy is 1/2 LI^2, where L is inductance and
+     * I is current through inductor.
+     *
+     * The circuit below has a time constant
+     * of 1 H / 2 ohm = 0.5 s. We simulate the circuit for 10s, which is 20x
+     * the RL constant to make sure the inductor has reached steady state
+     * where it behaves like a wire, so it's current is 10 V / 2 = 5 A
+     */
     @Test
     @DisplayName("Inductor getEnergy() works properly")
-    void test5() {
+    void test4() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualResistor R1 = new VirtualResistor(1);
         VirtualResistor R2  =new VirtualResistor(1);
@@ -117,9 +144,13 @@ class BasicTest {
         assertEquals(0.5 * 25, L1.getEnergy(), EPSILON);
     }
 
+    /**
+     * These components don't store energy. They should return
+     * UNKNOWN_ENERGY when asked.
+     */
     @Test
-    @DisplayName("Voltage and diodes return UNKNOWN_ENERGY for getEnergy()")
-    void test6() {
+    @DisplayName("Voltage sources, resistors and diodes return UNKNOWN_ENERGY for getEnergy()")
+    void test5() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualResistor R1 = new VirtualResistor(1);
         VirtualDiode D1 = new VirtualDiode(0.7);
@@ -133,6 +164,7 @@ class BasicTest {
         circuit.solve();
 
         assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, V1.getEnergy(), EPSILON);
+        assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, R1.getEnergy(), EPSILON);
         assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, D1.getEnergy(), EPSILON);
     }
 }

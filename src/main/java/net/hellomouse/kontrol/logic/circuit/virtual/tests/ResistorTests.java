@@ -10,11 +10,18 @@ import org.junit.jupiter.api.Test;
 import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.EPSILON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// Sorry if some of the polarities are weird
-// For voltage sources, node1 is the + terminal, node2 is -
-// For resistors, voltage and current are negative going from node1 to node2
 
-class ResistorTest {
+/**
+ * For voltage sources, node1 is the + terminal, node2 is -
+ * for resistors, voltage and current are negative going from node1 to node2
+ * See PolarityTests for more info
+ * @author Bowserinator
+ */
+class ResistorTests {
+    /**
+     * Testing voltage and current values for a 1k
+     * in series with 10 V source
+     */
     @Test
     @DisplayName("1k ohm resistor in series w/ 10 V source")
     void r1() {
@@ -35,6 +42,10 @@ class ResistorTest {
         assertEquals(I, V1.getCurrent(), EPSILON);
     }
 
+    /**
+     * Testing voltage and current with 2 resistors in series with
+     * a 10 V source.
+     */
     @Test
     @DisplayName("1k ohm resistor in series w/ 10 V source and 500 ohm resistor")
     void r2() {
@@ -59,6 +70,11 @@ class ResistorTest {
         assertEquals(I, V1.getCurrent(), EPSILON);
     }
 
+    /**
+     * Testing voltage and current for 3 3k resistors in parallel
+     * with a 10 V source. Voltage should be 10 V and current
+     * should be 1/3rd for each resistor compared to test1
+     */
     @Test
     @DisplayName("10 V source in parallel with 3 3k ohm resistors")
     void r3() {
@@ -87,6 +103,10 @@ class ResistorTest {
         // No check for V1 current because not supported in this configuration
     }
 
+    /**
+     * Voltage and current through parallel resistors that are not
+     * all the same resistance.
+     */
     @Test
     @DisplayName("10 V source in parallel with 1k, 2k, 3k resistor")
     void r4() {
@@ -113,6 +133,10 @@ class ResistorTest {
         // No check for V1 current because not supported in this configuration
     }
 
+    /**
+     * Voltage source in series with resistors, some are in series,
+     * some are in parallel
+     */
     @Test
     @DisplayName("10 V source + 1k ohm + (3 500 ohm in parallel)")
     void r5() {
@@ -146,6 +170,9 @@ class ResistorTest {
         assertEquals(I, V1.getCurrent(), EPSILON);
     }
 
+    /**
+     * Resistors in series with a positive and negative voltage source.
+     */
     @Test
     @DisplayName("10 V source + 1k ohm + -5V source + 2k ohm (in series)")
     void r6() {
@@ -177,20 +204,23 @@ class ResistorTest {
         assertEquals(I,  R2.getCurrent(), EPSILON);
     }
 
+    /**
+     * A more complex circuit layout with multiple voltage
+     * sources and resistors in a grid.
+     * Nodes and values are labelled below.
+     *
+     *  1            2              3
+     *  +-----WWWW---+-----WWWW-----+
+     *  |    R1 1k   |      1k R2   |
+     * [+] 10 V      Z 1k R3       [+] 15 V   V2
+     * [-] V1        Z             [-]
+     *  |            |              |
+     *  +------------------------------||| Ground 0
+     */
     @Test
     @DisplayName("T shaped configuration with 2 voltage sources")
     void r7() {
         VirtualCircuit circuit = new VirtualCircuit();
-
-        /* Circuit layout:
-         *  1            2              3
-         *  +-----WWWW---+-----WWWW-----+
-         *  |    R1 1k   |      1k R2   |
-         * [+] 10 V      Z 1k R3       [+] 15 V   V2
-         * [-] V1        Z             [-]
-         *  |            |              |
-         *  +------------------------------||| Ground 0
-         */
 
         VirtualResistor R1 = new VirtualResistor(1000);
         VirtualResistor R2 = new VirtualResistor(1000);

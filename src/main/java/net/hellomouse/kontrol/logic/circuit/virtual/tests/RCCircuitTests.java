@@ -10,11 +10,21 @@ import org.junit.jupiter.api.Test;
 
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.DT;
 import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.EPSILON;
+import static net.hellomouse.kontrol.logic.circuit.virtual.tests.TestConstants.ONE_TAU;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// See ResistorTests for resistor and voltage polarities
-// Capacitors drop voltage going from node1 to node2 when charging
-class RCCircuitTest {
+
+/**
+ * RC Circuit tests.
+ * See ResistorTests, PolarityTests for resistor and voltage polarities.
+ * Capacitors drop voltage going from node1 to node2 when charging
+ * @author Bowserinator
+ */
+class RCCircuitTests {
+    /**
+     * Testing capacitor initial state, where it behaves like
+     * a short circuit.
+     */
     @Test
     @DisplayName("1k ohm in series 10 V, 1 ohm and 100 uF capacitor - initial state")
     void test1() {
@@ -40,6 +50,11 @@ class RCCircuitTest {
         assertEquals(-10.0 * (1 / 1001.0), R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * Testing capacitor steady state where it behaves like an open
+     * circuit. We simulate for 1 second, which is 10x times the RC
+     * time constant of 0.1s to reach steady state.
+     */
     @Test
     @DisplayName("1k ohm in series 10 V, 1 ohm and 100 uF capacitor - steady state")
     void test2() {
@@ -57,13 +72,10 @@ class RCCircuitTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1 / DT; i++) {
             circuit.tick();
             circuit.solve();
         }
-
-        for (int i = 0; i < 4; i++)
-            System.out.println(circuit.getNodalVoltage(i));
 
         // Finally capacitor is closed
         assertEquals(10.0, C1.getVoltage(), EPSILON);
@@ -71,6 +83,12 @@ class RCCircuitTest {
         assertEquals(0.0, R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * This RC circuit has a very small time constant (1 ohm * 1e-6 F = 1e-6 s)
+     * This is many times below the time step used in integration. This circuit
+     * should not diverge and result in infinite voltages, but have expected steady state
+     * values.
+     */
     @Test
     @DisplayName("1 ohm in series 10 V, 1 ohm and 1 uF capacitor - divergence test")
     void test3() {
@@ -88,7 +106,7 @@ class RCCircuitTest {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1 / DT; i++) {
             circuit.tick();
             circuit.solve();
         }
@@ -99,6 +117,11 @@ class RCCircuitTest {
         assertEquals(0.0, R2.getVoltage(), EPSILON);
     }
 
+    /**
+     * Simulate for 1 time constant, and check if capacitor voltage is ~63.2% of
+     * final charge (as expected for 1 time constant). The epsilon allowance is increased
+     * to allow for errors in numeric integration.
+     */
     @Test
     @DisplayName("100 ohm in series 10 V, 1 ohm and 1 F capacitor - 1 time constant")
     void test4() {
@@ -124,9 +147,13 @@ class RCCircuitTest {
         }
 
         // Capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(6.3212055882, C1.getVoltage(), 0.1);
+        assertEquals(10 * ONE_TAU, C1.getVoltage(), 0.1);
     }
 
+    /**
+     * Using capacitors in series simulated for 1 time constant. Result should
+     * be as expected with an equivalent 1 F capacitor.
+     */
     @Test
     @DisplayName("100 ohm in series 10 V, 2 1 ohm and 2 2F capacitor - 1 time constant")
     void test5() {
@@ -156,9 +183,13 @@ class RCCircuitTest {
         }
 
         // (Combined) Capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(6.3212055882, C2.getVoltage() + R2.getVoltage() + C1.getVoltage(), 0.2);
+        assertEquals(10 * ONE_TAU, C2.getVoltage() + R2.getVoltage() + C1.getVoltage(), 0.2);
     }
 
+    /**
+     * Using capacitors in parallel simulated for 1 time constant. Result should
+     * be as expected with an equivalent 1 F capacitor.
+     */
     @Test
     @DisplayName("100 ohm in series 10 V, 1 ohm and (2 .5F capacitor in parallel) - 1 time constant")
     void test6() {
@@ -198,7 +229,7 @@ class RCCircuitTest {
         }
 
         // Each capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(6.3212055882, C1.getVoltage(), 0.2);
-        assertEquals(6.3212055882, C2.getVoltage(), 0.2);
+        assertEquals(10 * ONE_TAU, C1.getVoltage(), 0.2);
+        assertEquals(10 * ONE_TAU, C2.getVoltage(), 0.2);
     }
 }
