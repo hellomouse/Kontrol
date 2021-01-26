@@ -6,6 +6,8 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
+import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.OPEN_CIRCUIT_R;
+
 
 /**
  * A virtual circuit that can add virtual components,
@@ -95,7 +97,10 @@ public class VirtualCircuit {
      * - Non-resistors must only connect to resistors (Ie, no directly chaining voltage sources)
      */
     public void solve() {
-        if (!containsGround) { // No ground, randomly assign a voltage source's node to ground
+        if (!containsGround && containsEnergySource) { // No ground, randomly assign a voltage source's node to ground
+            // TODO: current sources are also ok
+            // So are fixed voltage points
+
             ArrayList<AbstractVirtualComponent> voltageComps = conditionComponentMap.get(VirtualCondition.Condition.VOLTAGE_DIFFERENCE);
             if (voltageComps != null && voltageComps.size() > 0)
                 addComponent(new VirtualGround(), voltageComps.get(0).getCondition().node2, voltageComps.get(0).getCondition().node2);
@@ -137,7 +142,7 @@ public class VirtualCircuit {
                 // Inductors: calculate current across, cannot exceed steady state value
                 else if (comp instanceof VirtualInductor) {
                     double SS_voltage = steadyState.get(condition.node1) - steadyState.get(condition.node2);
-                    double SS_current = SS_voltage * 1e9; // TODO hardcoded constant
+                    double SS_current = SS_voltage * OPEN_CIRCUIT_R;
                     if (Math.abs(comp.getCurrent()) > Math.abs(SS_current)) {
                         ((VirtualInductor) comp).setCurrent(SS_current);
                         recompute = true;
@@ -147,25 +152,20 @@ public class VirtualCircuit {
         }
 
         // Diode computations
-        if (nonLinearComponents.size() > 0) {
-            for (AbstractVirtualComponent comp : nonLinearComponents) {
-                VirtualCondition condition = comp.getCondition();
+        for (AbstractVirtualComponent comp : nonLinearComponents) {
+            if (comp instanceof VirtualDiode) {
+                // Enable diode if:
+                // - Current flowing correct way (+ to -) & forward voltage reached
+                double V = comp.getVoltage();
+                double I = comp.getCurrent();
 
-                if (comp instanceof VirtualDiode) {
-                    // Enable diode if:
-                    // - Current flowing correct way (+ to -) & forward voltage reached
-                    // - We do not reach V_breakdown
-                    double V = comp.getVoltage();
-                    double I = comp.getCurrent();
+                boolean oldState = comp.isDisabled();
+                boolean newState = !(I > 0 && Math.abs(V) >= ((VirtualDiode)comp).getVForward());
 
-                    boolean oldState = comp.isDisabled();
-                    boolean newState = !(I < 0 && Math.abs(V) >= ((VirtualDiode)comp).getVForward());
-
-                    if (oldState != newState) {
-                        recompute = true; // Always recompute diodes
-                        steadyStateNodalVoltages.clear(); // Diodes may alter steady state voltages, clear cache
-                        comp.setDisabled(newState);
-                    }
+                if (oldState != newState) {
+                    recompute = true; // Always recompute diodes
+                    steadyStateNodalVoltages.clear(); // Diodes may alter steady state voltages, clear cache
+                    comp.setDisabled(newState);
                 }
             }
         }
@@ -180,15 +180,14 @@ public class VirtualCircuit {
      * @return Nodal voltage ArrayList
      */
     private ArrayList<Double> solveHelper(boolean steadyState) {
-        // Compute number of unique node IDs
         int nodeCount = uniqueNodes.size();
+
+        // 1 node circuit, or no energy source circuits have all nodes = 0 V
         if (nodeCount < 2 || !containsEnergySource)
             return VirtualCondition.getEmptyRow(nodeCount);
 
-        // Helper data for generating final matrix
         SimpleMatrix matrix    = new SimpleMatrix(nodeCount, nodeCount);
         SimpleMatrix solutions = new SimpleMatrix(nodeCount, 1);
-
 
         // Compute all conditions. Due to order of matrix operations, they must be performed in this order.
         VirtualCondition.KCLCondition(components, matrix, solutions, steadyState);
@@ -218,39 +217,57 @@ public class VirtualCircuit {
         return nodalVoltages;
     }
 
+    /**
+     * Does numeric integration and other stuff components need to do
+     * every tick (component.tick() for every component)
+     */
     public void tick() {
         for (AbstractVirtualComponent comp : requireTickComponents)
             comp.tick();
     }
 
-
-    // --- State getters --- \\
-
-    public double getNodalVoltage(int nodeId) {
-        return nodalVoltages.get(nodeId);
-    }
-
+    /**
+     * Returns current from node1 to node2, current from node1 to node2
+     * is considered positive, node2 to node1 is negative. Current is computed
+     * from series resistors, so this will fail if there is no resistor in series
+     * for a component from node1 to node2
+     *
+     * This will also fail if the only component from node1 to node2 is a resistor itself.
+     *
+     * @param node1 Node id
+     * @param node2 Node id
+     * @return Current
+     */
     public double getCurrentThrough(int node1, int node2) {
         ArrayList<AbstractVirtualComponent> resistors = null;
-
         int[] nodes = { node1, node2 };
+        int nodeSide;
         int rCount;
 
         for (int nodeId : nodes) {
+            resistors = null;
+            rCount = 0;
+
+
+            // TODO: doesnt work for getting current of a resistor??
+            // TODO: allow multi-resistors?
+
+            // Check if the node has 2 or 3 components. We expect 2 components
+            // if it's in series, ie [Voltage source] - [Resistor], or 3 if one
+            // of the nodes is also grounded. There should be only 1 resistor
+            // in series
+
             if (nodeMap.get(nodeId).size() == 2 || nodeMap.get(nodeId).size() == 3)
                 resistors = nodeMap.get(nodeId);
             if (resistors == null)
                 continue;
 
-            rCount = 0;
             for (AbstractVirtualComponent comp : resistors) {
                 if (comp instanceof VirtualResistor)
                     rCount++;
             }
-            if (rCount != 1) {
-                resistors = null;
+            if (rCount != 1)
                 continue;
-            }
             break;
         }
 
@@ -307,5 +324,14 @@ public class VirtualCircuit {
      */
     public ArrayList<AbstractVirtualComponent> getComponents() {
         return components;
+    }
+
+    /**
+     * Get voltage at node id
+     * @param nodeId node id
+     * @return Voltage
+     */
+    public double getNodalVoltage(int nodeId) {
+        return nodalVoltages.get(nodeId);
     }
 }

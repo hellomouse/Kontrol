@@ -189,7 +189,7 @@ class RLCircuitTests {
         }
 
         // (Combined) Inductor should reach ~63.2% of final current of 10 / 3 A
-        assertEquals(-10 / 3.0 * ONE_TAU, R1.getCurrent(), 0.2);
+        assertEquals(10.0 / 3.0 * ONE_TAU, R1.getCurrent(), 0.2);
     }
 
     /**
@@ -235,6 +235,6 @@ class RLCircuitTests {
         }
 
         // R1 should reach ~63.2% of final current
-        assertEquals(-ONE_TAU * 5.0, R1.getCurrent(), 0.2);
+        assertEquals(ONE_TAU * 5.0, R1.getCurrent(), 0.2);
     }
 }

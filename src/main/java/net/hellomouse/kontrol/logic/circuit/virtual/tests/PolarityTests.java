@@ -56,7 +56,7 @@ class PolarityTests {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        assertEquals(10.0 / 1000.0, circuit.getCurrentThrough(1, 0), EPSILON);
+        assertEquals(-10.0 / 1000.0, circuit.getCurrentThrough(1, 0), EPSILON);
         assertEquals(R1.getCurrent(),  circuit.getCurrentThrough(0, 1), EPSILON);
         assertEquals(V1.getCurrent(), -circuit.getCurrentThrough(0, 1), EPSILON); // V1 nodes in opposite order = opposite current
     }
@@ -86,7 +86,7 @@ class PolarityTests {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        assertEquals(-(9.3) / 101, R1.getCurrent(), EPSILON);
+        assertEquals(9.3 / 101, R1.getCurrent(), EPSILON);
     }
 
     /**
@@ -114,10 +114,8 @@ class PolarityTests {
     }
 
     /**
-     * Current sources create current from node1 to node2
-     * Note: R1.getCurrent() returns -1 * (current from 2 to 3). This is because
-     * resistors compute current from voltage, which going from node1 to node2 is
-     * negative (because resistors drop voltage).
+     * Current sources create current from node1 to node2, this
+     * can be checked by measuring current through R1
      */
     @Test
     @DisplayName("Current sources have correct polarity")
@@ -127,7 +125,7 @@ class PolarityTests {
         VirtualResistor R1 = new VirtualResistor(1000);
         VirtualCurrentSource CS1 = new VirtualCurrentSource(10);
 
-        circuit.addComponent(CS1, 1, 0);
+        circuit.addComponent(CS1, 0, 1);
         circuit.addComponent(new VirtualResistor(1), 1, 2);
         circuit.addComponent(R1, 2, 3);
         circuit.addComponent(new VirtualResistor(1), 3, 0);

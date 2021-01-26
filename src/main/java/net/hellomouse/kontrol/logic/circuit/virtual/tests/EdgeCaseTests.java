@@ -108,7 +108,7 @@ class EdgeCaseTests {
         circuit.solve();
 
         assertEquals(-10.0, R1.getVoltage(), EPSILON);
-        assertEquals(-10.0 / 1000.0, R1.getCurrent(), EPSILON);
+        assertEquals(10.0 / 1000.0, R1.getCurrent(), EPSILON);
     }
 
 
@@ -267,6 +267,39 @@ class EdgeCaseTests {
         }
 
         // (Combined) Inductor should reach ~63.2% of final current of 10 / 3 A
-        assertEquals(-10 / 3.0 * ONE_TAU, R1.getCurrent(), 0.2);
+        assertEquals(10 / 3.0 * ONE_TAU, R1.getCurrent(), 0.2);
+    }
+
+    /**
+     * Test if solver behaves well with floating nodes. Floating branches
+     * should have no current and the same voltage as where they were connected.
+     */
+    @Test
+    @DisplayName("10 V with 3 1k resistors, two are floating")
+    void test10() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(1000);
+        VirtualResistor R2 = new VirtualResistor(1000);
+        VirtualResistor R3 = new VirtualResistor(1000);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
+
+        circuit.addComponent(V1, 1, 0);
+        circuit.addComponent(R1, 1, 2);
+        circuit.addComponent(R3, 2, 3);
+        circuit.addComponent(R2, 1, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(-10.0, R2.getVoltage(), EPSILON);
+        assertEquals(10.0 / 1000.0, R2.getCurrent(), EPSILON);
+
+        assertEquals(0.0, R1.getCurrent(), EPSILON);
+        assertEquals(0.0, R1.getVoltage(), EPSILON);
+        assertEquals(10.0, circuit.getNodalVoltage(2), EPSILON);
+
+        assertEquals(0.0, R3.getCurrent(), EPSILON);
+        assertEquals(0.0, R3.getVoltage(), EPSILON);
+        assertEquals(10.0, circuit.getNodalVoltage(3), EPSILON);
     }
 }

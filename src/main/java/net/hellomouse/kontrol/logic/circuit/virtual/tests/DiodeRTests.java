@@ -42,7 +42,7 @@ class DiodeRTests {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        double I = -(10.0 - 1.4) / 1000.0;
+        double I = (10.0 - 1.4) / 1000.0;
         assertEquals(I, D1.getCurrent(), EPSILON);
         assertEquals(I, D2.getCurrent(), EPSILON);
         assertEquals(I, R1.getCurrent(), EPSILON);

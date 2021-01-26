@@ -29,7 +29,7 @@ public class VirtualCapacitor extends VirtualVoltageSource {
     public void tick() {
         // I = C * dV / dt
         // Or V += I / C * dt (Euler approximation)
-        setVoltage(getVoltage() - getCurrent() / capacitance * VirtualCircuitConstants.DT);
+        setVoltage(getVoltage() + getCurrent() / capacitance * VirtualCircuitConstants.DT);
     }
 
     @Override

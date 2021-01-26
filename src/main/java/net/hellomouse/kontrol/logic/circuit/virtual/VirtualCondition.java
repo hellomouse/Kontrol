@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.CLOSED_CIRCUIT_R;
+import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.OPEN_CIRCUIT_R;
+
 public class VirtualCondition {
     public enum Condition {
         VOLTAGE_DIFFERENCE, RESISTANCE, CURRENT, FIXED_VOLTAGE
@@ -45,11 +48,10 @@ public class VirtualCondition {
             boolean shouldSolve = condition.type == Condition.RESISTANCE;
 
             if (comp.isDisabled() || (steadyState && comp.doesNumericIntegration())) {
-                // TODO: dont hard code
                 if (steadyState && comp instanceof VirtualInductor)
-                    invR = 1e9;
+                    invR = OPEN_CIRCUIT_R;
                 else
-                    invR = 1e-9;
+                    invR = CLOSED_CIRCUIT_R;
                 shouldSolve = true;
             }
 
