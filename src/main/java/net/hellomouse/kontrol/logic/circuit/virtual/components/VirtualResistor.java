@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
 import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCondition;
+import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
 
 public class VirtualResistor extends AbstractVirtualComponent {
     private double resistance;
@@ -27,7 +28,6 @@ public class VirtualResistor extends AbstractVirtualComponent {
 
     @Override
     public double getEnergy() {
-        double voltage = getVoltage();
-        return voltage / resistance * voltage;  // E = V^2 / R
+        return UNKNOWN_ENERGY;
     }
 }

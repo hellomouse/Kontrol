@@ -21,6 +21,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
 	compile group: 'com.moandjiezana.toml', name: 'toml4j', version: '0.7.2'
 
+	// https://ejml.org/wiki/index.php?title=Download
+	compile group: 'org.ejml', name: 'ejml-all', version: '0.40'
 }
 
 processResources {

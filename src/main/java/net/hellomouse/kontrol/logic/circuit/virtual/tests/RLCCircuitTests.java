@@ -34,7 +34,8 @@ class RLCCircuitTests {
         circuit.addComponent(new VirtualGround(), 0, 0);
         circuit.solve();
 
-        // Steady state
+        // TODO
+        // Steady state is correct
         // [0.0, 9.999999999999998, 9.999999999989999, 1.0000997616784776E-7, 9.999997616794777E-8, 9.999997615794778E-8]
 
         for (int i = 0; i < 5 / DT; i++) {

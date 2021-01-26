@@ -139,12 +139,37 @@ class SpeedTests {
     }
 
     /**
+     * 1000 resistors in series.
+     * Test of how fast it takes to solve, no voltage source present
+     * so all voltages should be 0
+     */
+    @Test
+    @DisplayName("Solving 1000 resistors in series - No voltage source")
+    void test6() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        for (int i = 0; i < 1000; i++)
+            circuit.addComponent(new VirtualResistor(1000), i, i + 1);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.addComponent(new VirtualGround(), 1001, 1001);
+
+        long startTime = System.nanoTime();
+        circuit.solve();
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+
+        System.out.println("Time to solve 1000 resistors in series, no voltage:");
+        System.out.println((duration / 1e6) + " ms");
+    }
+
+    /**
      * Test repeated circuit ticking and solving. This is not particularly
      * important as circuit ticks only once per in game tick, not all at once.
      */
     @Test
     @DisplayName("10,000 iterations of an RC circuit")
-    void test6() {
+    void test7() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualVoltageSource V1 = new VirtualVoltageSource(10);
         VirtualResistor R1 = new VirtualResistor(1000);
@@ -177,7 +202,7 @@ class SpeedTests {
      */
     @Test
     @DisplayName("10,000 iterations of an RC circuit with diode - correct direction")
-    void test7() {
+    void test8() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualVoltageSource V1 = new VirtualVoltageSource(10);
         VirtualResistor R1 = new VirtualResistor(1000);
@@ -214,7 +239,7 @@ class SpeedTests {
      */
     @Test
     @DisplayName("10,000 iterations of an RC circuit with diode - wrong direction")
-    void test8() {
+    void test9() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualVoltageSource V1 = new VirtualVoltageSource(10);
         VirtualResistor R1 = new VirtualResistor(1000);
