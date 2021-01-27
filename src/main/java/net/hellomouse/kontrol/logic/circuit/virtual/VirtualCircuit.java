@@ -37,8 +37,8 @@ public class VirtualCircuit {
     private ArrayList<Double> steadyStateNodalVoltages = new ArrayList<>();
     // Does circuit contain a ground?
     private boolean containsGround = false;
-    // Does the circuit have any way to be supplied with energy?
-    private boolean containsEnergySource = false;
+    // How many ways can the circuit be supplied with energy?
+    private int energySourceCount = 0;
 
     /**
      * Add a component from node1 to node2. See Polarity tests
@@ -79,7 +79,7 @@ public class VirtualCircuit {
                 condition.type == VirtualCondition.Condition.VOLTAGE_DIFFERENCE  ||
                 condition.type == VirtualCondition.Condition.CURRENT ||
                 condition.type == VirtualCondition.Condition.FIXED_VOLTAGE))
-            containsEnergySource = true;
+            energySourceCount++;
 
         // Add special components
         if (component.doesNumericIntegration())
@@ -97,7 +97,7 @@ public class VirtualCircuit {
      * - Non-resistors must only connect to resistors (Ie, no directly chaining voltage sources)
      */
     public void solve() {
-        if (!containsGround && containsEnergySource) { // No ground, randomly assign a voltage source's node to ground
+        if (!containsGround && energySourceCount > 0) { // No ground, randomly assign a voltage source's node to ground
             // TODO: current sources are also ok
             // So are fixed voltage points
 
@@ -134,8 +134,8 @@ public class VirtualCircuit {
                 if (comp instanceof VirtualCapacitor) {
                     double SS_voltage = steadyState.get(condition.node1) - steadyState.get(condition.node2);
                     if (Math.abs(comp.getVoltage()) > Math.abs(SS_voltage)) {
-                        ((VirtualCapacitor) comp).setVoltage(SS_voltage);
-                        recompute = true;
+                        //((VirtualCapacitor) comp).setVoltage(SS_voltage);
+                        //recompute = true;
                     }
                 }
 
@@ -183,7 +183,7 @@ public class VirtualCircuit {
         int nodeCount = uniqueNodes.size();
 
         // 1 node circuit, or no energy source circuits have all nodes = 0 V
-        if (nodeCount < 2 || !containsEnergySource)
+        if (nodeCount < 2 || energySourceCount == 0)
             return VirtualCondition.getEmptyRow(nodeCount);
 
         SimpleMatrix matrix    = new SimpleMatrix(nodeCount, nodeCount);
@@ -241,7 +241,6 @@ public class VirtualCircuit {
     public double getCurrentThrough(int node1, int node2) {
         ArrayList<AbstractVirtualComponent> resistors = null;
         int[] nodes = { node1, node2 };
-        int nodeSide;
         int rCount;
 
         for (int nodeId : nodes) {
@@ -306,7 +305,7 @@ public class VirtualCircuit {
         nodalVoltages.clear();
         steadyStateNodalVoltages.clear();
         containsGround = false;
-        containsEnergySource = false;
+        energySourceCount = 0;
     }
 
     /**
@@ -334,4 +333,8 @@ public class VirtualCircuit {
     public double getNodalVoltage(int nodeId) {
         return nodalVoltages.get(nodeId);
     }
+
+    /** Add or subtract energy source count */
+    public void incEnergySources() { energySourceCount++; }
+    public void decEnergySources() { energySourceCount--; }
 }

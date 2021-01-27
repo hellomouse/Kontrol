@@ -12,6 +12,11 @@ public class VirtualVoltageSource extends AbstractVirtualComponent {
     }
 
     public void setVoltage(double voltage) {
+        if (this.voltage == 0.0 && voltage != 0.0)
+            circuit.incEnergySources();
+        else if (this.voltage != 0.0 && voltage == 0.0)
+            circuit.decEnergySources();
+
         this.voltage = voltage;
         condition.value = voltage;
     }

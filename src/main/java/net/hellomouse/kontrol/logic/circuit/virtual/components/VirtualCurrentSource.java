@@ -12,6 +12,11 @@ public class VirtualCurrentSource extends AbstractVirtualComponent {
     }
 
     public void setCurrent(double current) {
+        if (this.current == 0.0 && current != 0.0)
+            circuit.incEnergySources();
+        else if (this.current != 0.0 && current == 0.0)
+            circuit.decEnergySources();
+
         this.current = current;
         condition.value = current;
     }
