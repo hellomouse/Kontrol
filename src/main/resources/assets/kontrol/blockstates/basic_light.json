@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/basic_light",
+			"y": 90
+		},
+		"facing=north": {
+			"model": "kontrol:block/basic_light"
+		},
+		"facing=south": {
+			"model": "kontrol:block/basic_light",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "kontrol:block/basic_light",
+			"y": 270
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"parent": "item/handheld",
+	"textures": { "layer0": "kontrol:item/measure/advanced_multimeter/1" },
+	"overrides": [
+		{ "predicate": { "damage": 0.2 }, "model": "kontrol:item/measure/advanced_multimeter/2" },
+		{ "predicate": { "damage": 0.4 }, "model": "kontrol:item/measure/advanced_multimeter/3" },
+		{ "predicate": { "damage": 0.6 }, "model": "kontrol:item/measure/advanced_multimeter/4" }
+	]
+}

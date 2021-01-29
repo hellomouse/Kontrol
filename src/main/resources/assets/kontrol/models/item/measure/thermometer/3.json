@@ -1,0 +1,6 @@
+{
+	"parent": "item/generated",
+	"textures": {
+		"layer0": "kontrol:item/measure/thermometer/3"
+	}
+}
