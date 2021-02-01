@@ -1,6 +1,16 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
-public class VirtualDiode extends VirtualVoltageSource {
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IBaseCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
+
+/**
+ * Diode component, modelled as voltage source
+ * See IBaseCondition for specific javadoc on common component methods
+ *
+ * @see IBaseCondition
+ * @author Bowserinator
+ */
+public class VirtualDiode extends VirtualVoltageSource implements IVoltageDifferenceCondition {
     private double V_forward;
 
     public VirtualDiode(double V_forward) {
@@ -11,6 +21,7 @@ public class VirtualDiode extends VirtualVoltageSource {
     public void setVForward(double V) { V_forward = V; }
     public double getVForward() { return V_forward; }
 
+    // Solving logic in VirtualCircuit
     @Override
     public boolean isNonLinear() { return true; }
 }

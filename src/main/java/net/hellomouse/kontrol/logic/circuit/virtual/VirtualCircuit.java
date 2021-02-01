@@ -1,6 +1,10 @@
 package net.hellomouse.kontrol.logic.circuit.virtual;
 
 import net.hellomouse.kontrol.logic.circuit.virtual.components.*;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.ICurrentCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IFixedVoltageCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IResistanceCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
 import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.SimpleMatrix;
 
@@ -35,8 +39,8 @@ public class VirtualCircuit {
     private ArrayList<Double> nodalVoltages = new ArrayList<>();
     // Solutions for voltages at every node at steady state
     private ArrayList<Double> steadyStateNodalVoltages = new ArrayList<>();
-    // Does circuit contain a ground?
-    private boolean containsGround = false;
+    // Does circuit contain a ground (or any fixed voltage point)
+    private boolean containsFixedVoltagePoint = false;
     // How many ways can the circuit be supplied with energy?
     private int energySourceCount = 0;
 
@@ -49,7 +53,6 @@ public class VirtualCircuit {
      */
     public void addComponent(AbstractVirtualComponent component, int node1, int node2) {
         uniqueNodes.add(node1);
-
         component.setNodes(node1, node2);
         component.setCircuit(this);
         components.add(component);
@@ -57,8 +60,12 @@ public class VirtualCircuit {
         nodeMap.computeIfAbsent(node1, k -> new ArrayList<>());
         nodeMap.get(node1).add(component);
 
-        conditionComponentMap.computeIfAbsent(component.getCondition().type, k -> new ArrayList<>());
-        conditionComponentMap.get(component.getCondition().type).add(component);
+        for (VirtualCondition.Condition key : VirtualCondition.Condition.values()) {
+            if (VirtualCondition.fitsKey(component, key)) {
+                conditionComponentMap.computeIfAbsent(key, k -> new ArrayList<>());
+                conditionComponentMap.get(key).add(component);
+            }
+        }
 
         if (node1 != node2) {
             uniqueNodes.add(node2);
@@ -67,18 +74,16 @@ public class VirtualCircuit {
         }
 
         // Checks for circuit
-        if (component instanceof VirtualGround)
-            containsGround = true;
+        if (component instanceof IFixedVoltageCondition)
+            containsFixedVoltagePoint = true;
         if (component.requireTicking())
             requireTickComponents.add(component);
 
-        // Check circuit contains an energy source, otherwise all voltages
+        // Check circuit contains an energy source, otherwise all nodal voltages
         // are zero by default
-        VirtualCondition condition = component.getCondition();
-        if (condition.value != 0.0 && (
-                condition.type == VirtualCondition.Condition.VOLTAGE_DIFFERENCE  ||
-                condition.type == VirtualCondition.Condition.CURRENT ||
-                condition.type == VirtualCondition.Condition.FIXED_VOLTAGE))
+        if (
+                ((component instanceof IFixedVoltageCondition || component instanceof IVoltageDifferenceCondition) && component.getVoltage() != 0.0) ||
+                (component instanceof ICurrentCondition && component.getCurrent() != 0.0))
             energySourceCount++;
 
         // Add special components
@@ -94,16 +99,15 @@ public class VirtualCircuit {
      * Caveats:
      * - All nodes ID must be used up to the max. ie, if the highest nodeId is 3, then
      *   nodes 0, 1, 2, and 3 must all exist
-     * - Non-resistors must only connect to resistors (Ie, no directly chaining voltage sources)
      */
     public void solve() {
-        if (!containsGround && energySourceCount > 0) { // No ground, randomly assign a voltage source's node to ground
-            // TODO: current sources are also ok
-            // So are fixed voltage points
-
-            ArrayList<AbstractVirtualComponent> voltageComps = conditionComponentMap.get(VirtualCondition.Condition.VOLTAGE_DIFFERENCE);
-            if (voltageComps != null && voltageComps.size() > 0)
-                addComponent(new VirtualGround(), voltageComps.get(0).getCondition().node2, voltageComps.get(0).getCondition().node2);
+        if (!containsFixedVoltagePoint && energySourceCount > 0) { // No ground, randomly assign a voltage source's node to ground
+            // Randomly select a valid voltage or current source
+            ArrayList<AbstractVirtualComponent> comps = conditionComponentMap.get(VirtualCondition.Condition.VOLTAGE_DIFFERENCE);
+            if (comps == null || comps.size() == 0)
+                comps = conditionComponentMap.get(VirtualCondition.Condition.CURRENT);
+            if (comps != null && comps.size() > 0)
+                addComponent(new VirtualGround(), comps.get(0).getNode2(), comps.get(0).getNode2());
         }
 
         nodalVoltages = solveHelper(false);
@@ -128,20 +132,21 @@ public class VirtualCircuit {
                 steadyStateNodalVoltages = steadyState;
 
             for (AbstractVirtualComponent comp : divergentComponents) {
-                VirtualCondition condition = comp.getCondition();
+                int node1 = comp.getNode1();
+                int node2 = comp.getNode2();
 
                 // Capacitors: calculate voltage across, cannot exceed steady state value
                 if (comp instanceof VirtualCapacitor) {
-                    double SS_voltage = steadyState.get(condition.node1) - steadyState.get(condition.node2);
+                    double SS_voltage = steadyState.get(node1) - steadyState.get(node2);
                     if (Math.abs(comp.getVoltage()) > Math.abs(SS_voltage)) {
-                        //((VirtualCapacitor) comp).setVoltage(SS_voltage);
-                        //recompute = true;
+                        ((VirtualCapacitor) comp).setVoltage(SS_voltage);
+                        recompute = true;
                     }
                 }
 
                 // Inductors: calculate current across, cannot exceed steady state value
                 else if (comp instanceof VirtualInductor) {
-                    double SS_voltage = steadyState.get(condition.node1) - steadyState.get(condition.node2);
+                    double SS_voltage = steadyState.get(node1) - steadyState.get(node2);
                     double SS_current = SS_voltage * OPEN_CIRCUIT_R;
                     if (Math.abs(comp.getCurrent()) > Math.abs(SS_current)) {
                         ((VirtualInductor) comp).setCurrent(SS_current);
@@ -159,13 +164,13 @@ public class VirtualCircuit {
                 double V = comp.getVoltage();
                 double I = comp.getCurrent();
 
-                boolean oldState = comp.isDisabled();
+                boolean oldState = comp.isHiZ();
                 boolean newState = !(I > 0 && Math.abs(V) >= ((VirtualDiode)comp).getVForward());
 
                 if (oldState != newState) {
                     recompute = true; // Always recompute diodes
                     steadyStateNodalVoltages.clear(); // Diodes may alter steady state voltages, clear cache
-                    comp.setDisabled(newState);
+                    comp.setHiZ(newState);
                 }
             }
         }
@@ -184,16 +189,18 @@ public class VirtualCircuit {
 
         // 1 node circuit, or no energy source circuits have all nodes = 0 V
         if (nodeCount < 2 || energySourceCount == 0)
-            return VirtualCondition.getEmptyRow(nodeCount);
+            return getEmptyRow(nodeCount);
 
         SimpleMatrix matrix    = new SimpleMatrix(nodeCount, nodeCount);
         SimpleMatrix solutions = new SimpleMatrix(nodeCount, 1);
 
         // Compute all conditions. Due to order of matrix operations, they must be performed in this order.
+        // See VirtualCondition for explanations of what each solver does
         VirtualCondition.KCLCondition(components, matrix, solutions, steadyState);
-        VirtualCondition.currentSourceCondition(conditionComponentMap.get(VirtualCondition.Condition.CURRENT), matrix, solutions, steadyState);
+        VirtualCondition.currentSourceCondition(conditionComponentMap.get(VirtualCondition.Condition.CURRENT), solutions, steadyState);
         VirtualCondition.voltageDifferenceCondition(conditionComponentMap.get(VirtualCondition.Condition.VOLTAGE_DIFFERENCE), matrix, solutions, steadyState);
         VirtualCondition.fixedNodeCondition(conditionComponentMap.get(VirtualCondition.Condition.FIXED_VOLTAGE), matrix, solutions);
+        // VirtualCondition.customCondition(conditionComponentMap.get(VirtualCondition.Condition.CUSTOM), matrix, solutions);
 
         // Solve matrix equation Ax = b
         ArrayList<Double> nodalVoltages = new ArrayList<>(nodeCount);
@@ -209,7 +216,7 @@ public class VirtualCircuit {
                 "Singular matrix attempting to solve Ax = b\n\n" +
                 "Value of A: \n\n" + matrix.toString() + "\n" +
                 "Value of b: \n\n" + solutions.toString() + "\n" +
-                (!containsGround ? "Note: Circuit does not have a ground, one was auto-added\n" : "") +
+                (!containsFixedVoltagePoint ? "Note: Circuit does not have a ground, one was auto-added\n" : "") +
                 "Note: steadyState: " + (steadyState ? "true" : "false")
             );
         }
@@ -276,13 +283,13 @@ public class VirtualCircuit {
         for (AbstractVirtualComponent comp : resistors) {
             if (uniqueNodes.size() > 2) {  // TODO doesnt work, fails if only 2 elements are in series and parallel
                 // TODO: describe series check
-                if (comp.getCondition().node1 == node1 && comp.getCondition().node2 == node2)
+                if (comp.getNode1() == node1 && comp.getNode2() == node2)
                     continue;
-                if (comp.getCondition().node2 == node1 && comp.getCondition().node1 == node2)
+                if (comp.getNode2() == node1 && comp.getNode1() == node2)
                     continue;
             }
-            if (comp.getCondition().type == VirtualCondition.Condition.RESISTANCE) {
-                if (comp.getCondition().node1 == node1 || comp.getCondition().node2 == node2)
+            if (comp instanceof IResistanceCondition) {
+                if (comp.getNode1() == node1 || comp.getNode2() == node2)
                     return -comp.getCurrent();
                 return comp.getCurrent();
             }
@@ -304,8 +311,19 @@ public class VirtualCircuit {
         uniqueNodes.clear();
         nodalVoltages.clear();
         steadyStateNodalVoltages.clear();
-        containsGround = false;
+        containsFixedVoltagePoint = false;
         energySourceCount = 0;
+    }
+
+    /**
+     * Returns an arraylist of size filled with all 0s
+     * @param size Size of arraylist
+     * @return Arraylist
+     */
+    public static ArrayList<Double> getEmptyRow(int size) {
+        ArrayList<Double> row = new ArrayList<>(Arrays.asList(new Double[size]));
+        Collections.fill(row, 0.0);
+        return row;
     }
 
     /**

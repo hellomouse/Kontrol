@@ -1,9 +1,18 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
-import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IBaseCondition;
+import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.DT;
 
+/**
+ * Capacitor component.
+ * See IBaseCondition for specific javadoc on common component methods
+ *
+ * @see IBaseCondition
+ * @author Bowserinator
+ */
 public class VirtualCapacitor extends VirtualVoltageSource {
     private double capacitance;
+    private double prev = 0.0;
 
     public VirtualCapacitor(double capacitance) {
         super(0.0); // Uncharged capacitor is short (0 V voltage source)
@@ -13,10 +22,7 @@ public class VirtualCapacitor extends VirtualVoltageSource {
     public double getCapacitance() {
         return capacitance;
     }
-    public void setCapacitance(double C) {
-        capacitance = C;
-        condition.value = C;
-    }
+    public void setCapacitance(double C) { capacitance = C; }
 
     @Override
     public boolean requireTicking() { return true; }
@@ -29,7 +35,10 @@ public class VirtualCapacitor extends VirtualVoltageSource {
     public void tick() {
         // I = C * dV / dt
         // Or V += I / C * dt (Euler approximation)
-        setVoltage(getVoltage() + getCurrent() / capacitance * VirtualCircuitConstants.DT);
+        double current = getCurrent() / capacitance * DT;
+        current -= (current - prev) * 0.5;
+        setVoltage(getVoltage() + current);
+        prev = current;
     }
 
     @Override

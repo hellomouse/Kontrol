@@ -3,65 +3,59 @@ package net.hellomouse.kontrol.logic.circuit.virtual;
 import net.hellomouse.kontrol.logic.circuit.virtual.components.AbstractVirtualComponent;
 import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualCapacitor;
 import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualInductor;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.*;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.CLOSED_CIRCUIT_R;
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.OPEN_CIRCUIT_R;
 
+/**
+ * Handling of all condition interfaces (does all the matrix manipulations)
+ * @author Bowserinator
+ */
 public class VirtualCondition {
-    public enum Condition {
-        VOLTAGE_DIFFERENCE, RESISTANCE, CURRENT, FIXED_VOLTAGE
-    };
+    // Correspond to all condition interfaces, used as key in component cache
+    public enum Condition { VOLTAGE_DIFFERENCE, RESISTANCE, CURRENT, FIXED_VOLTAGE, CUSTOM }
 
-    // Positive node = node1
-    // Negative node = node2
-    public final int node1, node2;
-    public double value;
-    public Condition type;
-
-    public VirtualCondition(int node1, int node2, double value, Condition type) {
-        this.node1 = node1;
-        this.node2 = node2;
-        this.value = value;
-        this.type = type;
-    }
-
-
-    // --- Computation for each condition --- \\
-    // The following conditions must be executed in the order
-    // they are declared in this file
-
-    // Note: we could declare a solver for each condition, but
-    // I don't want to sink any deeper into OOP hell
-
+    /**
+     * Solve all KCL conditions for resistors.
+     * @param components All components, not just resistors, as sometimes other components can be treated as resistors
+     * @param matrix Left side matrix
+     * @param solutions Right side matrix
+     * @param steadyState Solving for steady state?
+     */
     public static void KCLCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions, boolean steadyState) {
-        if (components == null)
-            return;
+        if (components == null) return;
+
         for (AbstractVirtualComponent comp : components) {
-            VirtualCondition condition = comp.getCondition();
+            double invR = 0.0; // Arbitrary initial value, should always be overwritten
+            boolean shouldSolve = comp instanceof IResistanceCondition;
 
-            double invR = 1 / condition.value;
-            boolean shouldSolve = condition.type == Condition.RESISTANCE;
+            // Set invR for a resistor
+            if (shouldSolve)
+                invR = 1 / ((IResistanceCondition) comp).getResistance();
 
-            if (comp.isDisabled() || (steadyState && comp.doesNumericIntegration())) {
-                if (steadyState && comp instanceof VirtualInductor)
-                    invR = OPEN_CIRCUIT_R;
-                else
-                    invR = CLOSED_CIRCUIT_R;
+            // High impedance
+            if (comp.isHiZ()) {
+                invR = CLOSED_CIRCUIT_R; // invR is very low because R is very high
+                shouldSolve = true;
+            }
+
+            // Non-resistor that behaves like one right now
+            if (steadyState && comp.doesNumericIntegration()) {
+                invR = comp instanceof VirtualInductor ? OPEN_CIRCUIT_R : CLOSED_CIRCUIT_R;
                 shouldSolve = true;
             }
 
             if (shouldSolve) {
-                int[] startingIds = {condition.node1, condition.node2};
+                int[] startingIds = {comp.getNode1(), comp.getNode2()};
                 for (int nodeId : startingIds) {
                     // (N1 - N2) / R = current into node. We add the negative sign to N2
                     // later on, for now this expression is (N1 + N2) / R
-                    addToMatrix(matrix, nodeId, condition.node1, invR);
-                    addToMatrix(matrix, nodeId, condition.node2, invR);
+                    addToMatrix(matrix, nodeId, comp.getNode1(), invR);
+                    addToMatrix(matrix, nodeId, comp.getNode2(), invR);
                 }
             }
         }
@@ -70,18 +64,22 @@ public class VirtualCondition {
             // KCL condition: sum all currents = 0
             solutions.set(nodeId, 0, 0.0);
             // Flip sign as mentioned above
-            setMatrix(matrix, nodeId, nodeId, -getMatrix(matrix, nodeId, nodeId));
+            matrix.set(nodeId, nodeId, -matrix.get(nodeId, nodeId));
         }
     }
 
-    public static void currentSourceCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions, boolean steadyState) {
-        if (components == null)
-            return;
+    /**
+     * Solve for all current source conditions
+     * @param components Only components that implement ICurrentCondition. This is not checked!
+     * @param solutions Right hand matrix
+     * @param steadyState Solve for steady state?
+     */
+    public static void currentSourceCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix solutions, boolean steadyState) {
+        if (components == null) return;
 
         for (AbstractVirtualComponent comp : components) {
-            VirtualCondition condition = comp.getCondition();
-
-            if (comp.isDisabled())
+            // Treated as a resistor, ignore now
+            if (comp.isHiZ())
                 continue;
 
             // Steady state: inductor is short
@@ -93,23 +91,25 @@ public class VirtualCondition {
             // Total current out of N1 is now = current source
             // Total current out of N2 is now = -current source
 
-            // We assume no more than 1 resistor connects to each end of the terminal
-            // (Following rule all non-resistors must be wrapped in series w/ a resistor)
-
-            solutions.set(condition.node1, 0, solutions.get(condition.node1, 0) + condition.value);
-            solutions.set(condition.node2, 0, solutions.get(condition.node2, 0) - condition.value);
+            solutions.set(comp.getNode1(), 0, solutions.get(comp.getNode1(), 0) + comp.getCurrent());
+            solutions.set(comp.getNode2(), 0, solutions.get(comp.getNode2(), 0) - comp.getCurrent());
         }
     }
 
+    /**
+     * Solve all voltage differences
+     * @param components Only components that implement IVoltageDifferenceCondition. This is not checked!
+     * @param matrix Left hand matrix
+     * @param solutions Right hand matrix
+     * @param steadyState Solve for steady state?
+     */
     public static void voltageDifferenceCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions, boolean steadyState) {
-        if (components == null)
-            return;
+        if (components == null) return;
 
         final int nodeCount = matrix.numRows();
         for (AbstractVirtualComponent comp : components) {
-            VirtualCondition condition = comp.getCondition();
-
-            if (comp.isDisabled())
+            // Treated as a resistor, ignore now
+            if (comp.isHiZ())
                 continue;
 
             // Steady state: capacitor is open circuit
@@ -118,73 +118,93 @@ public class VirtualCondition {
 
             // Voltage difference: supernode definition
             // > condition.value = voltage difference
-
             // node1 - node2 = voltage
 
             // Overwrite original rows by summing the two to get KCL equation
-            solutions.set(condition.node2, 0, solutions.get(condition.node1, 0) + solutions.get(condition.node2, 0));
-            solutions.set(condition.node1, 0, condition.value);
+            solutions.set(comp.getNode2(), 0, solutions.get(comp.getNode1(), 0) + solutions.get(comp.getNode2(), 0));
+            solutions.set(comp.getNode1(), 0, comp.getVoltage());
 
             for (int i = 0; i < nodeCount; i++) {
-                matrix.set(condition.node2, i, matrix.get(condition.node1, i) + matrix.get(condition.node2, i));
+                matrix.set(comp.getNode2(), i, matrix.get(comp.getNode1(), i) + matrix.get(comp.getNode2(), i));
 
                 double supernodeVal = 0.0;
-                if (i == condition.node1)
+                if (i == comp.getNode1())
                     supernodeVal = 1.0;
-                else if (i == condition.node2)
+                else if (i == comp.getNode2())
                     supernodeVal = -1.0;
-                matrix.set(condition.node1, i, supernodeVal);
+                matrix.set(comp.getNode1(), i, supernodeVal);
             }
         }
     }
 
+    /**
+     * Solve fixed nodal voltages
+     * @param components Only components that implement IFixedVoltageCondition. This is not checked!
+     * @param matrix Left hand matrix
+     * @param solutions Right hand matrix
+     */
     public static void fixedNodeCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions) {
         if (components == null)
             return;
 
         final int nodeCount = matrix.numRows();
         for (AbstractVirtualComponent comp : components) {
-            VirtualCondition condition = comp.getCondition();
-
+            // Ignore disabled fixed nodes
             if (comp.isDisabled())
                 continue;
 
             // Fixed voltage: just use [node] = [voltage]
-
-
-            solutions.set(condition.node1, 0, condition.value);
-            for (int i = 0; i < nodeCount; i++) {
-                matrix.set(condition.node1, i, i == condition.node1 ? 1.0 : 0.0);
-            }
+            // only node1 of the component is used.
+            solutions.set(comp.getNode1(), 0, comp.getVoltage());
+            for (int i = 0; i < nodeCount; i++)
+                matrix.set(comp.getNode1(), i, i == comp.getNode1() ? 1.0 : 0.0);
         }
     }
 
+//    /**
+//     * Solve custom matrix solutions
+//     * @param components Only components that implement ICustomCondition. This is not checked!
+//     * @param matrix Left hand matrix
+//     * @param solutions Right hand matrix
+//     */
+// UNCOMMENT IF CUSTOM CONDITIONS ARE EVER NEEDED
+// UNTESTED CODE!
+//    public static void customCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions) {
+//        if (components == null)
+//            return;
+//
+//        for (AbstractVirtualComponent comp : components)
+//            ((ICustomCondition)(comp)).modifyMatrix(matrix, solutions);
+//    }
 
-    // --- Helper for each condition --- \\
-
-    /* Returns ArrayList w/ Doubles filled with [size] zeroes */
-    // TODO: move to VirutalCirucit or something lol
-    public static ArrayList<Double> getEmptyRow(int size) {
-        ArrayList<Double> row = new ArrayList<>(Arrays.asList(new Double[size]));
-        Collections.fill(row, 0.0);
-        return row;
+    /**
+     * Increment matrix[i][j] by value
+     * @param matrix Matrix
+     * @param i Row
+     * @param j Col
+     * @param value How much to increment, negative to decrement
+     */
+    private static void addToMatrix(SimpleMatrix matrix, int i, int j, double value) {
+        matrix.set(i, j, matrix.get(i, j) + value);
     }
 
-    /* Increments matrix[i][j] by value */
-    public static void addToMatrix(SimpleMatrix matrix, int i, int j, double value) {
-        setMatrix(matrix, i, j, getMatrix(matrix, i, j) + value);
+    /**
+     * Returns if component belongs into a bin designated by key. This function is used
+     * for mapping a component to (possibly multiple) condition enums
+     * @param component Component to check
+     * @param key Enum to check
+     * @return Does component belong in a bin for key?
+     */
+    public static boolean fitsKey(AbstractVirtualComponent component, Condition key) {
+        switch (key) {
+            case VOLTAGE_DIFFERENCE: return component instanceof IVoltageDifferenceCondition;
+            case RESISTANCE: return component instanceof IResistanceCondition;
+            case CURRENT: return component instanceof ICurrentCondition;
+            case FIXED_VOLTAGE: return component instanceof IFixedVoltageCondition;
+            case CUSTOM: return component instanceof ICustomCondition;
+        }
+        throw new IllegalStateException("Enum " + key + " was not found (Condition handler missing?)");
     }
 
-    public static double getMatrix(SimpleMatrix matrix, int i, int j) {
-        return matrix.get(i, j);
-    }
-
-    public static void setMatrix(SimpleMatrix matrix, int i, int j, double value) {
-        matrix.set(i, j, value);
-    }
-
-
-    public String toString() {
-        return "Nodes: " + node1 + " to " + node2 + "   Value: " + value + " Type: " + type;
-    }
+    private VirtualCondition() {}
 }

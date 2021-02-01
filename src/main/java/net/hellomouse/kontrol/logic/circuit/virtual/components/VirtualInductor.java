@@ -1,7 +1,15 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
 import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IBaseCondition;
 
+/**
+ * Inductor component.
+ * See IBaseCondition for specific javadoc on common component methods
+ *
+ * @see IBaseCondition
+ * @author Bowserinator
+ */
 public class VirtualInductor extends VirtualCurrentSource {
     private double inductance;
 
@@ -10,13 +18,8 @@ public class VirtualInductor extends VirtualCurrentSource {
         this.inductance = inductance;
     }
 
-    public double getInductance() {
-        return inductance;
-    }
-    public void setCapacitance(double L) {
-        inductance = L;
-        condition.value = L;
-    }
+    public double getInductance() { return inductance; }
+    public void setCapacitance(double L) { inductance = L; }
 
     @Override
     public boolean requireTicking() { return true; }

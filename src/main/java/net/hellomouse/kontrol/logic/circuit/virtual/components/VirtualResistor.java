@@ -1,9 +1,19 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
-import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IBaseCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IResistanceCondition;
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
 
-public class VirtualResistor extends AbstractVirtualComponent {
+/**
+ * Resistor component, recommended to extend this for most resistor
+ * like elements.
+ *
+ * See IBaseCondition for specific javadoc on common component methods
+ *
+ * @see IBaseCondition
+ * @author Bowserinator
+ */
+public class VirtualResistor extends AbstractVirtualComponent implements IResistanceCondition {
     private double resistance;
 
     public VirtualResistor(double resistance) {
@@ -14,20 +24,21 @@ public class VirtualResistor extends AbstractVirtualComponent {
     public double getResistance() {
         return resistance;
     }
-
     public void setResistance(double resistance) {
         this.resistance = resistance;
-        condition.value = resistance;
     }
 
     @Override
-    public void setNodes(int node1, int node2) {
-        super.setNodes(node1, node2);
-        condition = new VirtualCondition(node1, node2, resistance, VirtualCondition.Condition.RESISTANCE);
+    public double getCurrent() {
+        // In direction of node1 to node2
+        // voltage across resistor is defined as negative but
+        // current positive, so we take -1 * voltage
+        return -getVoltage() / getResistance();
     }
 
     @Override
     public double getEnergy() {
+        // Resistors don't store energy
         return UNKNOWN_ENERGY;
     }
 }

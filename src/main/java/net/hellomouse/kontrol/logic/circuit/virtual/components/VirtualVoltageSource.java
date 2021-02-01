@@ -1,9 +1,19 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.components;
 
-import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IBaseCondition;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
 import static net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
 
-public class VirtualVoltageSource extends AbstractVirtualComponent {
+/**
+ * Voltage source component, recommended to extend this for most voltage
+ * source based elements.
+ *
+ * See IBaseCondition for specific javadoc on common component methods
+ *
+ * @see IBaseCondition
+ * @author Bowserinator
+ */
+public class VirtualVoltageSource extends AbstractVirtualComponent implements IVoltageDifferenceCondition {
     private double voltage;
 
     public VirtualVoltageSource(double voltage) {
@@ -16,26 +26,21 @@ public class VirtualVoltageSource extends AbstractVirtualComponent {
             circuit.incEnergySources();
         else if (this.voltage != 0.0 && voltage == 0.0)
             circuit.decEnergySources();
-
         this.voltage = voltage;
-        condition.value = voltage;
-    }
-
-    @Override
-    public void setNodes(int node1, int node2) {
-        super.setNodes(node1, node2);
-        condition = new VirtualCondition(node1, node2, voltage, VirtualCondition.Condition.VOLTAGE_DIFFERENCE);
     }
 
     @Override
     public double getVoltage() {
-        if (this.isDisabled())
+        if (isHiZ())
             return super.getVoltage();
+        if (isDisabled())
+            return 0.0;
         return voltage;
     }
 
     @Override
     public double getEnergy() {
+        // Voltage sources don't store energy
         return UNKNOWN_ENERGY;
     }
 }

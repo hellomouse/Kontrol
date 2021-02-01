@@ -240,8 +240,8 @@ public class Circuit {
        // System.out.println("Hmm " + outgoingNodes);
 
         for (AbstractVirtualComponent comp : components) {
-            int node1 = comp.getCondition().node1;
-            int node2 = comp.getCondition().node2;
+            int node1 = comp.getNode1();
+            int node2 = comp.getNode2();
 
             if (node1 < 0) {
                 if (!seenNodes.containsKey(node1)) {
