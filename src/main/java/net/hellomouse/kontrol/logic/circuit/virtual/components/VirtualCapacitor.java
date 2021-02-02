@@ -68,4 +68,9 @@ public class VirtualCapacitor extends VirtualVoltageSource implements INumericIn
         if (VirtualCondition.isDivergent(SS_value, initialValue, getVoltage()))
             super.setVoltage(SS_value); // Don't alter initial state, use super
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "\nC = " + capacitance + " C  |  V_0 = " + initialValue + " V";
+    }
 }

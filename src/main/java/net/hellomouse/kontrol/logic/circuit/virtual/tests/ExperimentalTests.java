@@ -38,6 +38,29 @@ class ExperimentalTests {
         System.out.println(" ");
     }
 
+    @Test
+    @DisplayName("Print names of all components")
+    void test3() {
+        ArrayList<AbstractVirtualComponent> comps = new ArrayList<>();
+
+        comps.add(new VirtualResistor(1));
+        comps.add(new VirtualVoltageSource(1));
+        comps.add(new VirtualCapacitor(1));
+        comps.add(new VirtualCurrentSource(1));
+        comps.add(new VirtualDiode(1));
+        comps.add(new VirtualFixedNode(1));
+        comps.add(new VirtualGround());
+        comps.add(new VirtualInductor(1));
+
+        for (AbstractVirtualComponent comp : comps) {
+            VirtualCircuit circuit = new VirtualCircuit();
+            circuit.addComponent(comp, 0, 1);
+            circuit.addComponent(new VirtualResistor(1), 1, 0);
+            circuit.solve();
+            System.out.println(comp);
+        }
+    }
+
     private void capacitorChargeTest(int n) {
         VirtualCircuit circuit = new VirtualCircuit();
 

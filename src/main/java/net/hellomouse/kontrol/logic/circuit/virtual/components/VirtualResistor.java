@@ -41,4 +41,9 @@ public class VirtualResistor extends AbstractVirtualComponent implements IResist
         // Resistors don't store energy
         return UNKNOWN_ENERGY;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "\nR = " + resistance + " ohms";
+    }
 }

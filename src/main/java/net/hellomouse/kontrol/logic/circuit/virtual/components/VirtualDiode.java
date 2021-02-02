@@ -24,4 +24,9 @@ public class VirtualDiode extends VirtualVoltageSource implements IVoltageDiffer
     // Solving logic in VirtualCircuit
     @Override
     public boolean isNonLinear() { return true; }
+
+    @Override
+    public String toString() {
+        return super.toString() + "\nV_fwd = " + V_forward + " V";
+    }
 }
