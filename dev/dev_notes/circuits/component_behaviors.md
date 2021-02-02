@@ -36,7 +36,7 @@ Steady state impedance is hard coded in `VirtualCondition.KCLCondition` for indu
 
 Additional steady state ignores may be added in `VirtualCondition.currentSourceCondition` and `VirtualCondition.voltageDifferenceCondition`, hardcoded for inductors and capacitors depending on how they are implemented.
 
-Steady state divergence checking is done in `VirtualCircuit.recomputeSpecialCases`.
+Steady state divergence checking is done in `VirtualCircuit.recomputeSpecialCases`, and depends on methods that are defined in the `INumericIntegration` interface.
 
 
 

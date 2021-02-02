@@ -26,7 +26,7 @@ class ExperimentalTests {
         System.out.println("Capacitor - charging");
         for (int i : chargeTimes)
             capacitorChargeTest(i);
-        System.out.println("");
+        System.out.println(" ");
     }
 
     @Test
@@ -35,7 +35,7 @@ class ExperimentalTests {
         System.out.println("Capacitor - discharging");
         for (int i : chargeTimes)
             capacitorDischargeTest(i);
-        System.out.println("");
+        System.out.println(" ");
     }
 
     private void capacitorChargeTest(int n) {
@@ -62,29 +62,6 @@ class ExperimentalTests {
         }
 
         System.out.println(". Error for " + n + " times: " + (10 - 10 * Math.exp(-n * DT / R / C) - C1.getVoltage()));
-    }
-
-    private void capacitorChargeTest2(int n) {
-        VirtualCircuit circuit = new VirtualCircuit();
-
-        VirtualResistor R1 = new VirtualResistor(1);
-        VirtualResistor R2 = new VirtualResistor(1);
-        VirtualCapacitor C1 = new VirtualCapacitor(n * DT / 2);
-        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
-
-        circuit.addComponent(V1, 1, 0);
-        circuit.addComponent(R1, 1, 2);
-        circuit.addComponent(C1, 2, 3);
-        circuit.addComponent(R2, 3, 0);
-        circuit.addComponent(new VirtualGround(), 0, 0);
-        circuit.solve();
-
-        for (int i = 0; i < n; i++) {
-            circuit.tick();
-            circuit.solve();
-        }
-
-        System.out.println(". Error for " + n + " times: " + (10 * ONE_TAU - C1.getVoltage()));
     }
 
     private void capacitorDischargeTest(int n) {

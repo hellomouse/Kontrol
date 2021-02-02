@@ -27,8 +27,6 @@ public class VirtualCircuit {
     private final Map<VirtualCondition.Condition, ArrayList<AbstractVirtualComponent>> conditionComponentMap = new HashMap<>();
     // NodeID: All components that connect to that node
     private final Map<Integer, ArrayList<AbstractVirtualComponent>> nodeMap = new HashMap<>();
-    // Components that use numeric integration
-    private final ArrayList<AbstractVirtualComponent> divergentComponents = new ArrayList<>();
     // Components that are non-linear, such as diodes
     private final ArrayList<AbstractVirtualComponent> nonLinearComponents = new ArrayList<>();
     // Components that need to tick() when this.tick() is called
@@ -88,8 +86,6 @@ public class VirtualCircuit {
             energySourceCount++;
 
         // Add special components
-        if (component.doesNumericIntegration())
-            divergentComponents.add(component);
         if (component.isNonLinear())
             nonLinearComponents.add(component);
     }
@@ -116,46 +112,11 @@ public class VirtualCircuit {
     }
 
     /**
-     * Fixes divergence in numeric integration in integrating components
-     * (capacitors and inductors), as well as solve non-linear components
-     * (diodes).
+     * Solves non-linear components (ie, diodes), and resolves circuit
+     * if necessary.
      */
     private void recomputeSpecialCases() {
         boolean recompute = false;
-
-        // Divergence checking is required -- check if surpassed steady state
-        if (divergentComponents.size() > 0) {
-            // Use cached steady state result, or solve for it
-            ArrayList<Double> steadyState = steadyStateNodalVoltages.size() == 0 ?
-                    solveHelper(true) :
-                    steadyStateNodalVoltages;
-            if (steadyStateNodalVoltages.size() == 0)
-                steadyStateNodalVoltages = steadyState;
-
-            for (AbstractVirtualComponent comp : divergentComponents) {
-                int node1 = comp.getNode1();
-                int node2 = comp.getNode2();
-
-                // Capacitors: calculate voltage across, cannot exceed steady state value
-                if (comp instanceof VirtualCapacitor) {
-                    double SS_voltage = steadyState.get(node1) - steadyState.get(node2);
-                    if (Math.abs(comp.getVoltage()) > Math.abs(SS_voltage)) {
-                        ((VirtualCapacitor) comp).setVoltage(SS_voltage);
-                        recompute = true;
-                    }
-                }
-
-                // Inductors: calculate current across, cannot exceed steady state value
-                else if (comp instanceof VirtualInductor) {
-                    double SS_voltage = steadyState.get(node1) - steadyState.get(node2);
-                    double SS_current = SS_voltage * OPEN_CIRCUIT_R;
-                    if (Math.abs(comp.getCurrent()) > Math.abs(SS_current)) {
-                        ((VirtualInductor) comp).setCurrent(SS_current);
-                        recompute = true;
-                    }
-                }
-            }
-        }
 
         // Diode computations
         for (AbstractVirtualComponent comp : nonLinearComponents) {
@@ -338,7 +299,6 @@ public class VirtualCircuit {
         components.clear();
         nodeMap.clear();
         conditionComponentMap.clear();
-        divergentComponents.clear();
         nonLinearComponents.clear();
         requireTickComponents.clear();
         uniqueNodes.clear();
@@ -374,6 +334,17 @@ public class VirtualCircuit {
      */
     public ArrayList<AbstractVirtualComponent> getComponents() {
         return components;
+    }
+
+    /**
+     * Return nodal voltages at steady state -- computes steady state
+     * if it's not cached
+     * @return Steady state
+     */
+    public ArrayList<Double> getSteadyStateNodalVoltages() {
+        if (steadyStateNodalVoltages.size() == 0)
+            steadyStateNodalVoltages = solveHelper(true);
+        return steadyStateNodalVoltages;
     }
 
     /**

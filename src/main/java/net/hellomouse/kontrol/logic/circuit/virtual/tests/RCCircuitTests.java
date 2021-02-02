@@ -232,4 +232,34 @@ class RCCircuitTests {
         assertEquals(10 * ONE_TAU, C1.getVoltage(), 0.2);
         assertEquals(10 * ONE_TAU, C2.getVoltage(), 0.2);
     }
+
+    /**
+     * Capacitor, V_0 = -10 V discharge test. Capacitor capacitance is set
+     * so the time constant of the circuit is 20 * DT
+     */
+    @Test
+    @DisplayName("Discharge - Two 1 ohm resistors in series with a capacitor - 1 time constant")
+    void test7() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(1);
+        VirtualResistor R2 = new VirtualResistor(1);
+        VirtualCapacitor C1 = new VirtualCapacitor(20 * DT / 2);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(C1, 1, 2);
+        circuit.addComponent(R2, 2, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+
+        C1.setVoltage(-10.0);
+        circuit.solve();
+
+        for (int i = 0; i < 20; i++) {
+            circuit.tick();
+            circuit.solve();
+        }
+
+        // Capacitor should reach ~63.2% to final charge of 0 V
+        assertEquals(-10 * (1 - ONE_TAU), C1.getVoltage(), 0.2);
+    }
 }

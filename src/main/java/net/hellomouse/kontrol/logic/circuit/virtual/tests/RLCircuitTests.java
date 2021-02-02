@@ -1,10 +1,7 @@
 package net.hellomouse.kontrol.logic.circuit.virtual.tests;
 
 import net.hellomouse.kontrol.logic.circuit.virtual.VirtualCircuit;
-import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualInductor;
-import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualGround;
-import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualResistor;
-import net.hellomouse.kontrol.logic.circuit.virtual.components.VirtualVoltageSource;
+import net.hellomouse.kontrol.logic.circuit.virtual.components.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -236,5 +233,35 @@ class RLCircuitTests {
 
         // R1 should reach ~63.2% of final current
         assertEquals(ONE_TAU * 5.0, R1.getCurrent(), 0.2);
+    }
+
+    /**
+     * Inductor: I_0 = -10 A discharge test. Inductor inductance is set
+     * so the time constant of the circuit is 20 * DT
+     */
+    @Test
+    @DisplayName("Discharge - Two 1 ohm resistors in series with an inductor - 1 time constant")
+    void test7() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(1);
+        VirtualResistor R2 = new VirtualResistor(1);
+        VirtualInductor L1 = new VirtualInductor(20 * DT * 2);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(L1, 1, 2);
+        circuit.addComponent(R2, 2, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+
+        L1.setCurrent(-10.0);
+        circuit.solve();
+
+        for (int i = 0; i < 20; i++) {
+            circuit.tick();
+            circuit.solve();
+        }
+
+        // Inductor should reach ~63.2% to final current of 0 A
+        assertEquals(-10 * (1 - ONE_TAU), L1.getCurrent(), 0.2);
     }
 }

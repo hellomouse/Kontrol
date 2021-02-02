@@ -206,5 +206,17 @@ public class VirtualCondition {
         throw new IllegalStateException("Enum " + key + " was not found (Condition handler missing?)");
     }
 
+    /**
+     * Generic check for divergence -- If value exceeds steady state value
+     * it assumes the integral doesn't converge
+     * @param SS_value Steady state value
+     * @param initialValue Initial value
+     * @param value Current value
+     * @return Is divergent?
+     */
+    public static boolean isDivergent(double SS_value, double initialValue, double value) {
+        return (SS_value > initialValue && value > SS_value) || (SS_value < initialValue && value < SS_value);
+    }
+
     private VirtualCondition() {}
 }

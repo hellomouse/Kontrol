@@ -85,8 +85,8 @@ public interface IBaseCondition {
     boolean requireTicking();
 
     /**
-     * Does the component do numeric integration? This is used for divergence
-     * checking in VirtualCircuit as well as certain circuit optimizations
+     * Does the component do numeric integration? Currently this is
+     * not used, but may be used in the future
      * @return Does the component do numeric integration?
      */
     boolean doesNumericIntegration();
