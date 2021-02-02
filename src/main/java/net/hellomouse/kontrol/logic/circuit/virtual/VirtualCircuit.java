@@ -5,6 +5,7 @@ import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.ICurre
 import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IFixedVoltageCondition;
 import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IResistanceCondition;
 import net.hellomouse.kontrol.logic.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
+import org.apache.logging.log4j.LogManager;
 import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.SimpleMatrix;
 
@@ -236,65 +237,97 @@ public class VirtualCircuit {
     /**
      * Returns current from node1 to node2, current from node1 to node2
      * is considered positive, node2 to node1 is negative. Current is computed
-     * from series resistors, so this will fail if there is no resistor in series
-     * for a component from node1 to node2
+     * from series resistors, so this will fail if there is no resistor(s) in series
+     * for a component from node1 to node2.
      *
-     * This will also fail if the only component from node1 to node2 is a resistor itself.
+     * In other words, there must be only 1 component from node1 to node2, or an incorrect
+     * result may be returned.
      *
      * @param node1 Node id
      * @param node2 Node id
      * @return Current
      */
     public double getCurrentThrough(int node1, int node2) {
-        ArrayList<AbstractVirtualComponent> resistors = null;
+        ArrayList<AbstractVirtualComponent> seriesComponents = null;
+        int resistorCount;
+        double totalCurrent = 0.0;
         int[] nodes = { node1, node2 };
-        int rCount;
 
         for (int nodeId : nodes) {
-            resistors = null;
-            rCount = 0;
+            resistorCount = 0;
+            totalCurrent = 0.0;
+            seriesComponents = nodeMap.get(nodeId);
 
-
-            // TODO: doesnt work for getting current of a resistor??
-            // TODO: allow multi-resistors?
-
-            // Check if the node has 2 or 3 components. We expect 2 components
-            // if it's in series, ie [Voltage source] - [Resistor], or 3 if one
-            // of the nodes is also grounded. There should be only 1 resistor
-            // in series
-
-            if (nodeMap.get(nodeId).size() == 2 || nodeMap.get(nodeId).size() == 3)
-                resistors = nodeMap.get(nodeId);
-            if (resistors == null)
+            if (seriesComponents == null)
                 continue;
 
-            for (AbstractVirtualComponent comp : resistors) {
-                if (comp instanceof VirtualResistor)
-                    rCount++;
+            // Components that are not resistors but are ignored for current
+            // calculation purposes
+            int specialComponentCount = 0;
+
+            for (AbstractVirtualComponent comp : seriesComponents) {
+                boolean isResistor = comp instanceof IResistanceCondition;
+                boolean isCurrentSource = comp instanceof ICurrentCondition;
+
+                if (comp instanceof IFixedVoltageCondition)
+                    specialComponentCount++;
+                if (isResistor)
+                    resistorCount++;
+                if (isCurrentSource) {
+                    specialComponentCount++;
+                    totalCurrent += comp.getCurrent();
+                }
+
+                // Component found exactly matching nodes and it has a pre-determined
+                // current (Resistors and current sources know their currents)
+                // So we don't need to sum series resistors, juts return the component directly
+
+                // The uniqueNodes.size() > 2 check is because for a 2 node circuit anything
+                // in series will have the same nodes
+
+                if (uniqueNodes.size() > 2 && (isResistor || isCurrentSource)) {
+                    if (comp.getNode1() == node1 && comp.getNode2() == node2)
+                        return comp.getCurrent();
+                    if (comp.getNode2() == node1 && comp.getNode1() == node2)
+                        return -comp.getCurrent();
+                }
             }
-            if (rCount != 1)
+
+            // Verify all components, except the component we're measuring across (assumed = 1) and the
+            // exempt components (specialComponentCount) are resistors
+            if ((resistorCount != seriesComponents.size() - 1 - specialComponentCount) || resistorCount == 0)
                 continue;
             break;
         }
 
-        if (resistors == null)
+        // No series resistors were found
+        if (seriesComponents == null) {
+            LogManager.getLogger().warn("No resistors were found in series for nodes " + node1 + " to " + node2);
             return 0.0;
+        }
 
-        for (AbstractVirtualComponent comp : resistors) {
-            if (uniqueNodes.size() > 2) {  // TODO doesnt work, fails if only 2 elements are in series and parallel
-                // TODO: describe series check
-                if (comp.getNode1() == node1 && comp.getNode2() == node2)
-                    continue;
-                if (comp.getNode2() == node1 && comp.getNode1() == node2)
+        for (AbstractVirtualComponent comp : seriesComponents) {
+            // Skip the component we're measuring across
+            // See the if (uniqueNodes.size() > 2) above
+            if (uniqueNodes.size() > 2) {
+                if (
+                        (comp.getNode1() == node1 && comp.getNode2() == node2) ||
+                        (comp.getNode2() == node1 && comp.getNode1() == node2))
                     continue;
             }
+
+            // If resistor starts at node1 or ends at node2, then current is going wrong way
+            // [R1_node2] <---- [R1_node1 = node1] ----> [node2 = R2_node2] <----- [R2_node1]
+            // Note the middle arrow (direction we're measuring) is opposite of the resistors
+
             if (comp instanceof IResistanceCondition) {
                 if (comp.getNode1() == node1 || comp.getNode2() == node2)
-                    return -comp.getCurrent();
-                return comp.getCurrent();
+                    totalCurrent += -comp.getCurrent();
+                else
+                    totalCurrent += comp.getCurrent();
             }
         }
-        return 0.0;
+        return totalCurrent;
     }
 
     /**

@@ -1,5 +1,9 @@
 package net.hellomouse.kontrol.logic.circuit.virtual;
 
+/**
+ * Circuit constants
+ * @author Bowserinator
+ */
 public class VirtualCircuitConstants {
     // Time in seconds attributed to 1 tick
     // Effectively an integration time step

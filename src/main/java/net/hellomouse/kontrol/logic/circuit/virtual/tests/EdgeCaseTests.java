@@ -201,8 +201,7 @@ class EdgeCaseTests {
 
     /**
      * Resistor in series with 2 voltage sources, but 1 is disabled.
-     * A disabled component is an open circuit, so there should
-     * be no current flow.
+     * A disabled voltage source is 0.0 V, so basically V1 doesn't exist
      */
     @Test
     @DisplayName("2 Voltage sources - 1 disabled")
@@ -214,16 +213,17 @@ class EdgeCaseTests {
         VirtualVoltageSource V2 = new VirtualVoltageSource(10);
 
         circuit.addComponent(V1, 1, 0);
-        circuit.addComponent(V2, 2, 1);
-        circuit.addComponent(R1, 2, 3);
+        circuit.addComponent(new VirtualResistor(0.001), 1, 2);
+        circuit.addComponent(V2, 3, 2);
+        circuit.addComponent(R1, 3, 4);
         circuit.addComponent(new VirtualGround(), 0, 0);
-        circuit.addComponent(new VirtualGround(), 3, 3);
+        circuit.addComponent(new VirtualGround(), 4, 4);
         V1.setDisabled(true);
         circuit.solve();
 
-        assertEquals(0.0, R1.getVoltage(), EPSILON);
-        assertEquals(0.0, V1.getCurrent(), EPSILON);
-        assertEquals(0.0, V2.getCurrent(), EPSILON);
+        assertEquals(-10 / 1000.0, V1.getCurrent(), EPSILON);
+        assertEquals(-10 / 1000.0, V2.getCurrent(), EPSILON);
+        assertEquals(-10.0, R1.getVoltage(), EPSILON);
     }
 
     /**
@@ -301,5 +301,172 @@ class EdgeCaseTests {
         assertEquals(0.0, R3.getCurrent(), EPSILON);
         assertEquals(0.0, R3.getVoltage(), EPSILON);
         assertEquals(10.0, circuit.getNodalVoltage(3), EPSILON);
+    }
+
+    /**
+     * Resistor in series with 2 voltage sources, but 1 is hi-Z
+     * A Hi-Z is basically an open circuit.
+     */
+    @Test
+    @DisplayName("2 Voltage sources - 1 hi-Z")
+    void test11() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(1000);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
+        VirtualVoltageSource V2 = new VirtualVoltageSource(10);
+
+        circuit.addComponent(V1, 1, 0);
+        circuit.addComponent(V2, 2, 1);
+        circuit.addComponent(R1, 2, 3);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.addComponent(new VirtualGround(), 3, 3);
+        V1.setHiZ(true);
+        circuit.solve();
+
+        assertEquals(0.0, V1.getCurrent(), EPSILON);
+        assertEquals(0.0, V2.getCurrent(), EPSILON);
+        assertEquals(0.0, R1.getVoltage(), EPSILON);
+    }
+
+    /**
+     * Use circuit.getCurrentThrough through an resistor
+     */
+    @Test
+    @DisplayName("circuit.getCurrentThrough for a resistor")
+    void test12() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(500);
+        VirtualResistor R2 = new VirtualResistor(500);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
+
+        circuit.addComponent(V1, 1, 0);
+        circuit.addComponent(R1, 1, 2);
+        circuit.addComponent(R2, 2, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(10 / 1000.0, R1.getCurrent(), EPSILON);
+        assertEquals(10 / 1000.0, R2.getCurrent(), EPSILON);
+        assertEquals(-10 / 1000.0, V1.getCurrent(), EPSILON);
+        assertEquals(R1.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
+    }
+
+    /**
+     * Use circuit.getCurrentThrough on a current source
+     */
+    @Test
+    @DisplayName("circuit.getCurrentThrough for a current source")
+    void test13() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(500);
+        VirtualResistor R2 = new VirtualResistor(500);
+        VirtualCurrentSource C1 = new VirtualCurrentSource(10);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(C1, 1, 2);
+        circuit.addComponent(R2, 2, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(10, R1.getCurrent(), EPSILON);
+        assertEquals(10, R2.getCurrent(), EPSILON);
+        assertEquals(R1.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
+    }
+
+
+    /**
+     * Use circuit.getCurrentThrough, multiple resistors on both sides
+     */
+    @Test
+    @DisplayName("circuit.getCurrentThrough multiple resistors")
+    void test14() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(500);
+        VirtualResistor R2 = new VirtualResistor(500);
+        VirtualResistor R3 = new VirtualResistor(500);
+        VirtualResistor R4 = new VirtualResistor(500);
+        VirtualCurrentSource C1 = new VirtualCurrentSource(10);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(1);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(R3, 0, 1);
+        circuit.addComponent(V1, 2, 1);
+        circuit.addComponent(C1, 3, 0);
+        circuit.addComponent(R2, 2, 3);
+        circuit.addComponent(R4, 2, 3);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(5, R1.getCurrent(), EPSILON);
+        assertEquals(5, R2.getCurrent(), EPSILON);
+        assertEquals(R1.getCurrent() + R3.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
+    }
+
+    /**
+     * Use circuit.getCurrentThrough, multiple resistors on both sides, 1 side invalid
+     */
+    @Test
+    @DisplayName("circuit.getCurrentThrough multiple resistors, 1 side invalid")
+    void test15() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(500);
+        VirtualResistor R2 = new VirtualResistor(500);
+        VirtualResistor R3 = new VirtualResistor(500);
+        VirtualResistor R4 = new VirtualResistor(500);
+        VirtualCurrentSource C1 = new VirtualCurrentSource(10);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(1);
+        VirtualInductor L1 = new VirtualInductor(1);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(R3, 0, 1);
+        circuit.addComponent(V1, 2, 1);
+        circuit.addComponent(C1, 3, 4);
+        circuit.addComponent(R2, 2, 3);
+        circuit.addComponent(R4, 2, 3);
+        circuit.addComponent(new VirtualResistor(1), 4, 0);
+
+        circuit.addComponent(L1, 0, 4);
+        circuit.addComponent(new VirtualResistor(1),4, 1);
+
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(R2.getCurrent() + R4.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
+    }
+
+    /**
+     * Use circuit.getCurrentThrough, multiple resistors + current source on both sides
+     */
+    @Test
+    @DisplayName("circuit.getCurrentThrough multiple resistors, 2 sides invalid")
+    void test16() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualResistor R1 = new VirtualResistor(500);
+        VirtualResistor R2 = new VirtualResistor(500);
+        VirtualResistor R3 = new VirtualResistor(500);
+        VirtualResistor R4 = new VirtualResistor(500);
+        VirtualCurrentSource C1 = new VirtualCurrentSource(10);
+        VirtualCurrentSource C2 = new VirtualCurrentSource(10);
+
+        circuit.addComponent(R1, 0, 1);
+        circuit.addComponent(R3, 0, 1);
+        circuit.addComponent(C1, 0, 1);
+
+        circuit.addComponent(new VirtualCapacitor(1), 1, 2);
+
+        circuit.addComponent(R2, 2, 3);
+        circuit.addComponent(R4, 2, 3);
+        circuit.addComponent(C2, 2, 3);
+
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.solve();
+
+        assertEquals(R2.getCurrent() + R4.getCurrent() + C2.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
     }
 }
