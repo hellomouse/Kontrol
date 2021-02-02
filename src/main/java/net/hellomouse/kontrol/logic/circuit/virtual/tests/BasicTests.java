@@ -149,22 +149,49 @@ class BasicTests {
      * UNKNOWN_ENERGY when asked.
      */
     @Test
-    @DisplayName("Voltage sources, resistors and diodes return UNKNOWN_ENERGY for getEnergy()")
+    @DisplayName("Voltage sources, resistors, fixed nodes and diodes return UNKNOWN_ENERGY for getEnergy()")
     void test5() {
         VirtualCircuit circuit = new VirtualCircuit();
         VirtualResistor R1 = new VirtualResistor(1);
         VirtualDiode D1 = new VirtualDiode(0.7);
         VirtualVoltageSource V1 = new VirtualVoltageSource(10);
+        VirtualFixedNode N1 = new VirtualFixedNode(10);
 
         circuit.addComponent(V1, 1, 0);
         circuit.addComponent(R1, 1, 2);
         circuit.addComponent(D1, 2, 3);
         circuit.addComponent(new VirtualResistor(1), 3, 0);
         circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.addComponent(N1, 2, 2);
         circuit.solve();
 
         assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, V1.getEnergy(), EPSILON);
         assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, R1.getEnergy(), EPSILON);
         assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, D1.getEnergy(), EPSILON);
+        assertEquals(VirtualCircuitConstants.UNKNOWN_ENERGY, N1.getEnergy(), EPSILON);
+    }
+
+    /**
+     * Fixed node actually fixes the voltage
+     */
+    @Test
+    @DisplayName("Fixed nodes actually have fixed voltage")
+    void test6() {
+        VirtualCircuit circuit = new VirtualCircuit();
+        VirtualResistor R1 = new VirtualResistor(1);
+        VirtualDiode D1 = new VirtualDiode(0.7);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(10);
+        VirtualFixedNode N1 = new VirtualFixedNode(5);
+
+        circuit.addComponent(V1, 1, 0);
+        circuit.addComponent(R1, 1, 2);
+        circuit.addComponent(D1, 2, 3);
+        circuit.addComponent(new VirtualResistor(1), 3, 0);
+        circuit.addComponent(new VirtualGround(), 0, 0);
+        circuit.addComponent(N1, 2, 2);
+        circuit.solve();
+
+        assertEquals(5.0, circuit.getNodalVoltage(2), EPSILON);
+        assertEquals(-5.0, R1.getVoltage(), EPSILON);
     }
 }
