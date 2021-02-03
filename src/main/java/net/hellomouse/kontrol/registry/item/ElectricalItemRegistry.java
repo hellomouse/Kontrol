@@ -2,7 +2,7 @@ package net.hellomouse.kontrol.registry.item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.hellomouse.kontrol.Kontrol;
-import net.hellomouse.kontrol.items.electrical.multimeters.*;
+import net.hellomouse.kontrol.electrical.items.multimeters.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;

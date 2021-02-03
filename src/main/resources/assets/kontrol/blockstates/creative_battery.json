@@ -1,7 +1,19 @@
 {
-	"multipart": [
-        {
-            "apply":{ "model": "kontrol:block/creative_battery" }
-        }
-	]
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/creative_battery",
+			"y": 90
+		},
+		"facing=north": {
+			"model": "kontrol:block/creative_battery"
+		},
+		"facing=south": {
+			"model": "kontrol:block/creative_battery",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "kontrol:block/creative_battery",
+			"y": 270
+		}
+	}
 }

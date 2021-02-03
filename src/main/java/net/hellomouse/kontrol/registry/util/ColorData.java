@@ -2,6 +2,7 @@ package net.hellomouse.kontrol.registry.util;
 
 import net.minecraft.block.MaterialColor;
 
+import java.awt.*;
 import java.util.HashMap;
 
 
@@ -83,5 +84,23 @@ public class ColorData {
             case BLACK: return MaterialColor.BLACK;
         }
         throw new IllegalStateException("Color is invalid: received " + color + ", but doesn't exist.");
+    }
+
+    /**
+     * Darken (or lighten) a hex int representing an RGB color.
+     * Returns an RGB color.
+     * @param hexColor Int representing RGB color (ie 0xffffff)
+     * @param percent Percentage to darken. Negative = lighten
+     * @return Int representing an RGB color
+     */
+    public static int darken(int hexColor, float percent) {
+        float multiplier = 1 - percent;
+        int R = (int)(multiplier * ((hexColor & 0xff0000) >> 16));
+        int G = (int)(multiplier * ((hexColor & 0xff00) >> 8));
+        int B = (int)(multiplier *  ((hexColor & 0xff)));
+        R = Math.min(255, R);
+        G = Math.min(255, G);
+        B = Math.min(255, B);
+        return R * (0x10000) + G * (0x100) + B;
     }
 }
