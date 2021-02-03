@@ -82,8 +82,8 @@ public class VirtualCondition {
             if (comp.isHiZ())
                 continue;
 
-            // Steady state: inductor is short
-            if (steadyState && comp instanceof VirtualInductor)
+            // Steady state: ignore resistors and capacitors
+            if (steadyState && comp.doesNumericIntegration())
                 continue;
 
             // Current source from N1 to N2
@@ -110,10 +110,6 @@ public class VirtualCondition {
         for (AbstractVirtualComponent comp : components) {
             // Treated as a resistor, ignore now
             if (comp.isHiZ())
-                continue;
-
-            // Steady state: capacitor is open circuit
-            if (steadyState && comp instanceof VirtualCapacitor)
                 continue;
 
             // Voltage difference: supernode definition
@@ -204,18 +200,6 @@ public class VirtualCondition {
             case CUSTOM: return component instanceof ICustomCondition;
         }
         throw new IllegalStateException("Enum " + key + " was not found (Condition handler missing?)");
-    }
-
-    /**
-     * Generic check for divergence -- If value exceeds steady state value
-     * it assumes the integral doesn't converge
-     * @param SS_value Steady state value
-     * @param initialValue Initial value
-     * @param value Current value
-     * @return Is divergent?
-     */
-    public static boolean isDivergent(double SS_value, double initialValue, double value) {
-        return (SS_value > initialValue && value > SS_value) || (SS_value < initialValue && value < SS_value);
     }
 
     private VirtualCondition() {}

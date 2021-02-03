@@ -5,16 +5,11 @@ package net.hellomouse.kontrol.logic.circuit.virtual.components.conditions;
  * for KCL performed with current calculated from V / R.
  *
  * Conflicts with all other conditions except for ICurrentCondition
- * (Ie, cannot be implemented with any other condition interface)
- * This is done via the _preventDuplicate method.
+ * (Ie, should not be implemented with any other condition interface)
  *
- * @see notes.md
  * @author Bowserinator
  */
 public interface IResistanceCondition extends IBaseCondition {
-    default float _preventDuplicate() { return 0.0f; }
-
     double getResistance();
     void setResistance(double resistance);
 }
-

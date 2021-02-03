@@ -45,7 +45,7 @@ class RCCircuitTests {
         circuit.solve();
 
         // Initially capacitor is open
-        assertEquals(0.0, C1.getVoltage(), EPSILON);
+        assertEquals(0.0, C1.getVoltage(), 0.01);
         assertEquals(-10.0 * (1000 / 1001.0), R1.getVoltage(), EPSILON);
         assertEquals(-10.0 * (1 / 1001.0), R2.getVoltage(), EPSILON);
     }
@@ -78,9 +78,9 @@ class RCCircuitTests {
         }
 
         // Finally capacitor is closed
-        assertEquals(10.0, C1.getVoltage(), EPSILON);
-        assertEquals(0.0, R1.getVoltage(), EPSILON);
-        assertEquals(0.0, R2.getVoltage(), EPSILON);
+        assertEquals(-10.0, C1.getVoltage(), 0.01);
+        assertEquals(0.0, R1.getVoltage(), 0.01);
+        assertEquals(0.0, R2.getVoltage(), 0.01);
     }
 
     /**
@@ -112,7 +112,7 @@ class RCCircuitTests {
         }
 
         // Finally capacitor is closed
-        assertEquals(10.0, C1.getVoltage(), EPSILON);
+        assertEquals(-10.0, C1.getVoltage(), 0.01);
         assertEquals(0.0, R1.getVoltage(), EPSILON);
         assertEquals(0.0, R2.getVoltage(), EPSILON);
     }
@@ -147,7 +147,7 @@ class RCCircuitTests {
         }
 
         // Capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(10 * ONE_TAU, C1.getVoltage(), 0.1);
+        assertEquals(-10 * ONE_TAU, C1.getVoltage(), 0.1);
     }
 
     /**
@@ -183,7 +183,7 @@ class RCCircuitTests {
         }
 
         // (Combined) Capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(10 * ONE_TAU, C2.getVoltage() + R2.getVoltage() + C1.getVoltage(), 0.2);
+        assertEquals(-10 * ONE_TAU, C2.getVoltage() + R2.getVoltage() + C1.getVoltage(), 0.2);
     }
 
     /**
@@ -229,8 +229,8 @@ class RCCircuitTests {
         }
 
         // Each capacitor should reach ~63.2% of final charge of 10 V
-        assertEquals(10 * ONE_TAU, C1.getVoltage(), 0.2);
-        assertEquals(10 * ONE_TAU, C2.getVoltage(), 0.2);
+        assertEquals(-10 * ONE_TAU, C1.getVoltage(), 0.2);
+        assertEquals(-10 * ONE_TAU, C2.getVoltage(), 0.2);
     }
 
     /**

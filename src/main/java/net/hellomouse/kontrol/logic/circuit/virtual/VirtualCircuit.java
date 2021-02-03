@@ -338,7 +338,7 @@ public class VirtualCircuit {
 
     /**
      * Return nodal voltages at steady state -- computes steady state
-     * if it's not cached
+     * if it's not cached, which requires a resolve.
      * @return Steady state
      */
     public ArrayList<Double> getSteadyStateNodalVoltages() {

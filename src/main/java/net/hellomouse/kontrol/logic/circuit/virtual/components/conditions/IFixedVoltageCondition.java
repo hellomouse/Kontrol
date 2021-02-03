@@ -5,15 +5,11 @@ package net.hellomouse.kontrol.logic.circuit.virtual.components.conditions;
  * for a fixed nodal voltage (Node = V)
  *
  * Conflicts with all other conditions
- * (Ie, cannot be implemented with any other condition interface)
- * This is done via the _preventDuplicate method.
+ * (Ie, should not be implemented with any other condition interface)
  *
- * @see notes.md
  * @author Bowserinator
  */
 public interface IFixedVoltageCondition {
-    default int _preventDuplicate() { return 0; }
-
     double getVoltage();
     void setVoltage(double voltage);
 }

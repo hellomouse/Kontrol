@@ -7,17 +7,13 @@ import org.ejml.simple.SimpleMatrix;
  * on a custom function defined by the user
  *
  * Conflicts with all other conditions
- * (Ie, cannot be implemented with any other condition interface)
- * This is done via the _preventDuplicate method.
+ * (Ie, should not be implemented with any other condition interface)
  *
  * To use a custom condition, you should uncomment the custom condition
  * solver method in VirtualCondition and uncomment the solve line in VirtualCircuit
  *
- * @see notes.md
  * @author Bowserinator
  */
 public interface ICustomCondition {
-    default char _preventDuplicate() { return ' '; }
-
     void modifyMatrix(SimpleMatrix matrix, SimpleMatrix solutions);
 }

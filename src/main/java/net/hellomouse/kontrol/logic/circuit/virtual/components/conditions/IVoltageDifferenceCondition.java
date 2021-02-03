@@ -5,15 +5,11 @@ package net.hellomouse.kontrol.logic.circuit.virtual.components.conditions;
  * for a voltage different (Node A - Node B = V)
  *
  * Conflicts with all other conditions
- * (Ie, cannot be implemented with any other condition interface)
- * This is done via the _preventDuplicate method.
+ * (Ie, should not be implemented with any other condition interface)
  *
- * @see notes.md
  * @author Bowserinator
  */
 public interface IVoltageDifferenceCondition {
-    default double _preventDuplicate() { return 0.0; }
-
     double getVoltage();
     void setVoltage(double voltage);
 }
