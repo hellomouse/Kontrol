@@ -2,6 +2,7 @@ package net.hellomouse.kontrol.electrical.items.multimeters;
 
 import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.util.FormatUtil;
+import net.hellomouse.kontrol.util.Units;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -112,27 +113,27 @@ public class MultimeterReading {
         if ((flags & FLAG_DELTA_V) != 0 && !Double.isNaN(voltage)) {
             infoLineExists = true;
             infoLine.add((color ? Formatting.GOLD.toString() : "") +
-                    FormatUtil.SIFormat(voltage, precision, "ΔV"));
+                    FormatUtil.SIFormat(voltage, precision, Units.DELTA_VOLT));
         }
         if ((flags & FLAG_VOLTAGE) != 0 && !Double.isNaN(absoluteVoltage)) {
             infoLineExists = true;
             infoLine.add((color ? Formatting.LIGHT_PURPLE.toString() : "") +
-                    FormatUtil.SIFormat(absoluteVoltage, precision, "|V|"));
+                    FormatUtil.SIFormat(absoluteVoltage, precision, Units.ABS_VOLT));
         }
         if ((flags & FLAG_CURRENT) != 0 && !Double.isNaN(current)) {
             infoLineExists = true;
             infoLine.add((color ? Formatting.AQUA.toString() : "") +
-                    FormatUtil.SIFormat(current, precision, "A"));
+                    FormatUtil.SIFormat(current, precision, Units.AMP));
         }
         if ((flags & FLAG_POWER) != 0 && !Double.isNaN(power)) {
             infoLineExists = true;
             infoLine.add((color ? Formatting.RED.toString() : "") +
-                    FormatUtil.SIFormat(power, precision, "W"));
+                    FormatUtil.SIFormat(power, precision, Units.WATT));
         }
         if ((flags & FLAG_TEMPERATURE) != 0 && !Double.isNaN(temperature)) {
             infoLineExists = true;
             infoLine.add((color ? Formatting.DARK_RED.toString() : "") +
-                    String.format("%." + precision + "f", temperature) + " °C");
+                    String.format("%." + precision + "f", temperature) + " " + Units.CELSIUS);
         }
 
         if ((flags & FLAG_POLARITY) != 0 && positive != null && negative != null) {
@@ -151,7 +152,7 @@ public class MultimeterReading {
 
         if ((flags & FLAG_ABSOLUTE) != 0 && nodalVoltages != null) {
             Text array = new LiteralText(Arrays.toString(
-                    nodalVoltages.stream().map(v -> FormatUtil.SIFormat(v, precision, "V")).toArray()));
+                    nodalVoltages.stream().map(v -> FormatUtil.SIFormat(v, precision, Units.VOLT)).toArray()));
             lines.add(new TranslatableText("item." + Kontrol.MOD_ID + ".multimeter.nodal_voltages").append(array));
         }
 

@@ -28,9 +28,9 @@ public class FormatUtil {
         /* Numbers get rounded during formatting, so, ie, 0.99999999 V => 1000 mV instead of 1 V
          * This manually fixes that by checking if number is close enough to 1000 to simply round it */
         if (Math.abs(Math.abs(value / pow10) - 1000) < (precision == 0 ? 1 : 0.5 / precision)) {
-            value = 1.0;
             engMagnitude++;
             pow10 = Math.pow(10.0, engMagnitude * 3);
+            value = pow10;
         }
 
         final int prefixIndex = engMagnitude + SI_PREFIXES.length / 2;
