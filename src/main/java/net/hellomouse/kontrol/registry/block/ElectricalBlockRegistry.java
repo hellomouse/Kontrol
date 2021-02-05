@@ -1,23 +1,34 @@
 package net.hellomouse.kontrol.registry.block;
 
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.electrical.block.*;
 import net.hellomouse.kontrol.electrical.block.entity.*;
+import net.hellomouse.kontrol.electrical.block.entity.render.CapacitorEntityRenderer;
+import net.hellomouse.kontrol.electrical.block.entity.render.ResistorEntityRenderer;
+import net.hellomouse.kontrol.electrical.items.ElectricalBlockItem;
 import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.electrical.screen.BoxScreen;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
 import net.hellomouse.kontrol.registry.util.ColorData;
+import net.hellomouse.kontrol.util.specific.ResistorUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 
 
 public class ElectricalBlockRegistry extends AbstractBlockRegistry {
@@ -33,6 +44,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<CapacitorBlockEntity> CAPACITOR_BLOCK_ENTITY;
     public static BlockEntityType<BatteryBlockEntity> BATTERY_BLOCK_ENTITY;
     public static BlockEntityType<ResistorBlockEntity> RESISTOR_BLOCK_ENTITY;
+    public static BlockEntityType<SwitchBlockEntity> SWITCH_BLOCK_ENTITY;
+    public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -80,6 +93,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .block(new CreativeBatteryBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
                 .blockEntityName("battery_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
         );
 
         addBlock(new BlockWrapper()
@@ -87,6 +101,31 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .block(new CreativeResistorBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
                 .blockEntityName("resistor_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
+        );
+
+        addBlock(new BlockWrapper()
+                .name("creative_capacitor")
+                .block(new CreativeCapacitorBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
+                .blockEntityName("capacitor_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
+        );
+
+        addBlock(new BlockWrapper()
+                .name("creative_inductor")
+                .block(new CreativeInductorBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
+                .blockEntityName("inductor_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
+        );
+
+        addBlock(new BlockWrapper()
+                .name("creative_switch")
+                .block(new CreativeSwitchBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
+                .blockEntityName("switch_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
         );
 
 
@@ -116,6 +155,10 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "resistor_block", "resistor_block_entity", ResistorBlockEntity::new);
         BATTERY_BLOCK_ENTITY = (BlockEntityType<BatteryBlockEntity>)getRegisteredBlockEntity(
                 "battery_block", "battery_block_entity", BatteryBlockEntity::new);
+        SWITCH_BLOCK_ENTITY = (BlockEntityType<SwitchBlockEntity>)getRegisteredBlockEntity(
+                "switch_block", "switch_block_entity", SwitchBlockEntity::new);
+        INDUCTOR_BLOCK_ENTITY = (BlockEntityType<InductorBlockEntity>)getRegisteredBlockEntity(
+                "inductor_block", "inductor_block_entity", InductorBlockEntity::new);
 
 
         // Screen Handlers
@@ -131,7 +174,17 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         // TODO: color by proper color
        //  ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
         ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.darken(BasicLightBlock.LIGHT_COLOR, (1 - state.get(BasicLightBlock.BRIGHTNESS)  / 15.0f) / 2.0f), BASIC_LIGHT_BLOCK);
+
+        // TODO: for loop to iterate all resistors
+
+        ColorProviderRegistry.BLOCK.register(ResistorUtil::getColorForBlock, lookup("creative_resistor").getBlock());
+        ColorProviderRegistry.ITEM.register(ResistorUtil::getColorForItemStack, lookup("creative_resistor").getItem());
+
+
         BlockRenderLayerMap.INSTANCE.putBlock(BASIC_LIGHT_BLOCK, RenderLayer.getTranslucent());
+
+        BlockEntityRendererRegistry.INSTANCE.register(RESISTOR_BLOCK_ENTITY, ResistorEntityRenderer::new);
+        BlockEntityRendererRegistry.INSTANCE.register(CAPACITOR_BLOCK_ENTITY, CapacitorEntityRenderer::new);
 
         ScreenRegistry.register(BOX_SCREEN_HANDLER, BoxScreen::new);
     }

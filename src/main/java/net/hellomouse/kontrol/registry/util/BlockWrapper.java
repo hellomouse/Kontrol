@@ -1,9 +1,12 @@
 package net.hellomouse.kontrol.registry.util;
 
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+
+import java.util.function.BiFunction;
 
 
 /**
@@ -89,6 +92,30 @@ public class BlockWrapper {
     public BlockWrapper item(BlockItem item) {
         checkFinalized();
         this.item = item;
+        return this;
+    }
+
+    /**
+     * Alternative way to set BlockItem in place of the default, this will construct an instance
+     * of the passed custom item using this.block and the provided item settings.
+     *
+     * <pre>{@code
+     * new BlockWrapper()
+     *   .block(...)
+     *   .item(MyCustomItem::new, myFabricItemSettings)
+     * }</pre>
+     *
+     * @see #build()
+     * @param fn Constructor of the custom item, pass as MyCustomItem::new. Expects the constructor
+     *           to take two arguments of type Block and Item.Settings and return a ? extends BlockItem type
+     * @param settings Fabric item settings to apply to the item
+     * @return this
+     */
+    public BlockWrapper item(BiFunction<Block, Item.Settings, BlockItem> fn, FabricItemSettings settings) {
+        checkFinalized();
+        if (this.block == null)
+            throw new IllegalStateException("Block not set, call .block(...) before calling .item(supplier, settings)!");
+        this.item = fn.apply(this.block, settings);
         return this;
     }
 

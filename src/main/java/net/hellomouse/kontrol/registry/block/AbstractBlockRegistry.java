@@ -26,6 +26,8 @@ import java.util.function.Supplier;
 public abstract class AbstractBlockRegistry {
     // All blocks
     private static final ArrayList<BlockWrapper> blocks = new ArrayList<>();
+    // Lookup blocks by name
+    private static final HashMap<String, BlockWrapper> blockLookup = new HashMap<>();
     // All colored Blocks & BlockItems
     private static final ArrayList<BlockWrapper> coloredBlocks = new ArrayList<>();
     // Unique block entity identifier (not necessarily same as the one passed into BlockEntity) : [Blocks that create this entity]
@@ -39,6 +41,7 @@ public abstract class AbstractBlockRegistry {
     public static void addBlock(BlockWrapper wrappedBlock) {
         wrappedBlock.build(); // Gen-defaults, prevent future mutations
         blocks.add(wrappedBlock);
+        blockLookup.put(wrappedBlock.getName(), wrappedBlock);
 
         if (wrappedBlock.hasColor())
             coloredBlocks.add(wrappedBlock);
@@ -94,5 +97,14 @@ public abstract class AbstractBlockRegistry {
             Registry.register(Registry.BLOCK, new Identifier(Kontrol.MOD_ID, name), wrapper.getBlock());
             Registry.register(Registry.ITEM,  new Identifier(Kontrol.MOD_ID, name), wrapper.getItem());
         }
+    }
+
+    /**
+     * Lookup a block by name
+     * @param name Name of the block
+     * @return BlockWrapper, or null if not found
+     */
+    protected static BlockWrapper lookup(String name) {
+        return blockLookup.get(name);
     }
 }
