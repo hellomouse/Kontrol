@@ -41,6 +41,11 @@ public class VirtualCircuit {
     // How many ways can the circuit be supplied with energy?
     private int energySourceCount = 0;
 
+    // Optimization settings
+    private VirtualCircuitSettings settings = new VirtualCircuitSettings();
+    // Number of times circuit has been ticked
+    private int ticks = 0;
+
     /**
      * Add a component from node1 to node2. See Polarity tests
      * for polarities for each component
@@ -105,6 +110,12 @@ public class VirtualCircuit {
                 addComponent(new VirtualGround(), comps.get(0).getNode2(), comps.get(0).getNode2());
         }
 
+        // Reset diodes to OFF by default
+        if (ticks % settings.resetDiodesEveryNTicks == 0) {
+            for (AbstractVirtualComponent comp : nonLinearComponents)
+                comp.setHiZ(true);
+        }
+
         nodalVoltages = solveHelper(false);
         recomputeSpecialCases();
     }
@@ -115,34 +126,28 @@ public class VirtualCircuit {
      * in future resolves, which for most (hopefully) circuits is a short amount of time.
      */
     private void recomputeSpecialCases() {
-        boolean recompute = false;
+        for (int i = 1; i < settings.maxIterations; i++) {
+            boolean recompute = false;
 
-        // Diode computations
-        for (AbstractVirtualComponent comp : nonLinearComponents) {
-            if (comp instanceof VirtualDiode) {
-                // Enable diode if:
-                // - Current flowing correct way (+ to -) & forward voltage reached
-                double V = comp.getVoltage();
-                double I = comp.getCurrent();
+            // Diode computations
+            for (AbstractVirtualComponent comp : nonLinearComponents) {
+                if (comp instanceof VirtualDiode) {
+                    // Enable diode if forward voltage reached
+                    double V = comp.getVoltage();
+                    boolean oldState = comp.isHiZ();
+                    boolean newState = !(-V >= ((VirtualDiode) comp).getVForward());
 
-                boolean oldState = comp.isHiZ();
-                boolean newState = !(I > 0.1 && Math.abs(V) >= ((VirtualDiode)comp).getVForward());
-
-                System.out.println(V + " " + I + "   " + oldState + " -> " + newState);
-                System.out.println(nodalVoltages);
-
-                if (oldState != newState) {
-                    recompute = true; // Always recompute diodes
-                    steadyStateNodalVoltages.clear(); // Diodes may alter steady state voltages, clear cache
-                    comp.setHiZ(newState);
+                    if (oldState != newState) {
+                        recompute = true; // Always recompute diodes
+                        steadyStateNodalVoltages.clear(); // Diodes may alter steady state voltages, clear cache
+                        comp.setHiZ(newState);
+                    }
                 }
             }
-        }
 
-        if (recompute)
+            if (!recompute) break; // No need to further iterate, reached steady state
             nodalVoltages = solveHelper(false);
-
-        System.out.println(nodalVoltages);
+        }
     }
 
     /**
@@ -195,6 +200,7 @@ public class VirtualCircuit {
      * every tick (component.tick() for every component)
      */
     public void tick() {
+        ticks++;
         for (AbstractVirtualComponent comp : requireTickComponents)
             comp.tick();
     }
@@ -363,4 +369,41 @@ public class VirtualCircuit {
     /** Add or subtract energy source count */
     public void incEnergySources() { energySourceCount++; }
     public void decEnergySources() { energySourceCount--; }
+
+    /**
+     * Set the circuit settings to settings
+     * @param settings New settings
+     */
+    public void changeSettings(VirtualCircuitSettings settings) {
+        this.settings = settings;
+    }
+
+
+    /**
+     * Optimization settings for the circuit
+     * @author Bowserinator
+     */
+    public static class VirtualCircuitSettings {
+        private final int maxIterations; // Default only solve() twice
+        private final int resetDiodesEveryNTicks ; // Reset diode states to Hi-Z for proper solving every 2 iterations
+
+        /** Construct settings with default values */
+        public VirtualCircuitSettings() {
+            this(2, 2);
+        }
+
+        /**
+         * Construct settings
+         * @param maxIterations Max iterations to try to solve non-linear components per solve()
+         *                      High numbers may result in lots of circuit re-solves which can impact performance
+         *                      Low numbers may cause circuits with lots of non-linear components to converge very slowly
+         * @param resetDiodesEveryNTicks Every n ticks diodes will be reset to Hi-Z to re-solve properly
+         *                               Setting this too low will result in unnecessary re-solves, while setting it too high
+         *                               will result in improper diode behavior for fast changing circuits
+         */
+        public VirtualCircuitSettings(int maxIterations, int resetDiodesEveryNTicks) {
+            this.maxIterations = maxIterations;
+            this.resetDiodesEveryNTicks = resetDiodesEveryNTicks;
+        }
+    }
 }

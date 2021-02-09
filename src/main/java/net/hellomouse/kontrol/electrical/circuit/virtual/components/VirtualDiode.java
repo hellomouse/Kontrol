@@ -10,20 +10,16 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.I
  * @see IBaseCondition
  * @author Bowserinator
  */
-public class VirtualDiode extends VirtualCurrentSource implements IResistanceCondition {
+public class VirtualDiode extends VirtualVoltageSource {
     private double V_forward;
-    private double resistance = 10;
 
     public VirtualDiode(double V_forward) {
-        super(-V_forward / 10);
+        super(V_forward);
         this.V_forward = V_forward;
     }
 
     public void setVForward(double V) { V_forward = V; }
     public double getVForward() { return V_forward; }
-
-    public double getResistance() { return resistance; }
-    public void setResistance(double resistance) { this.resistance = resistance; }
 
     // Solving logic in VirtualCircuit
     @Override

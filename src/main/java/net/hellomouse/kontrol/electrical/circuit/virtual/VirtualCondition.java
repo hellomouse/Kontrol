@@ -34,7 +34,7 @@ public class VirtualCondition {
 
             // Set invR for a resistor
             if (shouldSolve)
-                invR = 1 / ((IResistanceCondition) comp).getResistance();
+                invR = 1 / ((IResistanceCondition)comp).getResistance();
 
             // High impedance
             if (comp.isHiZ()) {
@@ -162,8 +162,6 @@ public class VirtualCondition {
 //     * @param matrix Left hand matrix
 //     * @param solutions Right hand matrix
 //     */
-// UNCOMMENT IF CUSTOM CONDITIONS ARE EVER NEEDED
-// UNTESTED CODE!
 //    public static void customCondition(ArrayList<AbstractVirtualComponent> components, SimpleMatrix matrix, SimpleMatrix solutions) {
 //        if (components == null)
 //            return;

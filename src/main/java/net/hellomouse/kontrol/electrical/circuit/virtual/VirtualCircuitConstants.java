@@ -15,7 +15,6 @@ public class VirtualCircuitConstants {
     public static final double CAPACITOR_INITIAL_R = 1e-3;
     public static final double INDUCTOR_INITIAL_R = 1e9;
 
-
     // Used mainly in modelling steady state and disabled components
     public static final double OPEN_CIRCUIT_R = 1e9;
     public static final double SHORT_CIRCUIT_R = 1e-9;
