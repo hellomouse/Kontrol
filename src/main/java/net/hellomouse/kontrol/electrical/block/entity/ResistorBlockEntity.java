@@ -1,16 +1,21 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
+import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
+import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
+import org.apache.logging.log4j.LogManager;
 
-public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity {
+
+public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity implements RenderAttachmentBlockEntity, BlockEntityClientSerializable {
 
     // TODO: compute resistance somehow based on temperature
-    private double resistance = 1.0;
+    protected double resistance = 1.0;
 
     public ResistorBlockEntity() { super(ElectricalBlockRegistry.RESISTOR_BLOCK_ENTITY); }
 
@@ -24,9 +29,24 @@ public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity 
      * @return this
      */
     public ResistorBlockEntity resistance(double resistance) {
-        this.resistance = resistance;
+        setResistance(resistance);
         return this;
     }
+
+    public void setResistance(double resistance, boolean dirty) {
+        this.resistance = resistance;
+        if (this.resistance <= 0.0) {
+            LogManager.getLogger().warn("Attempted to set resistor at " + getPos() + " to invalid resistance " + resistance);
+            this.resistance = CircuitValues.LOW_VOLTAGE_RESISTANCE; // TODO: default values
+        }
+        if (dirty) markDirty();
+    }
+
+    public void setResistance(double resistance) {
+        setResistance(resistance, true);
+    }
+
+    public double getResistance() { return resistance; }
 
     public void onUpdate() {
         // TODO Not for all resistors, temporary
@@ -57,12 +77,25 @@ public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity 
     @Override
     public void fromTag(BlockState state, CompoundTag tag) {
         super.fromTag(state, tag);
-        resistance = tag.getDouble("resistance");
+        setResistance(tag.getDouble("Resistance"), false);
     }
 
     @Override
     public CompoundTag toTag(CompoundTag tag) {
-        tag.putDouble("resistance", resistance);
+        tag.putDouble("Resistance", resistance);
         return super.toTag(tag);
+    }
+
+    public void fromClientTag(CompoundTag tag) {
+        setResistance(tag.getDouble("Resistance"), false);
+    }
+
+    public CompoundTag toClientTag(CompoundTag tag) {
+        tag.putDouble("Resistance", resistance);
+        return tag;
+    }
+
+    public Object getRenderAttachmentData() {
+        return resistance;
     }
 }

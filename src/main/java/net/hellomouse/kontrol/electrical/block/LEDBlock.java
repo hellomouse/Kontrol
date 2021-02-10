@@ -21,17 +21,10 @@ public class LEDBlock extends AbstractElectricalBlock {
         super(settings);
         setDefaultState(getStateManager()
                 .getDefaultState()
-                .with(Properties.HORIZONTAL_FACING, Direction.NORTH)
                 .with(Properties.WATERLOGGED, false)
                 .with(BRIGHTNESS, 0));
     }
 
-
-    @Override
-    boolean canAttach(BlockState state, Direction dir, Block other) {
-        return other instanceof AbstractElectricalBlock &&
-                (dir == positiveTerminal(state) || dir == negativeTerminal(state));
-    }
 
     public Direction positiveTerminal(BlockState state) {
         return state.get(Properties.HORIZONTAL_FACING);

@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.registry.block;
 
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
@@ -12,6 +13,8 @@ import net.hellomouse.kontrol.electrical.block.*;
 import net.hellomouse.kontrol.electrical.block.entity.*;
 import net.hellomouse.kontrol.electrical.block.entity.render.CapacitorEntityRenderer;
 import net.hellomouse.kontrol.electrical.block.entity.render.ResistorEntityRenderer;
+import net.hellomouse.kontrol.electrical.block.entity.render.ScopeEntityRenderer;
+import net.hellomouse.kontrol.electrical.circuit.CircuitManager;
 import net.hellomouse.kontrol.electrical.items.ElectricalBlockItem;
 import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.electrical.screen.BoxScreen;
@@ -24,17 +27,19 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.math.BlockPos;
+
 
 
 public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     // TODO: offer way to lookup blocks and items
     // Special blocks
     public static Block BASIC_LIGHT_BLOCK;
+
+    public static final CircuitManager CIRCUIT_MANAGER = new CircuitManager();
 
 
     // Block entities
@@ -46,6 +51,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<ResistorBlockEntity> RESISTOR_BLOCK_ENTITY;
     public static BlockEntityType<SwitchBlockEntity> SWITCH_BLOCK_ENTITY;
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
+    public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -60,7 +66,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .block(new BasicWireBlock(FabricBlockSettings
                     .of(Material.WOOL).nonOpaque().breakByHand(true)
                     .strength(0.1f, 0.1f)
-                    .materialColor(ColorData.nameToMaterialColor(color))))
+                    .materialColor(ColorData.nameToMaterialColor(color)),
+                        color))
                 .color(color)
                 .blockEntityName("wire_block_entity"));
 
@@ -128,6 +135,14 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
         );
 
+        addBlock(new BlockWrapper()
+                .name("creative_scope")
+                .block(new CreativeScopeBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
+                .blockEntityName("scope_block_entity")
+                .item(ElectricalBlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
+        );
+
 
         BASIC_LIGHT_BLOCK = new BasicLightBlock(FabricBlockSettings
                 .of(Material.GLASS).nonOpaque().strength(1.5f, 0.5f)
@@ -159,6 +174,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "switch_block", "switch_block_entity", SwitchBlockEntity::new);
         INDUCTOR_BLOCK_ENTITY = (BlockEntityType<InductorBlockEntity>)getRegisteredBlockEntity(
                 "inductor_block", "inductor_block_entity", InductorBlockEntity::new);
+        SCOPE_BLOCK_ENTITY = (BlockEntityType<ScopeBlockEntity>)getRegisteredBlockEntity(
+                "scope_block", "scope_block_entity", ScopeBlockEntity::new);
 
 
         // Screen Handlers
@@ -185,6 +202,20 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
 
         BlockEntityRendererRegistry.INSTANCE.register(RESISTOR_BLOCK_ENTITY, ResistorEntityRenderer::new);
         BlockEntityRendererRegistry.INSTANCE.register(CAPACITOR_BLOCK_ENTITY, CapacitorEntityRenderer::new);
+        BlockEntityRendererRegistry.INSTANCE.register(SCOPE_BLOCK_ENTITY, ScopeEntityRenderer::new);
+
+        ClientPlayNetworking.registerGlobalReceiver(new Identifier("data"), (client, handler, buf, responseSender) -> {
+            int data = buf.readInt();
+            int[] readings = buf.readIntArray();
+            BlockPos pos = buf.readBlockPos();
+
+            if (client.world != null) {
+                BlockEntity e = client.world.getBlockEntity(pos);
+                if (e != null && e instanceof ScopeBlockEntity) {
+                    ((ScopeBlockEntity) e).getScopeState().forceUpdate(data, readings);
+                }
+            }
+        });
 
         ScreenRegistry.register(BOX_SCREEN_HANDLER, BoxScreen::new);
     }

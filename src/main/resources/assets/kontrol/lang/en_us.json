@@ -23,6 +23,12 @@
 	
 	"block.kontrol.creative_battery": "Creative Battery",
 	
+	"block.kontrol.creative_capacitor": "Creative Capacitor",
+	
+	"block.kontrol.creative_resistor": "Creative Resistor",
+	
+	"block.kontrol.creative_inductor": "Creative Inductor",
+	
 	"item.kontrol.tooltip.shift": "§7§o<Press shift>",
 	
 	"item.kontrol.electrical.tooltip": "Rating: [V] V / [P] W",

@@ -2,7 +2,7 @@ package net.hellomouse.kontrol.electrical.block;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.hellomouse.kontrol.electrical.block.entity.ResistorBlockEntity;
+import net.hellomouse.kontrol.electrical.block.entity.CapacitorBlockEntity;
 import net.hellomouse.kontrol.util.WorldUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -16,37 +16,44 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 
 @SuppressWarnings({"deprecation"})
-public class CreativeResistorBlock extends AbstractPolarizedElectricalBlock {
-    public CreativeResistorBlock(AbstractBlock.Settings settings) {
+public class CreativeCapacitorBlock extends AbstractPolarizedElectricalBlock {
+    public CreativeCapacitorBlock(AbstractBlock.Settings settings) {
         super(settings, false);
     }
 
     @Override
     public BlockEntity createBlockEntity(BlockView blockView) {
-        return new ResistorBlockEntity();
+        return new CapacitorBlockEntity();
     }
 
     @Override
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPos, ShapeContext context) {
         Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
-        return (facing == Direction.NORTH || facing == Direction.SOUTH) ?
-                createCuboidShape(3, 0, 0, 13, 11, 16) :
-                createCuboidShape(0, 0, 3, 16, 11, 13);
+        boolean NS = facing == Direction.NORTH || facing == Direction.SOUTH;
+
+        VoxelShape base = NS ?
+                createCuboidShape(2, 0, 0, 14, 1, 16) :
+                createCuboidShape(0, 0, 2, 16, 1, 14);
+        VoxelShape top = NS ?
+                createCuboidShape(4, 0, 1, 12, 12, 15) :
+                createCuboidShape(1, 1, 4, 15, 12, 12);
+        return VoxelShapes.union(base, top);
     }
 
     @Override
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         if (!world.isClient && !player.isCreative()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof ResistorBlockEntity) {
+            if (blockEntity instanceof CapacitorBlockEntity) {
                 ItemStack itemStack = new ItemStack(state.getBlock());
-                itemStack.getOrCreateTag().putDouble("Resistance", ((ResistorBlockEntity) blockEntity).getResistance());
+                itemStack.getOrCreateTag().putDouble("Capacitance", ((CapacitorBlockEntity) blockEntity).getCapacitance());
                 WorldUtil.spawnItemStack(world, pos, itemStack);
             }
         }
@@ -58,12 +65,12 @@ public class CreativeResistorBlock extends AbstractPolarizedElectricalBlock {
         super.onPlaced(world, pos, state, placer, itemStack);
         BlockEntity blockEntity = world.getBlockEntity(pos);
 
-        if (blockEntity instanceof ResistorBlockEntity) {
-            ResistorBlockEntity resistorBlockEntity = (ResistorBlockEntity) blockEntity;
+        if (blockEntity instanceof CapacitorBlockEntity) {
+            CapacitorBlockEntity capacitorBlockEntity = (CapacitorBlockEntity) blockEntity;
             CompoundTag compoundTag = itemStack.getOrCreateTag();
-            if (compoundTag.contains("Resistance")) {
-                resistorBlockEntity.setResistance(compoundTag.getDouble("Resistance"));
-                resistorBlockEntity.markDirty();
+            if (compoundTag.contains("Capacitance")) {
+                capacitorBlockEntity.setCapacitance(compoundTag.getDouble("Capacitance"));
+                capacitorBlockEntity.markDirty();
             }
         }
     }
@@ -71,10 +78,10 @@ public class CreativeResistorBlock extends AbstractPolarizedElectricalBlock {
     @Environment(EnvType.CLIENT)
     public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
         ItemStack itemStack = super.getPickStack(world, pos, state);
-        ResistorBlockEntity resistorBlockEntity = (ResistorBlockEntity)world.getBlockEntity(pos);
+        CapacitorBlockEntity capacitorBlockEntity = (CapacitorBlockEntity)world.getBlockEntity(pos);
 
-        if (resistorBlockEntity != null)
-            itemStack.getOrCreateTag().putDouble("Resistance", resistorBlockEntity.getResistance());
+        if (capacitorBlockEntity != null)
+            itemStack.getOrCreateTag().putDouble("Capacitance", capacitorBlockEntity.getCapacitance());
         return itemStack;
     }
 }

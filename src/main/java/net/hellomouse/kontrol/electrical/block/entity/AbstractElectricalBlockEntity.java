@@ -1,10 +1,11 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
 import net.hellomouse.kontrol.electrical.block.AbstractElectricalBlock;
-import net.hellomouse.kontrol.electrical.block.interfaces.IPolarizedBlock;
+import net.hellomouse.kontrol.electrical.block.AbstractPolarizedElectricalBlock;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.electrical.circuit.Circuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
+import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 
 /**
  * Block entity for an electrical block
+ * @author Bowserinator
  */
 public abstract class AbstractElectricalBlockEntity extends BlockEntity implements Tickable {
     protected ArrayList<Integer> outgoingNodes = new ArrayList<>();
@@ -48,26 +50,6 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     }
 
     /**
-     * Reset and populate connectedSides and normalizedOutgoingNodes
-     * from world data.
-     */
-    public void computeConnectedSides() {
-        connectedSides.clear();
-        normalizedOutgoingNodes.clear();
-
-        for (Direction dir : Direction.values()) {
-            BlockState state = world.getBlockState(pos);
-            BlockState otherState = world.getBlockState(pos.offset(dir));
-            AbstractElectricalBlock ownBlock = (AbstractElectricalBlock)state.getBlock();
-            boolean canConnect = ownBlock.canConnect(state, dir, otherState);
-
-            connectedSides.add(canConnect);
-            if (canConnect)
-                normalizedOutgoingNodes.add(outgoingNodes.get(Circuit.indexFromDirection(dir)));
-        }
-    }
-
-    /**
      * Returns the internal circuit representation of this block entity
      * @return VirtualCircuit representing the internal circuit. Outgoing nodes should be numbered
      *         from 0, 1, 2... while internal nodes that cannot connect with other components
@@ -92,7 +74,7 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
         super.markRemoved();
         System.out.println("DELETING\n");
 
-        if (circuit != null) circuit.markInvalid();
+        if (circuit != null) circuit.flagElementRemoved(pos);
     }
 
     public void toTag() {
@@ -106,7 +88,17 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
 
     }
 
-    private boolean recomputeEveryTick() { return false; }
+    public boolean recomputeEveryTick() { return false; }
+
+
+    public abstract boolean canAttach(Direction dir, BlockEntity otherEntity);
+
+    public boolean canConnectTo(Direction dir, BlockEntity otherEntity) {
+        if (!(otherEntity instanceof AbstractElectricalBlockEntity))
+            return false;
+        return this.canAttach(dir, otherEntity) &&
+                ((AbstractElectricalBlockEntity)otherEntity).canAttach(dir.getOpposite(), this);
+    }
 
 
 
@@ -123,10 +115,34 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             // If not part of a circuit initiate floodfill from Circuitmanager
 
             if (circuit == null) {
-                System.out.println("Generating circuit for " + this.getPos());
-                circuit = new Circuit(world);
+                // Check neighbors for non-null components
+
+                boolean found = false;
+                for (Direction dir : Direction.values()) {
+                    BlockEntity _otherEntity = world.getBlockEntity(pos.offset(dir));
+
+                    if (_otherEntity instanceof AbstractElectricalBlockEntity) {
+                        AbstractElectricalBlockEntity otherEntity = (AbstractElectricalBlockEntity)_otherEntity;
+
+                        if (canConnectTo(dir, otherEntity) && otherEntity.canConnectTo(dir.getOpposite(), this)) {
+                            AbstractElectricalBlockEntity e2  =((AbstractElectricalBlockEntity)world.getBlockEntity(pos.offset(dir)));
+                            Circuit c = e2.getCircuit();
+                            if (c != null && !e2.isRemoved()) {
+                                found = true;
+                                c.flagElementAdded(e2.getPos());
+                                System.out.println("Found connecting circuit, flaging as invalid");
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!found) {
+                    System.out.println("Generating circuit for " + this.getPos());
+                    circuit = new Circuit(world, pos);
+                    ElectricalBlockRegistry.CIRCUIT_MANAGER.addCircuit(circuit);
+                }
             }
-            circuit.verifyIntegrity(this.world, this.getPos());
 
             // TODO: dont run literally every tick, check if circuit actually reconstructed?
             onUpdate();
@@ -135,11 +151,9 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             // cirucitmanager.floodFill(this pos, this, etc...) // also set circuit TODO
 
             // flag calculation if necessary
-           //  if (recomputeEveryTick())
-            //    ElectricalBlockRegistry.circuitManager.doComputation();
+            if (recomputeEveryTick() && this.circuit != null)
+                circuit.markDirty();
 
-            // Read new state from CircuitComputor
-            // current = ElectricalBlockRegistry.circuitManager.computeComponentVoltage(this);
             // voltage = ... todo get state somehow ibstead
         }
 
@@ -181,22 +195,28 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     }
 
     /**
+     * Reset and populate connectedSides and normalizedOutgoingNodes
+     * from world data.
+     */
+    public void computeConnectedSides() {
+        connectedSides.clear();
+        normalizedOutgoingNodes.clear();
+
+        for (Direction dir : Direction.values()) {
+            boolean canConnect = this.canConnectTo(dir, world.getBlockEntity(pos.offset(dir)));
+
+            connectedSides.add(canConnect);
+            if (canConnect)
+                normalizedOutgoingNodes.add(outgoingNodes.get(Circuit.indexFromDirection(dir)));
+        }
+    }
+
+    /**
      * Outgoing nodes will be sorted so the 0th index contains
      * the positive node and the 1st index contains the negative
      */
     protected void sortOutgoingNodesByPolarity() {
-        BlockState state = world.getBlockState(pos);
-        AbstractElectricalBlock block = (AbstractElectricalBlock)state.getBlock();
-
-        if (block instanceof IPolarizedBlock) {
-            int node1 = normalizedOutgoingNodes.get(0);
-            int node2 = normalizedOutgoingNodes.get(1);
-
-            if (normalizedNodeToDir.get(node1) != ((IPolarizedBlock) block).positiveTerminal(state)) {
-                normalizedOutgoingNodes.set(0, node2);
-                normalizedOutgoingNodes.set(1, node1);
-            }
-        }
+        // Do nothing since not polarized block entity
     }
 
     public void clearConnectedSides() {

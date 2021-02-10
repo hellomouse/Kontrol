@@ -57,8 +57,9 @@ class BasicTests {
         assertEquals(10.0, V1.getVoltage(), EPSILON);
         assertEquals(0.0, R1.getVoltage(), EPSILON);
         assertEquals(0.0, C1.getVoltage(), EPSILON);
-        // assertEquals(-10.0, L1.getVoltage(), EPSILON);
-        assertEquals(0.0, D1.getVoltage(), EPSILON);
+
+        assertEquals(-9.3, L1.getVoltage(), EPSILON);
+        assertEquals(0.7, D1.getVoltage(), EPSILON);
     }
 
     /**

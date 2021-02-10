@@ -3,6 +3,7 @@ package net.hellomouse.kontrol.electrical.circuit;
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -13,9 +14,9 @@ import java.util.*;
 
 
 /**
- * Applies changes from the Minecraft world to the virtual circuit
- * and vice versa. Only updates when markDirty() is called, and updates
- * on the next tick after being marked.
+ * A physical Minecraft circuit, internally solved with a VirtualCircuit.
+ * Handles blocks being deleted and added to a network.
+ * @author Bowserinator
  */
 public class Circuit {
     // Required:
@@ -23,13 +24,12 @@ public class Circuit {
     // map of node => pos and pos => node
     //
 
-    private boolean dirty = true; // Requires update?
-    private boolean invalid = true;
+    private boolean dirty = true;   // Requires update?
+    private boolean invalid = true; // Requires re-construction?
 
-    // World access stuff
+    // World
     private final ArrayList<AbstractElectricalBlockEntity> blockEntities = new ArrayList<>();
-    private final WorldAccess world;
-
+    private final World world;
 
     private long lastQueuedTick;
 
@@ -37,9 +37,14 @@ public class Circuit {
 
     private final VirtualCircuit circuit = new VirtualCircuit();
 
-    public Circuit(WorldAccess world) {
+    private BlockPos floodfillPos;
+    private boolean removed = false;
+
+
+    public Circuit(World world, BlockPos pos) {
         this.world = world;
         this.lastQueuedTick = -1;
+        this.floodfillPos = pos;
 
         // Individual branches can be marked dirty as well
         // to avoid full recomputation?
@@ -57,7 +62,17 @@ public class Circuit {
         // TODO: copy all things from TPT, like floating branches, branches, etc...
     }
 
-    public void verifyIntegrity(World world, BlockPos pos) {
+    public void flagElementAdded(BlockPos pos) {
+        floodfillPos = pos;
+        markInvalid();
+    }
+
+    public void flagElementRemoved(BlockPos pos) {
+        removed = true;
+        markInvalid();
+    }
+
+    public void verifyIntegrity() {
         // Updates all values so others can get it
 
 
@@ -65,19 +80,41 @@ public class Circuit {
         // Circuit structure has been invalidated, re-do floodFill and
         // virtual circuit construction
         if (invalid) {
-            floodFill(world, pos);
+            if (removed) {
+                System.out.println("A circuit elemnt was removed");
+                floodfillPos = null;
+                for (AbstractElectricalBlockEntity blockEntity : blockEntities) {
+                    blockEntity.setCircuit(null);
+                    if (floodfillPos == null && !blockEntity.isRemoved())
+                        floodfillPos = blockEntity.getPos();
+                }
+            }
 
-            System.out.println(world.getTime());
+            if (floodfillPos != null) {
+                System.out.println("Floodfill at " + floodfillPos);
+                floodFill(floodfillPos);
+                floodfillPos = null;
+            }
+
+            // System.out.println(world.getTime());
 
             lastUpdatedTick = world.getTimeOfDay();
             invalid = false;
+            dirty = false;
+            removed = false;
+        }
+
+        else if (dirty) {
+            circuit.tick(); // TODO: elsewhere
+            solve();
+            lastUpdatedTick = world.getTimeOfDay();
             dirty = false;
         }
     }
 
 
 
-    public void floodFill(World world, BlockPos pos) {
+    public void floodFill(BlockPos pos) {
         final long startTime = System.nanoTime();
 
         circuit.clear();
@@ -92,8 +129,14 @@ public class Circuit {
 
         System.out.println("Starting: " + blockEntities.size());
 
-        for (AbstractElectricalBlockEntity e : blockEntities)
+        // TODO: if another circuit type was found delete self from existance
+
+
+
+        for (AbstractElectricalBlockEntity e : blockEntities) {
             e.clearConnectedSides();
+            e.setCircuit(null);
+        }
 
         // TODO: clear
         blockEntities.clear();
@@ -125,6 +168,9 @@ public class Circuit {
                 if (newEntity instanceof AbstractElectricalBlockEntity) {
 
                     AbstractElectricalBlockEntity eEntity = ((AbstractElectricalBlockEntity) newEntity);
+
+                    if (!(electricalEntity.getConnectedSides().get(indexFromDirection(dir))))
+                        continue;
 
                     if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this) {
                         //System.out.println(eEntity.getOutgoingNodes());
@@ -285,17 +331,6 @@ public class Circuit {
     public void markInvalid() {
         invalid = true;
         lastQueuedTick = world.getLunarTime();
-    }
-
-    public void addNode(BlockPos pos) {
-        // Check node connections
-        // each block tracks start and end node?
-        //
-        markDirty();
-    }
-
-    public void removeNode() {
-        markDirty();
     }
 
     public VirtualCircuit virtualCircuit() {

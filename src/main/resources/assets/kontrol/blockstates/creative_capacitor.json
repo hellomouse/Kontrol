@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/creative_capacitor",
+			"y": 90
+		},
+		"facing=north": {
+			"model": "kontrol:block/creative_capacitor"
+		},
+		"facing=south": {
+			"model": "kontrol:block/creative_capacitor",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "kontrol:block/creative_capacitor",
+			"y": 270
+		}
+	}
+}

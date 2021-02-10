@@ -5,6 +5,9 @@ package net.hellomouse.kontrol.util;
  * @author Bowserinator
  */
 public class Units {
+    // No unit
+    public static final String UNITLESS = "";
+
     // Electrical units
     public static final String
             VOLT       = "V",   // Electric potential

@@ -1,6 +1,5 @@
 package net.hellomouse.kontrol.electrical.block;
 
-import net.hellomouse.kontrol.electrical.block.interfaces.IPolarizedBlock;
 import net.hellomouse.kontrol.electrical.block.entity.FurnaceGeneratorEntity;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -33,11 +32,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Random;
 
 @SuppressWarnings({"deprecation"})
-public class FurnaceGenerator extends AbstractElectricalBlock implements BlockEntityProvider, IPolarizedBlock {
+public class FurnaceGenerator extends AbstractPolarizedElectricalBlock implements BlockEntityProvider {
     public static final BooleanProperty LIT = BooleanProperty.of("lit");
 
     public FurnaceGenerator(AbstractBlock.Settings settings) {
-        super(settings);
+        super(settings, true);
         setDefaultState(getStateManager()
                 .getDefaultState()
                 .with(Properties.HORIZONTAL_FACING, Direction.NORTH)
@@ -45,31 +44,8 @@ public class FurnaceGenerator extends AbstractElectricalBlock implements BlockEn
     }
 
 
-
-    @Override
-    boolean canAttach(BlockState state, Direction dir, Block other) {
-        return other instanceof AbstractElectricalBlock &&
-                (dir == positiveTerminal(state) || dir == negativeTerminal(state));
-    }
-
-
     // -- Terminal computation -- \\
     // Should match textures of the block
-    public Direction positiveTerminal(BlockState state) {
-        Direction dir = state.get(Properties.HORIZONTAL_FACING);
-        switch(dir) {
-            case NORTH: return Direction.WEST;
-            case SOUTH: return Direction.EAST;
-            case WEST: return Direction.SOUTH;
-            case EAST: return Direction.NORTH;
-        }
-        return Direction.NORTH; // Shouldn't happen
-    }
-
-    public Direction negativeTerminal(BlockState state) {
-        return positiveTerminal(state).getOpposite();
-    }
-
 
     // ---- Block behavior ---- \\
     @Override
@@ -159,7 +135,6 @@ public class FurnaceGenerator extends AbstractElectricalBlock implements BlockEn
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
         super.appendProperties(stateManager);
-        stateManager.add(Properties.HORIZONTAL_FACING);
         stateManager.add(LIT);
     }
 

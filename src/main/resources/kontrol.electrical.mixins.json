@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "mixins": [
+        "CircuitTickMixin"
+    ],
+    "client": [],
+    "server": [
+
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "package": "net.hellomouse.kontrol.electrical.mixin"
+}

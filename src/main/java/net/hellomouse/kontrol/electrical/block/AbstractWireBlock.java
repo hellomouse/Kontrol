@@ -2,7 +2,9 @@ package net.hellomouse.kontrol.electrical.block;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.electrical.block.entity.WireBlockEntity;
+import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
@@ -35,7 +37,9 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
     private VoxelShape
         UP_SHAPE, DOWN_SHAPE, NORTH_SHAPE, SOUTH_SHAPE, EAST_SHAPE, WEST_SHAPE, NONE_SHAPE;
 
-    public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize, float noneSize) {
+    private final ColorData.COLOR_STRING color;
+
+    public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize, float noneSize, ColorData.COLOR_STRING color) {
         super(settings);
         generateVoxelShapes(wireSize, noneSize);
         setDefaultState(getStateManager().getDefaultState()
@@ -46,16 +50,25 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
                 .with(ATTACH_SOUTH, false)
                 .with(ATTACH_EAST, false)
                 .with(ATTACH_WEST, false));
+        this.color = color;
+    }
+
+    public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize, ColorData.COLOR_STRING color) {
+        this(settings, wireSize, wireSize, color);
+    }
+
+    public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize, float noneSize) {
+        this(settings, wireSize, noneSize, null);
     }
 
     public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize) {
-        this(settings, wireSize, wireSize);
+        this(settings, wireSize,null);
     }
 
 
     @Override
     public BlockEntity createBlockEntity(BlockView blockView) {
-        return new WireBlockEntity();
+        return new WireBlockEntity().color(color);
     }
 
     /**
@@ -110,15 +123,6 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
     }
 
 
-    // ---- Circuit computation ---- \\
-
-
-    @Override
-    boolean canAttach(BlockState state, Direction dir, Block other) {
-        return true;
-    }
-
-
     // ---- Waterlogging and connection ---- \\
 
     @Override
@@ -141,15 +145,14 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
         if (state.get(Properties.WATERLOGGED))
             world.getFluidTickScheduler().schedule(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
 
-        // Only attach to other block if other block is ElectricalBlock with a legal connection
-        // (Both this and other block can connect in that direction)
-        if (state.get(getPropertyFromDirection(dir)) != canConnect(state, dir, blockstateOther)) {
-           // Circuit t = ((AbstractElectricalBlockEntity)world.getBlockEntity(pos)).getCircuit();
-           // if (t != null)
-           //     t.markInvalid();
+        BlockEntity entity = world.getBlockEntity(pos);
+
+        if (entity instanceof AbstractElectricalBlockEntity) {
+            AbstractElectricalBlockEntity electricalBlockEntity = (AbstractElectricalBlockEntity)entity;
+            return state.with(getPropertyFromDirection(dir), electricalBlockEntity.canConnectTo(dir, world.getBlockEntity(pos.offset(dir))));
         }
 
-        return state.with(getPropertyFromDirection(dir), canConnect(state, dir, blockstateOther));
+        return state;
     }
 
     @Override
@@ -157,8 +160,12 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
         super.onPlaced(world, pos, state, placer, itemStack);
 
          for (Direction dir : Direction.values()) {
-             BlockState blockstateOther = world.getBlockState(pos.offset(dir));
-             state = state.with(getPropertyFromDirection(dir), canConnect(state, dir, blockstateOther));
+             BlockEntity entity = world.getBlockEntity(pos);
+
+             if (entity instanceof AbstractElectricalBlockEntity) {
+                 AbstractElectricalBlockEntity electricalBlockEntity = (AbstractElectricalBlockEntity) entity;
+                 state = state.with(getPropertyFromDirection(dir), electricalBlockEntity.canConnectTo(dir, world.getBlockEntity(pos.offset(dir))));
+             }
          }
          world.setBlockState(pos, state);
 

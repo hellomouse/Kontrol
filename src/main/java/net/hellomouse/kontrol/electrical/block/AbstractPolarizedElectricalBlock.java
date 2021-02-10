@@ -1,6 +1,5 @@
 package net.hellomouse.kontrol.electrical.block;
 
-import net.hellomouse.kontrol.electrical.block.interfaces.IPolarizedBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -24,7 +23,7 @@ import net.minecraft.world.WorldAccess;
  * @author Bowserinator
  */
 @SuppressWarnings({"deprecation"})
-public abstract class AbstractPolarizedElectricalBlock extends AbstractElectricalBlock implements IPolarizedBlock {
+public abstract class AbstractPolarizedElectricalBlock extends AbstractElectricalBlock {
     public final boolean waterloggable;
     public final boolean rotateWhenPlacing;
 
@@ -47,19 +46,6 @@ public abstract class AbstractPolarizedElectricalBlock extends AbstractElectrica
         // setDefaultState(state);
     }
 
-    @Override
-    boolean canAttach(BlockState state, Direction dir, Block other) {
-        return other instanceof AbstractElectricalBlock &&
-                (dir == positiveTerminal(state) || dir == negativeTerminal(state));
-    }
-
-    public Direction positiveTerminal(BlockState state) {
-        return state.get(Properties.HORIZONTAL_FACING);
-    }
-
-    public Direction negativeTerminal(BlockState state) {
-        return positiveTerminal(state).getOpposite();
-    }
 
     @Override
     public BlockState getStateForNeighborUpdate(BlockState state, Direction dir, BlockState blockStateOther, WorldAccess world, BlockPos pos, BlockPos otherPos) {

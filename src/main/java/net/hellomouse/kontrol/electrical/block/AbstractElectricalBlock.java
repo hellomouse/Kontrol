@@ -17,23 +17,6 @@ public abstract class AbstractElectricalBlock extends BlockWithEntity {
     }
 
 
-    // --- Custom to Electrical Block --- \\
-
-    abstract boolean canAttach(BlockState state, Direction dir, Block other);
-
-
-    // --- Connection logic --- \\
-    public boolean canConnect(BlockState state, Direction dir, BlockState blockStateOther) {
-        return canAttach(state, dir, blockStateOther.getBlock()) &&
-                !blockStateOther.isAir() &&
-                globalConnectableCheck(blockStateOther.getBlock()) &&
-                ((AbstractElectricalBlock)(blockStateOther.getBlock())).canAttach(blockStateOther, dir.getOpposite(), this);
-    }
-
-    private boolean globalConnectableCheck(Block other) {
-        return other instanceof AbstractElectricalBlock;
-    }
-
     // --- Mojang --- \\
     @Override
     public PistonBehavior getPistonBehavior(BlockState state) {
