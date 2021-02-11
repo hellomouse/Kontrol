@@ -82,4 +82,7 @@ public class CapacitorBlockEntity extends AbstractPolarizedElectricalBlockEntity
         text.add(new LiteralText("C = " + capacitance));
         return super.getReading().misc(text);
     }
+
+    @Override
+    public boolean canStartFloodfill() { return true; }
 }

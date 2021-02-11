@@ -78,4 +78,7 @@ public class InductorBlockEntity extends AbstractPolarizedElectricalBlockEntity 
         text.add(new LiteralText("L = " + inductance));
         return super.getReading().misc(text);
     }
+
+    @Override
+    public boolean canStartFloodfill() { return true; }
 }

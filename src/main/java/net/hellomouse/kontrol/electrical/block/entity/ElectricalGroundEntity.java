@@ -25,4 +25,7 @@ public class ElectricalGroundEntity extends WireBlockEntity {
         internalCircuit.addComponent(new VirtualGround(), -1, -1);
         return internalCircuit;
     }
+
+    @Override
+    public boolean canStartFloodfill() { return true; }
 }

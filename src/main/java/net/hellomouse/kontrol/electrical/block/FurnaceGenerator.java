@@ -36,11 +36,12 @@ public class FurnaceGenerator extends AbstractPolarizedElectricalBlock implement
     public static final BooleanProperty LIT = BooleanProperty.of("lit");
 
     public FurnaceGenerator(AbstractBlock.Settings settings) {
-        super(settings, true);
+        super(settings, false);
         setDefaultState(getStateManager()
                 .getDefaultState()
                 .with(Properties.HORIZONTAL_FACING, Direction.NORTH)
-                .with(LIT, false));
+                .with(LIT, false)
+                .with(Properties.WATERLOGGED, false));
     }
 
 
@@ -138,10 +139,6 @@ public class FurnaceGenerator extends AbstractPolarizedElectricalBlock implement
         stateManager.add(LIT);
     }
 
-    @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(Properties.HORIZONTAL_FACING, ctx.getPlayerFacing());
-    }
 
     // --- World interaction --- \\
 

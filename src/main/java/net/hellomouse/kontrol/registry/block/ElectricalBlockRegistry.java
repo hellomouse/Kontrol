@@ -14,7 +14,6 @@ import net.hellomouse.kontrol.electrical.block.entity.*;
 import net.hellomouse.kontrol.electrical.block.entity.render.CapacitorEntityRenderer;
 import net.hellomouse.kontrol.electrical.block.entity.render.ResistorEntityRenderer;
 import net.hellomouse.kontrol.electrical.block.entity.render.ScopeEntityRenderer;
-import net.hellomouse.kontrol.electrical.circuit.CircuitManager;
 import net.hellomouse.kontrol.electrical.items.ElectricalBlockItem;
 import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.electrical.screen.BoxScreen;
@@ -38,8 +37,6 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     // TODO: offer way to lookup blocks and items
     // Special blocks
     public static Block BASIC_LIGHT_BLOCK;
-
-    public static final CircuitManager CIRCUIT_MANAGER = new CircuitManager();
 
 
     // Block entities

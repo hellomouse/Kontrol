@@ -61,6 +61,7 @@ public class ScopeBlockEntity extends AbstractPolarizedElectricalBlockEntity imp
 
     public ScopeBlockEntity() {
         super(ElectricalBlockRegistry.SCOPE_BLOCK_ENTITY);
+        setRotate(true);
     }
 
     public ScopeBlockEntity tier(int tier) {

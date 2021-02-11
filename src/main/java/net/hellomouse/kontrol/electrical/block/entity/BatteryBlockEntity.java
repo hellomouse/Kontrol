@@ -76,4 +76,7 @@ public class BatteryBlockEntity extends AbstractPolarizedElectricalBlockEntity {
         this.voltage = voltage;
         return this;
     }
+
+    @Override
+    public boolean canStartFloodfill() { return true; }
 }

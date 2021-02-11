@@ -9,7 +9,10 @@ import net.minecraft.nbt.CompoundTag;
 public class SwitchBlockEntity extends ResistorBlockEntity {
     private boolean open = true;
 
-    public SwitchBlockEntity() { super(ElectricalBlockRegistry.SWITCH_BLOCK_ENTITY); }
+    public SwitchBlockEntity() {
+        super(ElectricalBlockRegistry.SWITCH_BLOCK_ENTITY);
+        setRotate(true);
+    }
 
     public void onUpdate() {
         if (nodalVoltages.size() != 2)

@@ -31,6 +31,7 @@ public class FurnaceGeneratorEntity extends AbstractPolarizedElectricalBlockEnti
 
     public FurnaceGeneratorEntity() {
         super(ElectricalBlockRegistry.FURNACE_GENERATOR_ENTITY);
+        rotate = true;
     }
 
     @Override
@@ -150,5 +151,8 @@ public class FurnaceGeneratorEntity extends AbstractPolarizedElectricalBlockEnti
     public Text getDisplayName() {
         return new TranslatableText(getCachedState().getBlock().getTranslationKey());
     }
+
+    @Override
+    public boolean canStartFloodfill() { return true; }
 }
 

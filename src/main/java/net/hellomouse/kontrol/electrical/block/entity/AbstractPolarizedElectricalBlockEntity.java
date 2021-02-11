@@ -15,9 +15,14 @@ import net.minecraft.util.math.Direction;
 public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractElectricalBlockEntity {
     protected Direction positiveTerminal;
     protected Direction negativeTerminal;
+    protected boolean rotate;
 
     public AbstractPolarizedElectricalBlockEntity(BlockEntityType<?> entityType) {
         super(entityType);
+    }
+
+    public void setRotate(boolean rotate) {
+        this.rotate = rotate;
     }
 
     public MultimeterReading getReading() {
@@ -49,7 +54,10 @@ public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractEle
             if (!(state.getBlock() instanceof AbstractPolarizedElectricalBlock))
                 throw new IllegalStateException("Invalid block entity: block state's block does not extend AbstractPolarizedElectricalBlock, rather it is " + state.getBlock());
 
-            positiveTerminal = state.get(Properties.HORIZONTAL_FACING);
+            Direction dir = state.get(Properties.HORIZONTAL_FACING);
+            if (rotate)
+                dir = dir.rotateYClockwise();
+            positiveTerminal = dir;
         }
         return positiveTerminal;
     }

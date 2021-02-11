@@ -1,7 +1,6 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
-import net.hellomouse.kontrol.electrical.block.AbstractElectricalBlock;
-import net.hellomouse.kontrol.electrical.block.AbstractPolarizedElectricalBlock;
+import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.electrical.circuit.Circuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
@@ -9,12 +8,15 @@ import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Tickable;
 import net.minecraft.util.math.Direction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.UUID;
 
 
 /**
@@ -31,6 +33,8 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     protected VirtualCircuit internalCircuit = new VirtualCircuit();
 
     protected Circuit circuit;
+
+    private UUID savedCircuitUUID = null;
 
     // TODO: save these to tags
     protected double current, voltage, power;
@@ -77,9 +81,26 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
         if (circuit != null) circuit.flagElementRemoved(pos);
     }
 
-    public void toTag() {
-        // idk read state from the thingy
+
+
+
+    @Override
+    public CompoundTag toTag(CompoundTag tag) {
+        if (circuit != null)
+            savedCircuitUUID = circuit.id;
+        if (savedCircuitUUID != null)
+            tag.putUuid("CircuitUUID", savedCircuitUUID);
+        return super.toTag(tag);
     }
+
+
+    @Override
+    public void fromTag(BlockState state, CompoundTag tag) {
+        super.fromTag(state, tag);
+        if (tag.contains("CircuitUUID"))
+            savedCircuitUUID = tag.getUuid("CircuitUUID");
+    }
+
 
 
     // TODO: update slowly or update quickly?
@@ -111,6 +132,7 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             // TODO: why?
             computedConnectedSides = false;
 
+
             // ALL THIS TODO
             // If not part of a circuit initiate floodfill from Circuitmanager
 
@@ -130,17 +152,19 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
                             if (c != null && !e2.isRemoved()) {
                                 found = true;
                                 c.flagElementAdded(e2.getPos());
-                                System.out.println("Found connecting circuit, flaging as invalid");
+                                // System.out.println("Found connecting circuit, flaging as invalid");
                                 break;
                             }
                         }
                     }
                 }
 
-                if (!found) {
-                    System.out.println("Generating circuit for " + this.getPos());
-                    circuit = new Circuit(world, pos);
-                    ElectricalBlockRegistry.CIRCUIT_MANAGER.addCircuit(circuit);
+                if (!found && canStartFloodfill()) {
+                    System.out.println(world.hashCode() + " WORLD!!");
+                    circuit = new Circuit((ServerWorld)world, pos, UUID.randomUUID()); // savedCircuitUUID == null ? UUID.randomUUID() : savedCircuitUUID
+                    circuit = ((IHasCircuitManager)world).getCircuitManager().addCircuit(circuit);
+                    //if (circuit != null)
+                    //    System.out.println("Generating circuit for " + this.getPos());
                 }
             }
 
@@ -230,6 +254,10 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
 
     public void setNormalizedOutgoingNode(int nodeId, Direction dir) {
         normalizedNodeToDir.put(nodeId, dir);
+    }
+
+    public boolean canStartFloodfill() {
+        return false;
     }
 
     // --- World interactions --- \\
