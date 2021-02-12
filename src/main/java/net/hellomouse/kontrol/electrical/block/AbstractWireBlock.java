@@ -37,7 +37,7 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
     private VoxelShape
         UP_SHAPE, DOWN_SHAPE, NORTH_SHAPE, SOUTH_SHAPE, EAST_SHAPE, WEST_SHAPE, NONE_SHAPE;
 
-    private final ColorData.COLOR_STRING color;
+    protected final ColorData.COLOR_STRING color;
 
     public AbstractWireBlock(AbstractBlock.Settings settings, float wireSize, float noneSize, ColorData.COLOR_STRING color) {
         super(settings);

@@ -70,6 +70,7 @@ public class Circuit {
         // Circuit structure has been invalidated, re-do floodfill and
         // virtual circuit construction
         if (invalid) {
+
             // If an element was removed, select a start floodfill location
             // at any existing block entity (otherwise floodfill pos was set
             // when component was added)
@@ -131,9 +132,14 @@ public class Circuit {
 
             AbstractElectricalBlockEntity electricalEntity = ((AbstractElectricalBlockEntity) entity);
 
+            if (electricalEntity.isSuperconducting())
+                continue;
+
             electricalEntity.setCircuit(this);
-            electricalEntity.generatePreliminaryOutgoingNodes(index);
             blockEntities.add(electricalEntity);
+
+            if (electricalEntity.getOutgoingNodes().size() == 0)
+                electricalEntity.generatePreliminaryOutgoingNodes(index);
 
             for (Direction dir : Direction.values()) {
                 BlockEntity newEntity = world.getBlockEntity(p.offset(dir));
@@ -144,9 +150,15 @@ public class Circuit {
                 if (!(electricalEntity.getConnectedSides().get(indexFromDirection(dir)))) // No valid connection, checked in the entity
                     continue;
 
+                if (eEntity.isSuperconducting()) {
+                    index = superconductorFloodfill(p.offset(dir), posToVisit, electricalEntity.getOutgoingNodes().get(indexFromDirection(dir)), index);
+                    continue;
+                }
+
                 // We already traversed this entity, add new connection
-                if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this)
+                if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this) {
                     electricalEntity.setOutgoingNode(dir, eEntity.getOutgoingNodes().get(indexFromDirection(dir.getOpposite())));
+                }
 
                 // New entity
                 if (eEntity.getCircuit() != this) {
@@ -196,6 +208,57 @@ public class Circuit {
 //        double d2 = (endTime - solveTime) * 1.0 / 1e6;
 //        System.out.println("Total execution time: " + d + " ms, counts " + count + "  circuit size: " + circuit.getComponents().size());
 //        System.out.println("Time solving:: " + d + " ms");
+    }
+
+    private int superconductorFloodfill(BlockPos start, Queue<BlockPos> posToVisit, int outgoingNode, int index) {
+        Queue<BlockPos> superconductingPos = new LinkedList<>();
+        superconductingPos.add(start);
+
+        while (superconductingPos.size() > 0) {
+            BlockPos p = superconductingPos.remove();
+            BlockEntity entity = world.getBlockEntity(p);
+
+            if (!(entity instanceof AbstractElectricalBlockEntity)) break;
+
+            AbstractElectricalBlockEntity electricalEntity = ((AbstractElectricalBlockEntity)entity);
+            if (!electricalEntity.isSuperconducting())
+                continue;
+
+            electricalEntity.setCircuit(this);
+
+            for (Direction dir : Direction.values()) {
+                BlockEntity newEntity = world.getBlockEntity(p.offset(dir));
+                if (!(newEntity instanceof AbstractElectricalBlockEntity))
+                    continue;
+
+                AbstractElectricalBlockEntity eEntity = ((AbstractElectricalBlockEntity) newEntity);
+                if (!(electricalEntity.getConnectedSides().get(indexFromDirection(dir)))) // No valid connection, checked in the entity
+                    continue;
+
+                if (eEntity.isSuperconducting() && eEntity.getCircuit() != this) {
+                    if (eEntity.getCircuit() != null && !eEntity.getCircuit().id.equals(id))
+                        ((IHasCircuitManager)world).getCircuitManager().deleteCircuit(eEntity.getCircuit());
+                    superconductingPos.add(p.offset(dir));
+                    continue;
+                }
+
+                // We already traversed this entity, add new connection
+                // if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this)
+                    // electricalEntity.setOutgoingNode(dir, outgoingNode);
+
+                // New entity
+                if (eEntity.getCircuit() != this) {
+                    if (eEntity.getCircuit() != null && !eEntity.getCircuit().id.equals(id))
+                        ((IHasCircuitManager)world).getCircuitManager().deleteCircuit(eEntity.getCircuit());
+
+                    index++;
+                    posToVisit.add(p.offset(dir));
+                    eEntity.generatePreliminaryOutgoingNodes(index);
+                    eEntity.setOutgoingNode(dir.getOpposite(), outgoingNode);
+                }
+            }
+        }
+        return index;
     }
 
     /**

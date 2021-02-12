@@ -19,7 +19,7 @@ import org.apache.http.impl.conn.Wire;
 public class WireBlockEntity extends AbstractElectricalBlockEntity {
     // TODO: resistance should be in constructor
 
-    private ColorData.COLOR_STRING color;
+    protected ColorData.COLOR_STRING color;
 
     public WireBlockEntity() { super(ElectricalBlockRegistry.WIRE_BLOCK_ENTITY); }
 

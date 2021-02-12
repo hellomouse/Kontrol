@@ -55,8 +55,6 @@ public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractEle
                 throw new IllegalStateException("Invalid block entity: block state's block does not extend AbstractPolarizedElectricalBlock, rather it is " + state.getBlock());
 
             Direction dir = state.get(Properties.HORIZONTAL_FACING);
-            if (rotate)
-                dir = dir.rotateYClockwise();
             positiveTerminal = dir;
         }
         return positiveTerminal;

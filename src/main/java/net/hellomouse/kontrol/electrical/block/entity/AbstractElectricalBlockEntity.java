@@ -127,7 +127,7 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     public void tick() {
         boolean dirty = false;
 
-        if (!world.isClient) {
+        if (world != null && !world.isClient) {
             // Force computation of sides next tick
             // TODO: why?
             computedConnectedSides = false;
@@ -147,9 +147,9 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
                         AbstractElectricalBlockEntity otherEntity = (AbstractElectricalBlockEntity)_otherEntity;
 
                         if (canConnectTo(dir, otherEntity) && otherEntity.canConnectTo(dir.getOpposite(), this)) {
-                            AbstractElectricalBlockEntity e2  =((AbstractElectricalBlockEntity)world.getBlockEntity(pos.offset(dir)));
+                            AbstractElectricalBlockEntity e2 = ((AbstractElectricalBlockEntity)world.getBlockEntity(pos.offset(dir)));
                             Circuit c = e2.getCircuit();
-                            if (c != null && !e2.isRemoved()) {
+                            if (c != null && !e2.isRemoved() && !c.isDeleted()) {
                                 found = true;
                                 c.flagElementAdded(e2.getPos());
                                 // System.out.println("Found connecting circuit, flaging as invalid");
@@ -160,7 +160,6 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
                 }
 
                 if (!found && canStartFloodfill()) {
-                    System.out.println(world.hashCode() + " WORLD!!");
                     circuit = new Circuit((ServerWorld)world, pos, UUID.randomUUID()); // savedCircuitUUID == null ? UUID.randomUUID() : savedCircuitUUID
                     circuit = ((IHasCircuitManager)world).getCircuitManager().addCircuit(circuit);
                     //if (circuit != null)
@@ -230,7 +229,9 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             boolean canConnect = this.canConnectTo(dir, world.getBlockEntity(pos.offset(dir)));
 
             connectedSides.add(canConnect);
-            if (canConnect)
+
+            // TODO: why isUSperconducting(0
+            if (canConnect && !isSuperconducting())
                 normalizedOutgoingNodes.add(outgoingNodes.get(Circuit.indexFromDirection(dir)));
         }
     }
@@ -257,6 +258,10 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     }
 
     public boolean canStartFloodfill() {
+        return false;
+    }
+
+    public boolean isSuperconducting() {
         return false;
     }
 

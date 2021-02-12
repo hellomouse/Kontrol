@@ -49,6 +49,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<SwitchBlockEntity> SWITCH_BLOCK_ENTITY;
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
     public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
+    public static BlockEntityType<SuperconductingWireBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -68,6 +69,15 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .color(color)
                 .blockEntityName("wire_block_entity"));
 
+            addBlock(new BlockWrapper()
+                    .name(color + "_creative_wire")
+                    .block(new CreativeWireBlock(FabricBlockSettings
+                            .of(Material.METAL).nonOpaque()
+                            .strength(-1.0f, 3600000.0f).dropsNothing()
+                            .materialColor(ColorData.nameToMaterialColor(color)),
+                            color))
+                    .color(color)
+                    .blockEntityName("superconducting_wire_block_entity"));
         }
 
 
@@ -173,6 +183,9 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "inductor_block", "inductor_block_entity", InductorBlockEntity::new);
         SCOPE_BLOCK_ENTITY = (BlockEntityType<ScopeBlockEntity>)getRegisteredBlockEntity(
                 "scope_block", "scope_block_entity", ScopeBlockEntity::new);
+
+        SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingWireBlockEntity>)getRegisteredBlockEntity(
+                "superconducting_wire_block", "superconducting_wire_block_entity", SuperconductingWireBlockEntity::new);
 
 
         // Screen Handlers
