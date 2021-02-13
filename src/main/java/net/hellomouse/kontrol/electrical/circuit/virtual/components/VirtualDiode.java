@@ -1,7 +1,7 @@
 package net.hellomouse.kontrol.electrical.circuit.virtual.components;
 
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IBaseCondition;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
+
 
 /**
  * Diode component, modelled as voltage source
@@ -21,7 +21,7 @@ public class VirtualDiode extends VirtualVoltageSource {
     public void setVForward(double V) { V_forward = V; }
     public double getVForward() { return V_forward; }
 
-    // Solving logic in VirtualCircuit
+    // Solving logic is in VirtualCircuit
     @Override
     public boolean isNonLinear() { return true; }
 

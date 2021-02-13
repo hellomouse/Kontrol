@@ -3,6 +3,7 @@ package net.hellomouse.kontrol.electrical.circuit.virtual.components;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IBaseCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
 
+
 /**
  * Ground component
  * See IBaseCondition for specific javadoc on common component methods
@@ -15,14 +16,9 @@ public class VirtualGround extends AbstractVirtualComponent implements IFixedVol
         super();
     }
 
-    /**
-     * @see IBaseCondition#setNodes(int, int)
-     * @param node1 Node to set to V = 0
-     * @param node2 Unused, but override
-     */
     @Override
     public void setNodes(int node1, int node2) {
-        // Ground only uses node1
+        // Only uses node1
         super.setNodes(node1, node1);
     }
 

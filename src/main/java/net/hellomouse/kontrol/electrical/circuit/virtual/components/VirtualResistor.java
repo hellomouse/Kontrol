@@ -4,6 +4,7 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.I
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
 
+
 /**
  * Resistor component, recommended to extend this for most resistor
  * like elements.

@@ -4,6 +4,7 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.I
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
 
+
 /**
  * Voltage source component, recommended to extend this for most voltage
  * source based elements.
@@ -22,7 +23,24 @@ public class VirtualVoltageSource extends AbstractVirtualComponent implements IV
     }
 
     @Override
-    public void initialUpdateEnergySourceCount() { updateCircuitEnergySourceCount(0.0, voltage); }
+    public double getVoltage() {
+        if (isHiZ())
+            return super.getVoltage();
+        if (isDisabled())
+            return 0.0;
+        return voltage;
+    }
+
+    @Override
+    public double getEnergy() {
+        // Voltage sources don't store energy
+        return UNKNOWN_ENERGY;
+    }
+
+    @Override
+    public void initialUpdateEnergySourceCount() {
+        updateCircuitEnergySourceCount(0.0, voltage);
+    }
 
     @Override
     public void setVoltage(double voltage) {
@@ -40,20 +58,5 @@ public class VirtualVoltageSource extends AbstractVirtualComponent implements IV
     public void setHiZ(boolean hiZ) {
         updateEnergySourcesOnStateChange(disabled, disabled, this.hiZ, hiZ, voltage);
         super.setHiZ(hiZ);
-    }
-
-    @Override
-    public double getVoltage() {
-        if (isHiZ())
-            return super.getVoltage();
-        if (isDisabled())
-            return 0.0;
-        return voltage;
-    }
-
-    @Override
-    public double getEnergy() {
-        // Voltage sources don't store energy
-        return UNKNOWN_ENERGY;
     }
 }

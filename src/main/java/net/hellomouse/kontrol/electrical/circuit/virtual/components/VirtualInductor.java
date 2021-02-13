@@ -37,6 +37,8 @@ public class VirtualInductor extends VirtualCurrentSource implements IResistance
 
     @Override
     public void setCurrent(double current) {
+        if (circuit.isSolved())
+            current -= getVoltage() / getResistance();
         initialValue = current;
         super.setCurrent(current);
     }

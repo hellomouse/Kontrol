@@ -29,6 +29,7 @@ public abstract class AbstractVirtualComponent implements IBaseCondition {
         this.node2 = node2;
     }
 
+    // --- Info getters ---- \\
     public double getPower() {
         return Math.abs(getVoltage() * getCurrent());
     }
@@ -40,15 +41,41 @@ public abstract class AbstractVirtualComponent implements IBaseCondition {
     }
     public double getEnergy() { return VirtualCircuitConstants.UNKNOWN_ENERGY; }
 
-    public void tick() {}
 
+    // --- Component properties --- \\
+    public boolean requireTicking() {return false; }
+    public boolean doesNumericIntegration() { return false; }
+    public boolean isNonLinear() { return false; }
+
+
+    // --- Energy source count syncing --- \\
+
+    /** Apply any updates to energy source count when added, usually uses updateCircuitEnergySourceCount with prevValue = 0.0 */
     public void initialUpdateEnergySourceCount() {}
-    public void updateCircuitEnergySourceCount(double prevValue, double newValue) {
+
+    /**
+     * General helper method to update energy source count
+     * @param prevValue Old energy source value (ie, voltage source voltage or current source current)
+     * @param newValue New energy source value
+     */
+    protected void updateCircuitEnergySourceCount(double prevValue, double newValue) {
         if (prevValue == 0.0 && newValue != 0.0)
             circuit.incEnergySources();
         else if (prevValue != 0.0 && newValue == 0.0)
             circuit.decEnergySources();
     }
+
+    /**
+     * Update energy source count automatically using updateCircuitEnergySourceCount when either disabled or hiZ
+     * is changed. Both the old and new state must be provided, if there is no change make both parameters the same.
+     * Value is the value of the energy source (ie, voltage source voltage or current source current). Use this in an
+     * overridden setHiZ and setDisabled method
+     * @param oldDisabled Old disabled state
+     * @param newDisabled New disabled state
+     * @param oldHiZ Old hiZ state
+     * @param newHiz New hiZ state
+     * @param value Value of the energy source
+     */
     protected void updateEnergySourcesOnStateChange(boolean oldDisabled, boolean newDisabled, boolean oldHiZ, boolean newHiz, double value) {
         if (oldDisabled == newDisabled && oldHiZ == newHiz)
             return;
@@ -61,21 +88,27 @@ public abstract class AbstractVirtualComponent implements IBaseCondition {
             updateCircuitEnergySourceCount(0.0, value);
     }
 
-    public boolean requireTicking() {return false; }
-    public boolean doesNumericIntegration() { return false; }
-    public boolean isNonLinear() { return false; }
 
+    // --- States --- \\
     public void setDisabled(boolean disabled) { this.disabled = disabled; }
     public boolean isDisabled() { return disabled; }
 
     public void setHiZ(boolean hiZ) { this.hiZ = hiZ; }
     public boolean isHiZ() { return hiZ; }
 
+
+    // --- Misc setters / getters --- \\
     public void setCircuit(VirtualCircuit c) { this.circuit = c; }
 
     public int getNode1() { return node1; }
     public int getNode2() { return node2; }
 
+
+    // --- Simulation --- \\
+    public void tick() {}
+
+
+    // --- Information --- \\
     public String toString() {
         return this.getClass().getSimpleName() + " from " + node1 + " to " + node2 +
                 (disabled ? " (disabled)" : "") +

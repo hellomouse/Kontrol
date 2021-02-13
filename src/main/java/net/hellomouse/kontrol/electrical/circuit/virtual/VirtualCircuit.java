@@ -4,7 +4,6 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.*;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.ICurrentCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
 import org.apache.logging.log4j.LogManager;
 import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.SimpleMatrix;
@@ -40,6 +39,8 @@ public class VirtualCircuit {
     private boolean containsFixedVoltagePoint = false;
     // How many ways can the circuit be supplied with energy?
     private int energySourceCount = 0;
+    // Has circuit been solved at least once?
+    private boolean solved = false;
 
     // Optimization settings
     private VirtualCircuitSettings settings = new VirtualCircuitSettings();
@@ -153,6 +154,7 @@ public class VirtualCircuit {
      */
     private ArrayList<Double> solveHelper(boolean steadyState) {
         int nodeCount = uniqueNodes.size();
+        solved = true;
 
         // 1 node circuit, or no energy source circuits have all nodes = 0 V
         if (nodeCount < 2 || energySourceCount == 0)
@@ -366,6 +368,12 @@ public class VirtualCircuit {
     public void incEnergySources() { energySourceCount++; }
     public void decEnergySources() { energySourceCount--; }
     public int getEnergySourceCount() { return energySourceCount; }
+
+    /**
+     * Has circuit been solved at least once?
+     * @return Solved state
+     */
+    public boolean isSolved() { return solved; }
 
     /**
      * Set the circuit settings to settings

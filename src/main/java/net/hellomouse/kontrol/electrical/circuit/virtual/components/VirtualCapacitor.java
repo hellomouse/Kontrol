@@ -23,12 +23,20 @@ public class VirtualCapacitor extends VirtualCurrentSource implements IResistanc
         this.capacitance = capacitance;
     }
 
+    public void setVoltage(double voltage) {
+        setCurrent(voltage / resistance);
+        initialValue = voltage;
+    }
+
     public double getCapacitance() {
         return capacitance;
     }
     public void setCapacitance(double C) { capacitance = C; }
 
+    @Override
     public double getResistance() { return resistance; }
+
+    @Override
     public void setResistance(double resistance) { this.resistance = resistance; }
 
     @Override
@@ -36,11 +44,6 @@ public class VirtualCapacitor extends VirtualCurrentSource implements IResistanc
 
     @Override
     public boolean doesNumericIntegration() { return true; }
-
-    public void setVoltage(double voltage) {
-        setCurrent(voltage / CAPACITOR_INITIAL_R);
-        initialValue = voltage;
-    }
 
     @Override
     public void initialUpdateEnergySourceCount() {

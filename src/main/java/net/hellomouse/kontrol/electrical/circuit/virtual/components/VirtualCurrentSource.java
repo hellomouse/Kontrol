@@ -2,10 +2,9 @@ package net.hellomouse.kontrol.electrical.circuit.virtual.components;
 
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IBaseCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.ICurrentCondition;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IVoltageDifferenceCondition;
 
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.UNKNOWN_ENERGY;
+
 
 /**
  * Current source component, recommended to extend this for most current
@@ -25,9 +24,6 @@ public class VirtualCurrentSource extends AbstractVirtualComponent implements IC
     }
 
     @Override
-    public void initialUpdateEnergySourceCount() { updateCircuitEnergySourceCount(0.0, current); }
-
-    @Override
     public void setCurrent(double current) {
         updateCircuitEnergySourceCount(this.current, current);
         this.current = current;
@@ -41,6 +37,17 @@ public class VirtualCurrentSource extends AbstractVirtualComponent implements IC
     }
 
     @Override
+    public double getEnergy() {
+        // Current source doesn't store energy
+        return UNKNOWN_ENERGY;
+    }
+
+    @Override
+    public void initialUpdateEnergySourceCount() {
+        updateCircuitEnergySourceCount(0.0, current);
+    }
+
+    @Override
     public void setDisabled(boolean disabled) {
         updateEnergySourcesOnStateChange(this.disabled, disabled, hiZ, hiZ, current);
         super.setDisabled(disabled);
@@ -50,11 +57,5 @@ public class VirtualCurrentSource extends AbstractVirtualComponent implements IC
     public void setHiZ(boolean hiZ) {
         updateEnergySourcesOnStateChange(disabled, disabled, this.hiZ, hiZ, current);
         super.setHiZ(hiZ);
-    }
-
-    @Override
-    public double getEnergy() {
-        // Current source doesn't store energy
-        return UNKNOWN_ENERGY;
     }
 }
