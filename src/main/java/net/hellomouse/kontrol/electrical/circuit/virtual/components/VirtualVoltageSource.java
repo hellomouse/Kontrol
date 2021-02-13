@@ -21,12 +21,25 @@ public class VirtualVoltageSource extends AbstractVirtualComponent implements IV
         this.voltage = voltage;
     }
 
+    @Override
+    public void initialUpdateEnergySourceCount() { updateCircuitEnergySourceCount(0.0, voltage); }
+
+    @Override
     public void setVoltage(double voltage) {
-        if (this.voltage == 0.0 && voltage != 0.0)
-            circuit.incEnergySources();
-        else if (this.voltage != 0.0 && voltage == 0.0)
-            circuit.decEnergySources();
+        updateCircuitEnergySourceCount(this.voltage, voltage);
         this.voltage = voltage;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        updateEnergySourcesOnStateChange(this.disabled, disabled, hiZ, hiZ, voltage);
+        super.setDisabled(disabled);
+    }
+
+    @Override
+    public void setHiZ(boolean hiZ) {
+        updateEnergySourcesOnStateChange(disabled, disabled, this.hiZ, hiZ, voltage);
+        super.setHiZ(hiZ);
     }
 
     @Override

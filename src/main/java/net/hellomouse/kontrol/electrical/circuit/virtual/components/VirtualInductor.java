@@ -42,6 +42,11 @@ public class VirtualInductor extends VirtualCurrentSource implements IResistance
     }
 
     @Override
+    public void initialUpdateEnergySourceCount() {
+        circuit.incEnergySources();
+    }
+
+    @Override
     public void tick() {
         resistance = inductance / DT;
         super.setCurrent(getCurrent() - getVoltage() / getResistance());

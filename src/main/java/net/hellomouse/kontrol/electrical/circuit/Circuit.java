@@ -119,6 +119,7 @@ public class Circuit {
         for (AbstractElectricalBlockEntity e : blockEntities) {
             e.clearConnectedSides();
             e.setCircuit(null);
+            e.flagRecomputeConnectedSides();
         }
         blockEntities.clear();
 
@@ -352,7 +353,7 @@ public class Circuit {
 
     /**
      * Flag an element has been removed.
-     * @param pos Position of removed element? TODO
+     * @param pos Position of removed element
      */
     public void flagElementRemoved(BlockPos pos) {
         componentBeenRemoved = true;

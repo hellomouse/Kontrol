@@ -1,7 +1,6 @@
 package net.hellomouse.kontrol.electrical.circuit.virtual.components;
 
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IBaseCondition;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.*;
 
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.CAPACITOR_INITIAL_R;
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.DT;
@@ -44,9 +43,14 @@ public class VirtualCapacitor extends VirtualCurrentSource implements IResistanc
     }
 
     @Override
+    public void initialUpdateEnergySourceCount() {
+        circuit.incEnergySources();
+    }
+
+    @Override
     public void tick() {
         resistance = DT / capacitance;
-        setCurrent( getVoltage() / getResistance()   );
+        setCurrent(getVoltage() / getResistance());
     }
 
     @Override

@@ -4,8 +4,9 @@ import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.electrical.circuit.Circuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
-import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
@@ -24,26 +25,42 @@ import java.util.UUID;
  * @author Bowserinator
  */
 public abstract class AbstractElectricalBlockEntity extends BlockEntity implements Tickable {
+    // Node ids assigned to each face as a temporary step. Not normalized, nor will all node ids be used
+    // Use normalizedOutgoingNodes unless you know what you're doing
     protected ArrayList<Integer> outgoingNodes = new ArrayList<>();
+    // True if connected to another electrical component on the side. Array matches order of Circuit.indexFromDirection
+    protected ArrayList<Boolean> connectedSides = new ArrayList<>(Arrays.asList(false, false, false, false, false, false));
+    // Already computed connected sides?
+    private boolean computedConnectedSides = false;
 
+    // Proper, normalized node ids, array length = # of connected sides
     protected ArrayList<Integer> normalizedOutgoingNodes = new ArrayList<>();
+    // Maps normalized node ID => Direction
     protected HashMap<Integer, Direction> normalizedNodeToDir = new HashMap<>();
+    // Nodal voltages, maps iteration order for normalizedOutgoingNodes
     protected ArrayList<Double> nodalVoltages = new ArrayList<>();
 
+    // Internal circuit, will have new node ids assigned when added to circuit
     protected VirtualCircuit internalCircuit = new VirtualCircuit();
-
+    // Circuit it belongs to
     protected Circuit circuit;
+
 
     private UUID savedCircuitUUID = null;
 
     // TODO: save these to tags
     protected double current, voltage, power;
+
+    // Thermal simulation
     protected double temperature;
+    protected double thermalR = 0.0;
+    protected double thermalC = 0.0;
+    protected double tAmbientOffset = 0.0;
 
-    // True if connected on the side. Array matches order of iteration of Direction.values()
-    protected ArrayList<Boolean> connectedSides = new ArrayList<>(Arrays.asList(false, false, false, false, false, false));
+    private double tAmbient = 0.0;
+    private double heatDissipationRate = 0.0;
+    private boolean temperatureSetYet = false;
 
-    private boolean computedConnectedSides = false;
 
     /**
      * Construct an AbstractElectricalBlockEntity
@@ -53,34 +70,74 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
         super(entity);
     }
 
-    /**
-     * Returns the internal circuit representation of this block entity
-     * @return VirtualCircuit representing the internal circuit. Outgoing nodes should be numbered
-     *         from 0, 1, 2... while internal nodes that cannot connect with other components
-     *         should be numbered -1, -2, ...
-     */
-    public abstract VirtualCircuit getInternalCircuit();
 
-    /**
-     * Preliminary outgoing node generation. All 6 possible outgoing nodes (1 for
-     * each face of a cube) is assigned a unique ID in Circuit, and nodes are replaced
-     * for connected components.
-     *
-     * @param offset Unique offset for generating all 6 outgoing node IDs
-     */
-    public void generatePreliminaryOutgoingNodes(int offset) {
-        offset *= 6; // Avoid duplication of any of the 6 faces
-        outgoingNodes = new ArrayList<>(Arrays.asList(offset, offset + 1, offset + 2, offset + 3, offset + 4, offset + 5));
+    // ----- Thermal simulation ----- \\
+
+
+    public void updateAmbientTemperature() {
+        tAmbientOffset = 0.0;
+        for (Direction dir : Direction.values()) {
+            Block block = world.getBlockState(pos.offset(dir)).getBlock();
+            if (block == Blocks.LAVA)
+                tAmbientOffset += 100.0;
+        }
+        tAmbient = 13.6484805403 * world.getBiome(pos).getTemperature(pos) + 7.0879687222 + tAmbientOffset;
     }
 
+    public void thermalSim() {
+        // https://www.reddit.com/r/Minecraft/comments/3eh7yu/the_rl_temperature_of_minecraft_biomes_revealed/
+        // TODO document
 
-    public void markRemoved() {
-        super.markRemoved();
-        System.out.println("DELETING\n");
+        if (!temperatureSetYet) {
+            temperatureSetYet = true;
+            updateAmbientTemperature();
+            temperature = tAmbient;
+        }
 
-        if (circuit != null) circuit.flagElementRemoved(pos);
+
+        thermalC = 100.0;
+        thermalR = 1.0;
+
+        // Dissipates heat instantly TODO
+        if (thermalC == 0.0 && thermalR == 0.0) {
+            temperature = tAmbient;
+            return;
+        }
+
+        // dT / dt * thermal capacitance = power disappation rate
+
+        // V = getPower() * thermalR
+        // V -- VVVVV --- ||
+        // Voltage across capacitor = temp
+        // i = dV / dt * C
+        // integral power / C = T_diff
+
+        // TODO: override a computePower() abstract
+
+        double thermalSource = getPower() * thermalR + tAmbient;
+
+        double oldTemp = temperature;
+        temperature += 1 / thermalC * heatDissipationRate;
+        heatDissipationRate = (thermalSource - temperature) / thermalR;
+
+        // Divergence check
+        if ((oldTemp < temperature && temperature > thermalSource) ||
+                (oldTemp > temperature && temperature < thermalSource)) {
+            heatDissipationRate = 0.0;
+            temperature = thermalSource;
+        }
     }
 
+    public double getPower() {
+        try {
+            if (internalCircuit.getComponents().size() > 0)
+                return (internalCircuit.getComponents().get(0).getPower());
+            return 0.0;
+        }
+        catch(Exception e) {
+            return 0.0;
+        }
+    }
 
 
 
@@ -112,6 +169,26 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     public boolean recomputeEveryTick() { return false; }
 
 
+    /**
+     * Returns the internal circuit representation of this block entity
+     * @return VirtualCircuit representing the internal circuit. Outgoing nodes should be numbered
+     *         from 0, 1, 2... while internal nodes that cannot connect with other components
+     *         should be numbered -1, -2, ...
+     */
+    public abstract VirtualCircuit getInternalCircuit();
+
+    /**
+     * Preliminary outgoing node generation. All 6 possible outgoing nodes (1 for
+     * each face of a cube) is assigned a unique ID in Circuit, and nodes are replaced
+     * for connected components.
+     *
+     * @param offset Unique offset for generating all 6 outgoing node IDs
+     */
+    public void generatePreliminaryOutgoingNodes(int offset) {
+        offset *= 6; // Avoid duplication of any of the 6 faces
+        outgoingNodes = new ArrayList<>(Arrays.asList(offset, offset + 1, offset + 2, offset + 3, offset + 4, offset + 5));
+    }
+
     public abstract boolean canAttach(Direction dir, BlockEntity otherEntity);
 
     public boolean canConnectTo(Direction dir, BlockEntity otherEntity) {
@@ -121,6 +198,9 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
                 ((AbstractElectricalBlockEntity)otherEntity).canAttach(dir.getOpposite(), this);
     }
 
+    public void flagRecomputeConnectedSides() {
+        computedConnectedSides = false;
+    }
 
 
     @Override
@@ -130,8 +210,9 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
         if (world != null && !world.isClient) {
             // Force computation of sides next tick
             // TODO: why?
-            computedConnectedSides = false;
+           // computedConnectedSides = false;
 
+            thermalSim();
 
             // ALL THIS TODO
             // If not part of a circuit initiate floodfill from Circuitmanager
@@ -183,6 +264,14 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
         if (dirty)
             markDirty();
     }
+
+    public void markRemoved() {
+        super.markRemoved();
+        if (circuit != null)
+            circuit.flagElementRemoved(pos);
+    }
+
+
 
     public void clearVoltages() {
         nodalVoltages.clear();

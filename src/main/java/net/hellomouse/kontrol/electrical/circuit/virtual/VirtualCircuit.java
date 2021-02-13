@@ -81,12 +81,7 @@ public class VirtualCircuit {
         if (component.requireTicking())
             requireTickComponents.add(component);
 
-        // Check circuit contains an energy source, otherwise all nodal voltages
-        // are zero by default
-        if (
-                ((component instanceof IFixedVoltageCondition || component instanceof IVoltageDifferenceCondition) && component.getVoltage() != 0.0) ||
-                (component instanceof ICurrentCondition && component.getCurrent() != 0.0))
-            energySourceCount++;
+        component.initialUpdateEnergySourceCount();
 
         // Add special components
         if (component.isNonLinear())
@@ -134,8 +129,9 @@ public class VirtualCircuit {
                 if (comp instanceof VirtualDiode) {
                     // Enable diode if forward voltage reached
                     double V = comp.getVoltage();
+                    double I = comp.getCurrent();
                     boolean oldState = comp.isHiZ();
-                    boolean newState = !(-V >= ((VirtualDiode) comp).getVForward());
+                    boolean newState = !(-V >= ((VirtualDiode) comp).getVForward() && I > 0);
 
                     if (oldState != newState) {
                         recompute = true; // Always recompute diodes
@@ -369,6 +365,7 @@ public class VirtualCircuit {
     /** Add or subtract energy source count */
     public void incEnergySources() { energySourceCount++; }
     public void decEnergySources() { energySourceCount--; }
+    public int getEnergySourceCount() { return energySourceCount; }
 
     /**
      * Set the circuit settings to settings

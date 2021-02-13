@@ -469,4 +469,80 @@ class EdgeCaseTests {
 
         assertEquals(R2.getCurrent() + R4.getCurrent() + C2.getCurrent(), circuit.getCurrentThrough(1, 2), EPSILON);
     }
+
+    /**
+     * Circuit's energy source count is correct
+     */
+    @Test
+    @DisplayName("Energy source count test")
+    void test17() {
+        VirtualCircuit circuit = new VirtualCircuit();
+
+        VirtualCurrentSource CS1 = new VirtualCurrentSource(0.0);
+        VirtualVoltageSource V1 = new VirtualVoltageSource(0.0);
+        VirtualFixedNode F1 = new VirtualFixedNode(0.0);
+        VirtualCapacitor C1 = new VirtualCapacitor(1.0);
+        VirtualInductor L1 = new VirtualInductor(1.0);
+
+        circuit.addComponent(CS1, 0, 1);
+        circuit.addComponent(V1, 1, 2);
+        circuit.addComponent(F1, 0, 0);
+        circuit.addComponent(C1, 2, 3);
+        circuit.addComponent(L1, 3, 4);
+
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        CS1.setCurrent(1.0);
+        V1.setVoltage(1.0);
+        F1.setVoltage(1.0);
+        assertEquals(5, circuit.getEnergySourceCount());
+
+        CS1.setCurrent(0.0);
+        V1.setVoltage(0.0);
+        F1.setVoltage(0.0);
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        CS1.setCurrent(1.0);
+        V1.setVoltage(1.0);
+        F1.setVoltage(1.0);
+        V1.setDisabled(true);
+        F1.setDisabled(true);
+        CS1.setDisabled(true);
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        // Set disabled to false, twice on purpose
+        V1.setDisabled(false);
+        F1.setDisabled(false);
+        CS1.setDisabled(false);
+        V1.setDisabled(false);
+        F1.setDisabled(false);
+        CS1.setDisabled(false);
+        assertEquals(5, circuit.getEnergySourceCount());
+
+        V1.setHiZ(true);
+        F1.setHiZ(true);
+        CS1.setHiZ(true);
+        V1.setHiZ(true);
+        F1.setHiZ(true);
+        CS1.setHiZ(true);
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        V1.setDisabled(true);
+        F1.setDisabled(true);
+        CS1.setDisabled(true);
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        V1.setHiZ(false);
+        F1.setHiZ(false);
+        CS1.setHiZ(false);
+        V1.setHiZ(false);
+        F1.setHiZ(false);
+        CS1.setHiZ(false);
+        assertEquals(2, circuit.getEnergySourceCount());
+
+        V1.setDisabled(false);
+        F1.setDisabled(false);
+        CS1.setDisabled(false);
+        assertEquals(5, circuit.getEnergySourceCount());
+    }
 }

@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.electrical.circuit.virtual.components;
 
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
+import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IBaseCondition;
 
 
@@ -37,8 +38,28 @@ public abstract class AbstractVirtualComponent implements IBaseCondition {
     public double getCurrent() {
         return circuit.getCurrentThrough(node1, node2);
     }
+    public double getEnergy() { return VirtualCircuitConstants.UNKNOWN_ENERGY; }
 
     public void tick() {}
+
+    public void initialUpdateEnergySourceCount() {}
+    public void updateCircuitEnergySourceCount(double prevValue, double newValue) {
+        if (prevValue == 0.0 && newValue != 0.0)
+            circuit.incEnergySources();
+        else if (prevValue != 0.0 && newValue == 0.0)
+            circuit.decEnergySources();
+    }
+    protected void updateEnergySourcesOnStateChange(boolean oldDisabled, boolean newDisabled, boolean oldHiZ, boolean newHiz, double value) {
+        if (oldDisabled == newDisabled && oldHiZ == newHiz)
+            return;
+
+        // Not disabled state => disabled state
+        if (!oldDisabled && !oldHiZ)
+            updateCircuitEnergySourceCount(value, 0.0);
+        // Disabled state => not disabled state
+        else if (!newHiz && !newDisabled)
+            updateCircuitEnergySourceCount(0.0, value);
+    }
 
     public boolean requireTicking() {return false; }
     public boolean doesNumericIntegration() { return false; }

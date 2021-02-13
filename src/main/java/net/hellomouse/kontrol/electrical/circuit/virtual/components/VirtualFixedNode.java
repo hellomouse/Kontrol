@@ -20,11 +20,6 @@ public class VirtualFixedNode extends AbstractVirtualComponent implements IFixed
         this.voltage = voltage;
     }
 
-    /**
-     * @see IBaseCondition#setNodes(int, int)
-     * @param node1 Node to set to V = voltage
-     * @param node2 Unused, but override
-     */
     @Override
     public void setNodes(int node1, int node2) {
         // Fixed node only uses node1
@@ -32,11 +27,23 @@ public class VirtualFixedNode extends AbstractVirtualComponent implements IFixed
     }
 
     @Override
+    public void initialUpdateEnergySourceCount() { updateCircuitEnergySourceCount(0.0, voltage); }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        updateEnergySourcesOnStateChange(this.disabled, disabled, hiZ, hiZ, voltage);
+        super.setDisabled(disabled);
+    }
+
+    @Override
+    public void setHiZ(boolean hiZ) {
+        updateEnergySourcesOnStateChange(disabled, disabled, this.hiZ, hiZ, voltage);
+        super.setHiZ(hiZ);
+    }
+
+    @Override
     public void setVoltage(double voltage) {
-        if (this.voltage == 0.0 && voltage != 0.0)
-            circuit.incEnergySources();
-        else if (this.voltage != 0.0 && voltage == 0.0)
-            circuit.decEnergySources();
+        updateCircuitEnergySourceCount(this.voltage, voltage);
         this.voltage = voltage;
     }
 
