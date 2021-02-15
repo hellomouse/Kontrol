@@ -2,6 +2,7 @@ package net.hellomouse.kontrol.registry.util;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -41,6 +42,7 @@ public class BlockWrapper {
     private String name = null;
     private ColorData.COLOR_STRING color = null;
     private String blockEntityName = null;
+    private RenderLayer renderLayer = null;
 
     /* Additional properties - no getter / setter */
     private boolean finalizedProperties = false;
@@ -160,6 +162,17 @@ public class BlockWrapper {
         return this;
     }
 
+    /**
+     * Set a render layer for the block, use to adjust rendering
+     * (ie, for transparent blocks)
+     * @param renderLayer Render layer to set
+     * @return this
+     */
+    public BlockWrapper renderLayer(RenderLayer renderLayer) {
+        this.renderLayer = renderLayer;
+        return this;
+    }
+
     /** Returns block */
     public Block getBlock() { return block; }
 
@@ -174,6 +187,9 @@ public class BlockWrapper {
 
     /** Returns block entity name */
     public String getBlockEntityName() { return blockEntityName; }
+
+    /** Returns render layer */
+    public RenderLayer getRenderLayer() { return renderLayer; }
 
     /**
      * Helper method to throw exception if trying to mutate when properties

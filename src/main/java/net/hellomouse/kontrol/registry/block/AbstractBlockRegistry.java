@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.registry.block;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
@@ -8,6 +9,7 @@ import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -61,6 +63,11 @@ public abstract class AbstractBlockRegistry {
             ColorData.COLOR_STRING color = wrapper.getColor();
             ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
             ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getBlock());
+        }
+
+        for (BlockWrapper wrapper : blocks) {
+            if (wrapper.getRenderLayer() != null)
+                BlockRenderLayerMap.INSTANCE.putBlock(wrapper.getBlock(), wrapper.getRenderLayer());
         }
     }
 

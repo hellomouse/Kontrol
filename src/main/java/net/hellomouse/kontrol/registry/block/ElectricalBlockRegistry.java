@@ -77,6 +77,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                             .materialColor(ColorData.nameToMaterialColor(color)),
                             color))
                     .color(color)
+                    .renderLayer(RenderLayer.getTranslucent())
                     .blockEntityName("superconducting_wire_block_entity"));
         }
 
