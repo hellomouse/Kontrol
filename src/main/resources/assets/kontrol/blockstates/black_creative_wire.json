@@ -1,31 +1,31 @@
 {
     "multipart": [
         {
-            "apply":{ "model":"kontrol:block/wires/basic_wire/none" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/middle" }
         },
         {
             "when":{ "attach_up": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/up" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector" }
         },
         {
             "when":{ "attach_down": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/down" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector", "x": 180 }
         },
         {
             "when":{ "attach_north": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/north" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector", "x": 90, "y": 0 }
         },
         {
             "when":{ "attach_south": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/south" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector", "x": 90, "y": 180 }
         },
         {
             "when":{ "attach_west": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/west" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector", "x": 90, "y": 270}
         },
         {
             "when":{ "attach_east": "true" },
-            "apply":{ "model":"kontrol:block/wires/basic_wire/east" }
+            "apply":{ "model":"kontrol:block/wires/creative_wire/connector", "x": 90, "y": 90 }
         }
     ]
 }
