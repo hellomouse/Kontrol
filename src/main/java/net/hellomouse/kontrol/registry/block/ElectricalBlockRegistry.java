@@ -41,7 +41,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
 
     // Block entities
     public static BlockEntityType<FurnaceGeneratorEntity> FURNACE_GENERATOR_ENTITY;
-    public static BlockEntityType<WireBlockEntity> WIRE_BLOCK_ENTITY;
+    public static BlockEntityType<CableBlockEntity> WIRE_BLOCK_ENTITY;
     public static BlockEntityType<ElectricalGroundEntity> ELECTRICAL_GROUND_ENTITY;
     public static BlockEntityType<CapacitorBlockEntity> CAPACITOR_BLOCK_ENTITY;
     public static BlockEntityType<BatteryBlockEntity> BATTERY_BLOCK_ENTITY;
@@ -49,7 +49,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<SwitchBlockEntity> SWITCH_BLOCK_ENTITY;
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
     public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
-    public static BlockEntityType<SuperconductingWireBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
+    public static BlockEntityType<SuperconductingCableBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -60,25 +60,24 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         // Colored blocks
         for (ColorData.COLOR_STRING color : ColorData.COLOR_STRING.values()) {
             addBlock(new BlockWrapper()
-                .name(color + "_basic_wire")
-                .block(new BasicWireBlock(FabricBlockSettings
+                .name(color + "_basic_cable")
+                .block(new BasicCableBlock(FabricBlockSettings
                     .of(Material.WOOL).nonOpaque().breakByHand(true)
                     .strength(0.1f, 0.1f)
                     .materialColor(ColorData.nameToMaterialColor(color)),
                         color))
                 .color(color)
-                .blockEntityName("wire_block_entity"));
+                .blockEntityName("cable_block_entity"));
 
             addBlock(new BlockWrapper()
-                    .name(color + "_creative_wire")
-                    .block(new CreativeWireBlock(FabricBlockSettings
+                    .name(color + "_creative_cable")
+                    .block(new CreativeCableBlock(FabricBlockSettings
                             .of(Material.METAL).nonOpaque()
                             .strength(-1.0f, 3600000.0f).dropsNothing()
                             .materialColor(ColorData.nameToMaterialColor(color)),
                             color))
                     .color(color)
-                    .renderLayer(RenderLayer.getTranslucent())
-                    .blockEntityName("superconducting_wire_block_entity"));
+                    .blockEntityName("superconducting_cable_block_entity"));
         }
 
 
@@ -166,8 +165,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         // Block entities
         FURNACE_GENERATOR_ENTITY = (BlockEntityType<FurnaceGeneratorEntity>)getRegisteredBlockEntity(
                 "furnace_generator", "furnace_generator_entity", FurnaceGeneratorEntity::new);
-        WIRE_BLOCK_ENTITY = (BlockEntityType<WireBlockEntity>)getRegisteredBlockEntity(
-                "wire_block", "wire_block_entity", WireBlockEntity::new);
+        WIRE_BLOCK_ENTITY = (BlockEntityType<CableBlockEntity>)getRegisteredBlockEntity(
+                "cable_block", "cable_block_entity", CableBlockEntity::new);
         ELECTRICAL_GROUND_ENTITY = (BlockEntityType<ElectricalGroundEntity>)getRegisteredBlockEntity(
             "electrical_ground", "electrical_ground_entity", ElectricalGroundEntity::new);
         CAPACITOR_BLOCK_ENTITY = (BlockEntityType<CapacitorBlockEntity>)getRegisteredBlockEntity(
@@ -185,8 +184,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         SCOPE_BLOCK_ENTITY = (BlockEntityType<ScopeBlockEntity>)getRegisteredBlockEntity(
                 "scope_block", "scope_block_entity", ScopeBlockEntity::new);
 
-        SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingWireBlockEntity>)getRegisteredBlockEntity(
-                "superconducting_wire_block", "superconducting_wire_block_entity", SuperconductingWireBlockEntity::new);
+        SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingCableBlockEntity>)getRegisteredBlockEntity(
+                "superconducting_cable_block", "superconducting_cable_block_entity", SuperconductingCableBlockEntity::new);
 
 
         // Screen Handlers
@@ -200,7 +199,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         AbstractBlockRegistry.registerClient();
 
         // TODO: color by proper color
-       //  ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
+        //  ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
         ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.darken(BasicLightBlock.LIGHT_COLOR, (1 - state.get(BasicLightBlock.BRIGHTNESS)  / 15.0f) / 2.0f), BASIC_LIGHT_BLOCK);
 
         // TODO: for loop to iterate all resistors

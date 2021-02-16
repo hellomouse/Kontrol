@@ -3,7 +3,7 @@ package net.hellomouse.kontrol.electrical.block;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
-import net.hellomouse.kontrol.electrical.block.entity.WireBlockEntity;
+import net.hellomouse.kontrol.electrical.block.entity.CableBlockEntity;
 import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -68,7 +68,7 @@ public abstract class AbstractWireBlock extends AbstractElectricalBlock implemen
 
     @Override
     public BlockEntity createBlockEntity(BlockView blockView) {
-        return new WireBlockEntity().color(color);
+        return new CableBlockEntity().color(color);
     }
 
     /**

@@ -18,7 +18,7 @@ REPLACE_STRING = "[[COLOR]]"
 colors = "white, red, orange, pink, yellow, lime, green, light_blue, cyan, blue, magenta, purple, brown, gray, light_gray, black".split(", ")
 
 """
-copy_target - Template file path ie /my/dev/stuff/wire.json
+copy_target - Template file path ie /my/dev/stuff/cable.json
 target_dir  - Directory to output to
 name        - Base name of file w/o colors
 """
@@ -33,13 +33,12 @@ def generate_colored_block_jsons(copy_target, target_dir, name, modifier=lambda 
 
 
 
-# create_wire(1.5, "kontrol:block/wires/creative_wire", "creative_wire")
-
 import autogen
 
-autogen.create_wire("./autogen-assets/models/block/creative_wire", "creative_wire")
+autogen.create_cable("./autogen-assets/models/block/creative_cable", "creative_cable", 2)
+autogen.create_cable("./autogen-assets/models/block/basic_cable", "basic_cable", 1.5)
 
-generate_colored_block_jsons("./blockstates/basic_wire.json", "../src/main/resources/assets/kontrol/blockstates", "basic_wire")
-generate_colored_block_jsons("./model_item/basic_wire.json", "../src/main/resources/assets/kontrol/models/item", "basic_wire")
-generate_colored_block_jsons("./recipes/basic_wire.json", "../src/main/resources/data/kontrol/recipes", "basic_wire")
-generate_colored_block_jsons("./loot_tables/basic_wire.json", "../src/main/resources/data/kontrol/loot_tables/blocks", "basic_wire")
+# generate_colored_block_jsons("./blockstates/basic_cable.json", "../src/main/resources/assets/kontrol/blockstates", "basic_cable")
+# generate_colored_block_jsons("./model_item/basic_cable.json", "../src/main/resources/assets/kontrol/models/item", "basic_cable")
+generate_colored_block_jsons("./recipes/basic_cable.json", "../src/main/resources/data/kontrol/recipes", "basic_cable")
+generate_colored_block_jsons("./loot_tables/basic_cable.json", "../src/main/resources/data/kontrol/loot_tables/blocks", "basic_cable")

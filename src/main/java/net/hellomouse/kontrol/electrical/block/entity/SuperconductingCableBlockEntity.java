@@ -5,15 +5,15 @@ import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.entity.BlockEntityType;
 
-public class SuperconductingWireBlockEntity extends WireBlockEntity {
-    public SuperconductingWireBlockEntity() {
+public class SuperconductingCableBlockEntity extends CableBlockEntity {
+    public SuperconductingCableBlockEntity() {
         super(ElectricalBlockRegistry.SUPERCONDUCTING_WIRE_BLOCK_ENTITY);
     }
 
     /**
      * For use in classes that extend this
      */
-    protected SuperconductingWireBlockEntity(BlockEntityType<?> entityType) {
+    protected SuperconductingCableBlockEntity(BlockEntityType<?> entityType) {
         super(entityType);
     }
 
@@ -22,7 +22,7 @@ public class SuperconductingWireBlockEntity extends WireBlockEntity {
     }
 
     @Override
-    public SuperconductingWireBlockEntity color(ColorData.COLOR_STRING color) {
+    public SuperconductingCableBlockEntity color(ColorData.COLOR_STRING color) {
         this.color = color;
         return this;
     }

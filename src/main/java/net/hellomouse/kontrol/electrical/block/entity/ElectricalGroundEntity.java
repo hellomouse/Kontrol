@@ -7,7 +7,7 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResis
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 
 
-public class ElectricalGroundEntity extends WireBlockEntity {
+public class ElectricalGroundEntity extends CableBlockEntity {
     public ElectricalGroundEntity() {
         super(ElectricalBlockRegistry.ELECTRICAL_GROUND_ENTITY);
     }
