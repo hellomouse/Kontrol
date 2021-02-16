@@ -3,6 +3,7 @@ package net.hellomouse.kontrol.electrical.circuit;
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -116,12 +117,7 @@ public class Circuit {
         Queue<BlockPos> posToVisit = new LinkedList<>();
         posToVisit.add(pos);
 
-        for (AbstractElectricalBlockEntity e : blockEntities) {
-            e.clearConnectedSides();
-            e.setCircuit(null);
-            e.flagRecomputeConnectedSides();
-        }
-        blockEntities.clear();
+        resetBlockEntities();
 
         int index = 0; // Used for generating offset of preliminary node ids
         while (posToVisit.size() > 0) {
@@ -139,8 +135,10 @@ public class Circuit {
             electricalEntity.setCircuit(this);
             blockEntities.add(electricalEntity);
 
-            if (electricalEntity.getOutgoingNodes().size() == 0)
+            if (electricalEntity.getOutgoingNodes().size() == 0) {
                 electricalEntity.generatePreliminaryOutgoingNodes(index);
+                index++;
+            }
 
             for (Direction dir : Direction.values()) {
                 BlockEntity newEntity = world.getBlockEntity(p.offset(dir));
@@ -151,18 +149,20 @@ public class Circuit {
                 if (!(electricalEntity.getConnectedSides().get(indexFromDirection(dir)))) // No valid connection, checked in the entity
                     continue;
 
+                boolean alreadyVisited = eEntity.getCircuit() == this;
+
                 if (eEntity.isSuperconducting()) {
-                    index = superconductorFloodfill(p.offset(dir), posToVisit, electricalEntity.getOutgoingNodes().get(indexFromDirection(dir)), index);
+                   if (!alreadyVisited)
+                       index = superconductorFloodfill(p.offset(dir), posToVisit, electricalEntity.getOutgoingNodes().get(indexFromDirection(dir)), index);
                     continue;
                 }
 
                 // We already traversed this entity, add new connection
-                if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this) {
+                if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && alreadyVisited)
                     electricalEntity.setOutgoingNode(dir, eEntity.getOutgoingNodes().get(indexFromDirection(dir.getOpposite())));
-                }
 
                 // New entity
-                if (eEntity.getCircuit() != this) {
+                if (!alreadyVisited) {
                     if (eEntity.getCircuit() != null && !eEntity.getCircuit().id.equals(id))
                         ((IHasCircuitManager)world).getCircuitManager().deleteCircuit(eEntity.getCircuit());
 
@@ -170,7 +170,6 @@ public class Circuit {
                     eEntity.setCircuit(this);
                 }
             }
-            index++;
         }
 
         Direction[] directions = Direction.values();
@@ -179,6 +178,9 @@ public class Circuit {
 
         // Perform node ID normalization
         for (AbstractElectricalBlockEntity blockEntity : blockEntities) {
+            if (blockEntity.isSuperconducting())
+                continue;
+
             // getConnectedSides() may compute on the fly, so we cache result here
             ArrayList<Boolean> connectedSides = blockEntity.getConnectedSides();
 
@@ -225,6 +227,7 @@ public class Circuit {
             if (!electricalEntity.isSuperconducting())
                 continue;
 
+            blockEntities.add(electricalEntity);
             electricalEntity.setCircuit(this);
 
             for (Direction dir : Direction.values()) {
@@ -236,7 +239,9 @@ public class Circuit {
                 if (!(electricalEntity.getConnectedSides().get(indexFromDirection(dir)))) // No valid connection, checked in the entity
                     continue;
 
-                if (eEntity.isSuperconducting() && eEntity.getCircuit() != this) {
+                boolean alreadyVisited = eEntity.getCircuit() == this;
+
+                if (eEntity.isSuperconducting() && !alreadyVisited) {
                     if (eEntity.getCircuit() != null && !eEntity.getCircuit().id.equals(id))
                         ((IHasCircuitManager)world).getCircuitManager().deleteCircuit(eEntity.getCircuit());
                     superconductingPos.add(p.offset(dir));
@@ -244,17 +249,23 @@ public class Circuit {
                 }
 
                 // We already traversed this entity, add new connection
-                // if (eEntity.getOutgoingNodes().size() > 0 && electricalEntity.getOutgoingNodes().size() > 0 && eEntity.getCircuit() == this)
-                    // electricalEntity.setOutgoingNode(dir, outgoingNode);
+                if (eEntity.getOutgoingNodes().size() > 0 && alreadyVisited)
+                    eEntity.setOutgoingNode(dir.getOpposite(), outgoingNode);
 
                 // New entity
-                if (eEntity.getCircuit() != this) {
+                if (!alreadyVisited) {
                     if (eEntity.getCircuit() != null && !eEntity.getCircuit().id.equals(id))
                         ((IHasCircuitManager)world).getCircuitManager().deleteCircuit(eEntity.getCircuit());
 
-                    index++;
                     posToVisit.add(p.offset(dir));
-                    eEntity.generatePreliminaryOutgoingNodes(index);
+
+                    // Block may not be added to circuit yet but already had it's preliminary nodes assigned
+                    // Don't overwrite if it did
+                    if (eEntity.getOutgoingNodes().size() == 0) {
+                        eEntity.generatePreliminaryOutgoingNodes(index);
+                        index++;
+                    }
+                    eEntity.setCircuit(this);
                     eEntity.setOutgoingNode(dir.getOpposite(), outgoingNode);
                 }
             }
@@ -325,6 +336,19 @@ public class Circuit {
     }
 
     /**
+     * Resets all data connected to this circuit for block entities in this circuit.
+     * Run this when circuit is about to be deleted or when re-floodfilling
+     */
+    public void resetBlockEntities() {
+        for (AbstractElectricalBlockEntity e : blockEntities) {
+            e.clearConnectedSides();
+            e.setCircuit(null);
+            e.flagRecomputeConnectedSides();
+        }
+        blockEntities.clear();
+    }
+
+    /**
      * Mark the circuit as dirty. It will be ticked and re-solved
      * next time CircuitManager reaches it.
      */
@@ -365,10 +389,13 @@ public class Circuit {
      * Do not call directly, use circuit manager's deletion
      * scheduler instead.
      */
-    public void flagForDeletion() { this.deleted = true; }
+    public void flagForDeletion() {
+        deleted = true;
+        resetBlockEntities();
+    }
 
     /** Is circuit scheduled to be deleted? */
-    public boolean isDeleted() { return this.deleted; }
+    public boolean isDeleted() { return deleted; }
 
     /**
      * Get the internal virtual circuit

@@ -1,11 +1,6 @@
 package net.hellomouse.kontrol.electrical.circuit;
 
-import net.minecraft.server.world.ServerWorld;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -15,7 +10,7 @@ import java.util.UUID;
  */
 public class CircuitManager {
     private final Map<UUID, Circuit> circuitMap = new HashMap<>();
-    private final ArrayList<UUID> idsToDelete = new ArrayList<>();
+    private final HashSet<UUID> idsToDelete = new HashSet<>();
 
     /**
      * Run after ticking block entities. Deletes circuits scheduled for
