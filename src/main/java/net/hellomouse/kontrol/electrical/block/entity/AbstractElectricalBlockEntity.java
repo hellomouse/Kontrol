@@ -1,9 +1,9 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
-import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
-import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.electrical.circuit.Circuit;
+import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
+import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -323,6 +323,10 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             if (canConnect && !isSuperconducting())
                 normalizedOutgoingNodes.add(outgoingNodes.get(Circuit.indexFromDirection(dir)));
         }
+    }
+
+    protected boolean canSafelyMeasureCircuit() {
+        return internalCircuit.getComponents().size() > 0 && circuit != null;
     }
 
     /**

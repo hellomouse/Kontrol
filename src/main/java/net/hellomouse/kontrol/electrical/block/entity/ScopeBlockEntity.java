@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualCurrentSource;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.hellomouse.kontrol.electrical.misc.ScopeState;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
@@ -83,7 +82,7 @@ public class ScopeBlockEntity extends AbstractPolarizedElectricalBlockEntity imp
         if ((world.getTime() % (1 / state.getTimeScale())) != 0)
             return;
 
-        if (internalCircuit.getComponents().size() > 0 && state != null) {
+        if (canSafelyMeasureCircuit() && state != null) {
             // TODO Why this crash?? (dlete capacitor = crash)
             state.addReading(internalCircuit.getComponents().get(0).getVoltage());
 
