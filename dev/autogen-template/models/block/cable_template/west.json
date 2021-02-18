@@ -1,0 +1,18 @@
+{
+	"textures": {
+		"0": "[TEXTURE]",
+		"particle": "[TEXTURE]"
+	},
+	"elements": [
+		{
+			"from": [0, [X1], [X1]],
+			"to": [[X1], [X2], [X2]],
+			"faces": {
+				"north": {"uv": [0, 0, 8, 16], "rotation": 90, "texture": "#0", "tintindex": 0},
+				"south": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0},
+				"up": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0},
+				"down": {"uv": [0, 0, 8, 16], "rotation": 270, "texture": "#0", "tintindex": 0}
+			}
+		}
+	]
+}

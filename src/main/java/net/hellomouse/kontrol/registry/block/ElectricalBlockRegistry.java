@@ -15,8 +15,8 @@ import net.hellomouse.kontrol.electrical.client.render.block.entity.CapacitorEnt
 import net.hellomouse.kontrol.electrical.client.render.block.entity.ResistorEntityRenderer;
 import net.hellomouse.kontrol.electrical.client.render.block.entity.ScopeEntityRenderer;
 import net.hellomouse.kontrol.electrical.items.ElectricalBlockItem;
-import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.electrical.screen.BoxScreen;
+import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
 import net.hellomouse.kontrol.registry.util.ColorData;
 import net.hellomouse.kontrol.util.specific.ResistorUtil;
@@ -50,6 +50,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
     public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
     public static BlockEntityType<SuperconductingCableBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
+    public static BlockEntityType<ButtonBlockEntity> BUTTON_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -100,6 +101,13 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
             .block(new BasicCapacitorBlock(FabricBlockSettings
                 .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
             .blockEntityName("capacitor_block_entity")
+        );
+
+        addBlock(new BlockWrapper()
+                .name("basic_push_button")
+                .block(new BasicPushButtonBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
+                .blockEntityName("button_block_entity")
         );
 
         addBlock(new BlockWrapper()
@@ -183,6 +191,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "inductor_block", "inductor_block_entity", InductorBlockEntity::new);
         SCOPE_BLOCK_ENTITY = (BlockEntityType<ScopeBlockEntity>)getRegisteredBlockEntity(
                 "scope_block", "scope_block_entity", ScopeBlockEntity::new);
+        BUTTON_BLOCK_ENTITY = (BlockEntityType<ButtonBlockEntity>)getRegisteredBlockEntity(
+                "button_block", "button_block_entity", ButtonBlockEntity::new);
 
         SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingCableBlockEntity>)getRegisteredBlockEntity(
                 "superconducting_cable_block", "superconducting_cable_block_entity", SuperconductingCableBlockEntity::new);

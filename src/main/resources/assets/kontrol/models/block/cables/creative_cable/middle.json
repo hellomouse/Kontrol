@@ -1,0 +1,20 @@
+{
+	"textures": {
+		"0": "kontrol:block/cables/creative_cable",
+		"particle": "kontrol:block/cables/creative_cable"
+	},
+	"elements": [
+		{
+			"from": [6, 6, 6],
+			"to": [10, 10, 10],
+			"faces": {
+				"north": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0},
+				"east": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0},
+				"south": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0},
+				"west": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0},
+				"up": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0},
+				"down": {"uv": [8, 16, 16, 8], "texture": "#0", "tintindex": 0}
+			}
+		}
+	]
+}

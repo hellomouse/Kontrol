@@ -39,7 +39,12 @@ public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity 
             LogManager.getLogger().warn("Attempted to set resistor at " + getPos() + " to invalid resistance " + resistance);
             this.resistance = CircuitValues.LOW_VOLTAGE_RESISTANCE; // TODO: default values
         }
-        if (dirty) markDirty();
+
+        if (dirty) {
+            if (nodalVoltages.size() == 2)
+                ((VirtualResistor)internalCircuit.getComponents().get(0)).setResistance(resistance);
+            markDirty();
+        }
     }
 
     public void setResistance(double resistance) {

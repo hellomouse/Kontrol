@@ -1,0 +1,31 @@
+{
+    "multipart": [
+        {
+            "apply":{ "model":"kontrol:block/cables/creative_cable/middle" }
+        },
+        {
+            "when":{ "attach_up": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector" }
+        },
+        {
+            "when":{ "attach_down": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector", "x": 180 }
+        },
+        {
+            "when":{ "attach_north": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector", "x": 90, "y": 0 }
+        },
+        {
+            "when":{ "attach_south": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector", "x": 90, "y": 180 }
+        },
+        {
+            "when":{ "attach_west": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector", "x": 90, "y": 270}
+        },
+        {
+            "when":{ "attach_east": "true" },
+            "apply":{ "model":"kontrol:block/cables/creative_cable/connector", "x": 90, "y": 90 }
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+	"textures": {
+		"0": "kontrol:block/cables/creative_cable",
+		"particle": "kontrol:block/cables/creative_cable"
+	},
+	"elements": [
+		{
+			"from": [0, 6, 6],
+			"to": [16, 10, 10],
+			"faces": {
+				"north": {"uv": [0, 16, 8, 0], "rotation": 270, "texture": "#0", "tintindex": 0},
+				"east": {"uv": [8, 8, 16, 0], "rotation": 180, "texture": "#0"},
+				"south": {"uv": [0, 16, 8, 0], "rotation": 90, "texture": "#0", "tintindex": 0},
+				"west": {"uv": [8, 8, 16, 0], "rotation": 180, "texture": "#0"},
+				"up": {"uv": [0, 16, 8, 0], "rotation": 90, "texture": "#0", "tintindex": 0},
+				"down": {"uv": [0, 16, 8, 0], "rotation": 90, "texture": "#0", "tintindex": 0}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+		  "rotation": [ 0, 0, 90 ],
+		  "translation": [ 0, 0, 0 ],
+		  "scale": [ 0.55, 0.55, 0.55 ]
+		},
+		"firstperson_righthand": {
+		  "rotation": [ 0, 0, 90 ],
+		  "translation": [ 0, 0, 0 ],
+		  "scale": [ 0.55, 0.55, 0.55 ]
+		},
+		"gui": {
+			  "rotation": [ 25, -45, 0 ],
+			  "translation": [ 0, 0, 0 ],
+			  "scale": [ 1, 1, 1 ]
+		},
+		"ground": {
+		   "translation": [ 0, -0.5, 0 ],
+		   "scale": [ 0.55, 0.55, 0.55 ]
+		}
+	}
+}
