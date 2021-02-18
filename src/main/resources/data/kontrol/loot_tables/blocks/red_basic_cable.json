@@ -4,7 +4,7 @@
 		"rolls": 1,
 		"entries": [{
 			"type": "minecraft:item",
-			"name": "kontrol:red_basic_wire"
+			"name": "kontrol:red_basic_cable"
 		}],
 		"conditions": [{
 			"condition": "minecraft:survives_explosion"

@@ -139,6 +139,7 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
            // computedConnectedSides = false;
 
             thermalSim();
+            markDirty(); // For thermal sim
 
             // ALL THIS TODO
             // If not part of a circuit initiate floodfill from Circuitmanager

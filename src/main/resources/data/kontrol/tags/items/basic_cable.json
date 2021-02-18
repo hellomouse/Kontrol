@@ -1,0 +1,21 @@
+{
+    "replace": false,
+    "values": [
+		"kontrol:white_basic_cable",
+		"kontrol:red_basic_cable",
+		"kontrol:orange_basic_cable",
+		"kontrol:pink_basic_cable",
+		"kontrol:yellow_basic_cable",
+		"kontrol:lime_basic_cable",
+		"kontrol:green_basic_cable",
+		"kontrol:light_blue_basic_cable",
+		"kontrol:cyan_basic_cable",
+		"kontrol:blue_basic_cable",
+		"kontrol:magenta_basic_cable",
+		"kontrol:purple_basic_cable",
+		"kontrol:brown_basic_cable",
+		"kontrol:gray_basic_cable",
+		"kontrol:light_gray_basic_cable",
+		"kontrol:black_basic_cable"
+    ]
+}
