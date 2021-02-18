@@ -53,4 +53,6 @@ public class VoxelShapeUtil {
 
         return newShape[0];
     }
+
+    // TODO: mirrorShape
 }

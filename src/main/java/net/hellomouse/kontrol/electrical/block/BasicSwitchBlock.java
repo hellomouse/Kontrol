@@ -14,23 +14,22 @@ import net.minecraft.world.BlockView;
 
 
 @SuppressWarnings({"deprecation"})
-public class BasicPushButtonBlock extends AbstractPushButtonBlock {
-    public static final VoxelShape CUBOID_BASE, UNPRESSED_SHAPE, PRESSED_SHAPE;
+public class BasicSwitchBlock extends AbstractSwitchBlock {
+    public static final VoxelShape CUBOID_BASE;
 
     static {
         CUBOID_BASE = VoxelShapes.union(
                 TemplateVoxelShapes.BASIC_PLATE_SHAPE,
-                createCuboidShape(2, 1, 2, 14, 4, 14));
-        UNPRESSED_SHAPE = createCuboidShape(4, 4, 4, 12, 7, 12);
-        PRESSED_SHAPE = createCuboidShape(4, 4, 4, 12, 5, 12);
+                createCuboidShape(5, 1, 2, 11, 7, 14));
     }
 
-    public BasicPushButtonBlock(AbstractBlock.Settings settings) { super(settings); }
+    public BasicSwitchBlock(AbstractBlock.Settings settings) {
+        super(settings);
+    }
 
     @Override
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPos, ShapeContext context) {
         Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
-        boolean pressed = blockState.get(AbstractPushButtonBlock.PRESSED);
-        return VoxelShapeUtil.rotateShape(facing, VoxelShapes.union(CUBOID_BASE, pressed ? PRESSED_SHAPE : UNPRESSED_SHAPE));
+        return VoxelShapeUtil.rotateShape(facing, CUBOID_BASE);
     }
 }

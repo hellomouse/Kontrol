@@ -111,6 +111,13 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         );
 
         addBlock(new BlockWrapper()
+                .name("basic_switch")
+                .block(new BasicSwitchBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
+                .blockEntityName("switch_block_entity")
+        );
+
+        addBlock(new BlockWrapper()
                 .name("creative_battery")
                 .block(new CreativeBatteryBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
