@@ -53,22 +53,6 @@ public class ResistorBlockEntity extends AbstractPolarizedElectricalBlockEntity 
 
     public double getResistance() { return resistance; }
 
-    public void onUpdate() {
-        // TODO Not for all resistors, temporary
-        if (nodalVoltages.size() != 2)
-            return;
-
-        double voltage = Math.abs(nodalVoltages.get(1) - nodalVoltages.get(0));
-        double current = voltage / resistance;
-        double power = voltage * current;
-
-        int brightness = (int)(power * 10000);
-        if (brightness < 0) brightness = 0;
-        if (brightness > 15) brightness = 15;
-
-        // this.world.setBlockState(this.pos, world.getBlockState(pos).with(LEDBlock.BRIGHTNESS, brightness), 3);
-    }
-
     @Override
     public VirtualCircuit getInternalCircuit() {
         internalCircuit.clear();

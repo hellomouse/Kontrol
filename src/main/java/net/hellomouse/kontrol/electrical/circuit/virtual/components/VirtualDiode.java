@@ -29,4 +29,8 @@ public class VirtualDiode extends VirtualVoltageSource {
     public String toString() {
         return super.toString() + "\nV_fwd = " + V_forward + " V";
     }
+
+    // Smaller than open circuit impedance of switches and such
+    @Override
+    public double getHiZR() { return 1e6; }
 }

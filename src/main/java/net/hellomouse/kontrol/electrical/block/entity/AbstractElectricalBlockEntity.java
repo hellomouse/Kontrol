@@ -72,7 +72,10 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     /** Update the local ambient temperature, call when surrounding blocks / biome changes */
     public void updateAmbientTemperature() { thermal.updateAmbientTemperature(world, pos); }
 
-    public void thermalSim() { thermal.tick(world, pos, getDissipatedPower()); }
+    public void thermalSim() {
+        if (this.circuit != null)
+            thermal.tick(world, pos, getDissipatedPower());
+    }
 
     public double getDissipatedPower() {
         try {

@@ -9,7 +9,6 @@ import net.hellomouse.kontrol.registry.util.ColorData;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -91,7 +90,7 @@ public abstract class AbstractBlockRegistry {
      */
     public static <T extends BlockEntity> BlockEntityType<? extends T> getRegisteredBlockEntity(String blockEntityName, String blockEntityKey, Supplier<? extends T> supplier) {
         return Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(Kontrol.MOD_ID, blockEntityName),
-            BlockEntityType.Builder.create(supplier, blockEntityMap.get(blockEntityKey).toArray(new Block[0])).build(null));
+            BlockEntityType.Builder.create(supplier, blockEntityMap.getOrDefault(blockEntityKey, new ArrayList<>()).toArray(new Block[0])).build(null));
     }
 
     /**

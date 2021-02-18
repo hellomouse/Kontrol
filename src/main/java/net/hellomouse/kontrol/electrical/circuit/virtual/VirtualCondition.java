@@ -7,8 +7,8 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 
-import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.SHORT_CIRCUIT_R;
 import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.OPEN_CIRCUIT_R;
+import static net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuitConstants.SHORT_CIRCUIT_R;
 
 /**
  * Handling of all condition interfaces (does all the matrix manipulations)
@@ -38,7 +38,7 @@ public class VirtualCondition {
 
             // High impedance
             if (comp.isHiZ()) {
-                invR = SHORT_CIRCUIT_R; // invR is very low because R is very high
+                invR = 1 / comp.getHiZR(); // invR is very low because R is very high
                 shouldSolve = true;
             }
 

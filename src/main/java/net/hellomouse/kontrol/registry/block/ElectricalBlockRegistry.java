@@ -1,6 +1,5 @@
 package net.hellomouse.kontrol.registry.block;
 
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -20,11 +19,9 @@ import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
 import net.hellomouse.kontrol.registry.util.ColorData;
 import net.hellomouse.kontrol.util.specific.ResistorUtil;
-import net.minecraft.block.Block;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
@@ -34,11 +31,6 @@ import net.minecraft.util.math.BlockPos;
 
 
 public class ElectricalBlockRegistry extends AbstractBlockRegistry {
-    // TODO: offer way to lookup blocks and items
-    // Special blocks
-    public static Block BASIC_LIGHT_BLOCK;
-
-
     // Block entities
     public static BlockEntityType<FurnaceGeneratorEntity> FURNACE_GENERATOR_ENTITY;
     public static BlockEntityType<CableBlockEntity> WIRE_BLOCK_ENTITY;
@@ -46,11 +38,15 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<CapacitorBlockEntity> CAPACITOR_BLOCK_ENTITY;
     public static BlockEntityType<BatteryBlockEntity> BATTERY_BLOCK_ENTITY;
     public static BlockEntityType<ResistorBlockEntity> RESISTOR_BLOCK_ENTITY;
+    public static BlockEntityType<DiodeBlockEntity> DIODE_BLOCK_ENTITY;
     public static BlockEntityType<SwitchBlockEntity> SWITCH_BLOCK_ENTITY;
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
     public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
     public static BlockEntityType<SuperconductingCableBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
     public static BlockEntityType<PushButtonBlockEntity> PUSH_BUTTON_BLOCK_ENTITY;
+    public static BlockEntityType<LightBlockEntity> LIGHT_BLOCK_ENTITY;
+    public static BlockEntityType<LEDBlockEntity> LED_BLOCK_ENTITY;
+
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -118,6 +114,15 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         );
 
         addBlock(new BlockWrapper()
+                .name("basic_led")
+                .block(new BasicLEDBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)
+                        .luminance(blockState -> blockState.get(BasicLightBlock.BRIGHTNESS))))
+                .blockEntityName("led_block_entity")
+        );
+
+
+        addBlock(new BlockWrapper()
                 .name("creative_battery")
                 .block(new CreativeBatteryBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(-1.0f, 3600000.0f).dropsNothing()))
@@ -166,14 +171,14 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         );
 
 
-        BASIC_LIGHT_BLOCK = new BasicLightBlock(FabricBlockSettings
-                .of(Material.GLASS).nonOpaque().strength(1.5f, 0.5f)
-                .luminance(blockState -> blockState.get(BasicLightBlock.BRIGHTNESS)));
-        addBlock(new BlockWrapper()
-                .name("basic_light")
-                .block(BASIC_LIGHT_BLOCK) // TODO: settings & color and shit
-                .blockEntityName("resistor_block_entity")
-        );
+//        BASIC_LIGHT_BLOCK = new BasicLightBlock(FabricBlockSettings
+//                .of(Material.GLASS).nonOpaque().strength(1.5f, 0.5f)
+//                .luminance(blockState -> blockState.get(BasicLightBlock.BRIGHTNESS)));
+//        addBlock(new BlockWrapper()
+//                .name("basic_light")
+//                .block(BASIC_LIGHT_BLOCK) // TODO: settings & color and shit
+//                .blockEntityName("light_block_entity")
+//        );
 
 
 
@@ -200,6 +205,12 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "scope_block", "scope_block_entity", ScopeBlockEntity::new);
         PUSH_BUTTON_BLOCK_ENTITY = (BlockEntityType<PushButtonBlockEntity>)getRegisteredBlockEntity(
                 "push_button_block", "push_button_block_entity", PushButtonBlockEntity::new);
+        LIGHT_BLOCK_ENTITY = (BlockEntityType<LightBlockEntity>)getRegisteredBlockEntity(
+                "light_block", "light_block_entity", LightBlockEntity::new);
+        LED_BLOCK_ENTITY = (BlockEntityType<LEDBlockEntity>)getRegisteredBlockEntity(
+                "led_block", "led_block_entity", LEDBlockEntity::new);
+        DIODE_BLOCK_ENTITY = (BlockEntityType<DiodeBlockEntity>)getRegisteredBlockEntity(
+                "diode_block", "diode_block_entity", DiodeBlockEntity::new);
 
         SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingCableBlockEntity>)getRegisteredBlockEntity(
                 "superconducting_cable_block", "superconducting_cable_block_entity", SuperconductingCableBlockEntity::new);
@@ -217,7 +228,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
 
         // TODO: color by proper color
         //  ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
-        ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.darken(BasicLightBlock.LIGHT_COLOR, (1 - state.get(BasicLightBlock.BRIGHTNESS)  / 15.0f) / 2.0f), BASIC_LIGHT_BLOCK);
+        // ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.darken(BasicLightBlock.LIGHT_COLOR, (1 - state.get(BasicLightBlock.BRIGHTNESS)  / 15.0f) / 2.0f), BASIC_LIGHT_BLOCK);
 
         // TODO: for loop to iterate all resistors
 
@@ -225,7 +236,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
         ColorProviderRegistry.ITEM.register(ResistorUtil::getColorForItemStack, lookup("creative_resistor").getItem());
 
 
-        BlockRenderLayerMap.INSTANCE.putBlock(BASIC_LIGHT_BLOCK, RenderLayer.getTranslucent());
+       // BlockRenderLayerMap.INSTANCE.putBlock(BASIC_LIGHT_BLOCK, RenderLayer.getTranslucent());
 
         BlockEntityRendererRegistry.INSTANCE.register(RESISTOR_BLOCK_ENTITY, ResistorEntityRenderer::new);
         BlockEntityRendererRegistry.INSTANCE.register(CAPACITOR_BLOCK_ENTITY, CapacitorEntityRenderer::new);

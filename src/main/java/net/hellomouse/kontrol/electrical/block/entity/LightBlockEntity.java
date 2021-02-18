@@ -1,30 +1,36 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
-import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
+import net.hellomouse.kontrol.electrical.block.AbstractLightBlock;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 
 
-public class LightBlockEntity extends AbstractPolarizedElectricalBlockEntity {
-    // TODO: dont model light as light, make resistor block entity or something
-
+/**
+ * Non-diode light emitting electrical block
+ * @author Bowserinator
+ */
+public class LightBlockEntity extends ResistorBlockEntity {
     public LightBlockEntity() {
-        super(ElectricalBlockRegistry.RESISTOR_BLOCK_ENTITY);
+        super(ElectricalBlockRegistry.LIGHT_BLOCK_ENTITY);
     }
 
     @Override
-    public VirtualCircuit getInternalCircuit() {
-        internalCircuit.clear();
+    public void onUpdate() {
+        BlockState blockState = world.getBlockState(pos);
+        Block block = blockState.getBlock();
+        if (!(block instanceof AbstractLightBlock))
+            throw new IllegalStateException("Block at " + pos + " has LightBlockEntity, but doesn't extend AbstractLightBlock");
+        if (nodalVoltages.size() != 2 || circuit == null)
+            return;
 
-        double resistance = 1.0;
-        if (normalizedOutgoingNodes.size() == 2) {
-            // TODO: resistance in internal circuit
-            // TODO: config library for all values
-            // TODO: model as Diode?
-            // (diode block entity)
-            internalCircuit.addComponent(new VirtualResistor(resistance), normalizedOutgoingNodes.get(0), normalizedOutgoingNodes.get(1));
-        }
+        double voltage = Math.abs(nodalVoltages.get(0) - nodalVoltages.get(1));
+        double current = Math.abs(internalCircuit.getComponents().get(0).getCurrent());
+        double power = Math.abs(voltage * current);
 
-        return internalCircuit;
+        int brightness = ((AbstractLightBlock) block).getBrightness(voltage, current, power, thermal.temperature);
+        if (brightness < 0) brightness = 0;
+        else if (brightness > 15) brightness = 15;
+        world.setBlockState(pos, blockState.with(AbstractLightBlock.BRIGHTNESS, brightness));
     }
 }
