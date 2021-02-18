@@ -2,11 +2,10 @@ package net.hellomouse.kontrol.electrical.block.entity;
 
 import net.hellomouse.kontrol.electrical.circuit.Circuit;
 import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
+import net.hellomouse.kontrol.electrical.circuit.thermal.ThermalComponent;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
@@ -45,21 +44,14 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
     // Circuit it belongs to
     protected Circuit circuit;
 
-
+    // Save circuit UUID for re-creation on world load
     private UUID savedCircuitUUID = null;
 
     // TODO: save these to tags
     protected double current, voltage, power;
 
     // Thermal simulation
-    protected double temperature;
-    protected double thermalR = 0.0;
-    protected double thermalC = 0.0;
-    protected double tAmbientOffset = 0.0;
-
-    private double tAmbient = 0.0;
-    private double heatDissipationRate = 0.0;
-    private boolean temperatureSetYet = false;
+    protected ThermalComponent thermal;
 
 
     /**
@@ -68,67 +60,21 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
      */
     public AbstractElectricalBlockEntity(BlockEntityType<?> entity) {
         super(entity);
+        // TODO
+        thermal = new ThermalComponent(10, 10);
     }
 
 
-    // ----- Thermal simulation ----- \\
+    // -------------------------------------
+    // Thermal Simulation
+    // -------------------------------------
 
+    /** Update the local ambient temperature, call when surrounding blocks / biome changes */
+    public void updateAmbientTemperature() { thermal.updateAmbientTemperature(world, pos); }
 
-    public void updateAmbientTemperature() {
-        tAmbientOffset = 0.0;
-        for (Direction dir : Direction.values()) {
-            Block block = world.getBlockState(pos.offset(dir)).getBlock();
-            if (block == Blocks.LAVA)
-                tAmbientOffset += 100.0;
-        }
-        tAmbient = 13.6484805403 * world.getBiome(pos).getTemperature(pos) + 7.0879687222 + tAmbientOffset;
-    }
+    public void thermalSim() { thermal.tick(world, pos, getDissipatedPower()); }
 
-    public void thermalSim() {
-        // https://www.reddit.com/r/Minecraft/comments/3eh7yu/the_rl_temperature_of_minecraft_biomes_revealed/
-        // TODO document
-
-        if (!temperatureSetYet) {
-            temperatureSetYet = true;
-            updateAmbientTemperature();
-            temperature = tAmbient;
-        }
-
-
-        thermalC = 100.0;
-        thermalR = 1.0;
-
-        // Dissipates heat instantly TODO
-        if (thermalC == 0.0 && thermalR == 0.0) {
-            temperature = tAmbient;
-            return;
-        }
-
-        // dT / dt * thermal capacitance = power disappation rate
-
-        // V = getPower() * thermalR
-        // V -- VVVVV --- ||
-        // Voltage across capacitor = temp
-        // i = dV / dt * C
-        // integral power / C = T_diff
-
-        // TODO: override a computePower() abstract
-
-        double thermalSource = getPower() * thermalR + tAmbient;
-
-        double oldTemp = temperature;
-        temperature += 1 / thermalC * heatDissipationRate;
-        heatDissipationRate = (thermalSource - temperature) / thermalR;
-
-        // Divergence check
-        if ((oldTemp < temperature && temperature > thermalSource) ||
-                (oldTemp > temperature && temperature < thermalSource)) {
-            heatDissipationRate = 0.0;
-            temperature = thermalSource;
-        }
-    }
-
-    public double getPower() {
+    public double getDissipatedPower() {
         try {
             if (internalCircuit.getComponents().size() > 0)
                 return (internalCircuit.getComponents().get(0).getPower());
@@ -138,26 +84,6 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             return 0.0;
         }
     }
-
-
-
-    @Override
-    public CompoundTag toTag(CompoundTag tag) {
-        if (circuit != null)
-            savedCircuitUUID = circuit.id;
-        if (savedCircuitUUID != null)
-            tag.putUuid("CircuitUUID", savedCircuitUUID);
-        return super.toTag(tag);
-    }
-
-
-    @Override
-    public void fromTag(BlockState state, CompoundTag tag) {
-        super.fromTag(state, tag);
-        if (tag.contains("CircuitUUID"))
-            savedCircuitUUID = tag.getUuid("CircuitUUID");
-    }
-
 
 
     // TODO: update slowly or update quickly?
@@ -364,11 +290,35 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
                 .nodeIds(normalizedOutgoingNodes)
                 .nodalVoltages(nodalVoltages)
                 .blockType(this.getClass().toString().split(" ")[1])
-                .temperature(temperature);
+                .temperature(thermal.temperature);
     }
 
 
     // --- Circuit getters / setters --- \\
     public void setCircuit(Circuit c) { circuit = c; }
     public Circuit getCircuit() { return circuit; }
+
+
+    // -------------------------------------
+    // Tag save / load
+    // -------------------------------------
+
+    @Override
+    public CompoundTag toTag(CompoundTag tag) {
+        tag.put("Thermal", thermal.toTag(new CompoundTag()));
+
+        if (circuit != null)
+            savedCircuitUUID = circuit.id;
+        if (savedCircuitUUID != null)
+            tag.putUuid("CircuitUUID", savedCircuitUUID);
+        return super.toTag(tag);
+    }
+
+    @Override
+    public void fromTag(BlockState state, CompoundTag tag) {
+        super.fromTag(state, tag);
+        thermal.fromTag(tag.getCompound("Thermal"));
+        if (tag.contains("CircuitUUID"))
+            savedCircuitUUID = tag.getUuid("CircuitUUID");
+    }
 }

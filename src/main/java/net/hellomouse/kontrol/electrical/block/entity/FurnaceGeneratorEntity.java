@@ -1,11 +1,11 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
-import net.hellomouse.kontrol.util.ImplementedInventory;
+import net.hellomouse.kontrol.electrical.block.FurnaceGenerator;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualVoltageSource;
-import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
-import net.hellomouse.kontrol.electrical.block.FurnaceGenerator;
 import net.hellomouse.kontrol.electrical.screen.BoxScreenHandler;
+import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
+import net.hellomouse.kontrol.util.ImplementedInventory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -91,10 +91,10 @@ public class FurnaceGeneratorEntity extends AbstractPolarizedElectricalBlockEnti
             }
 
             // Heat up if burning, cool down if not
-            if (fuelTime > 0)
-                temperature = Math.min(10, temperature + 0.005f);
-            else
-                temperature = Math.max(temperature - 0.05f, 0);
+           // if (fuelTime > 0)
+           //     temperature = Math.min(10, temperature + 0.005f);
+            //else
+            //    temperature = Math.max(temperature - 0.05f, 0);
 
             // Burning state toggled, update blockState
             burningFinalState = fuelTime > 0;
