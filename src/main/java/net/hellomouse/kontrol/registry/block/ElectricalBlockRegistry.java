@@ -50,7 +50,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<InductorBlockEntity> INDUCTOR_BLOCK_ENTITY;
     public static BlockEntityType<ScopeBlockEntity> SCOPE_BLOCK_ENTITY;
     public static BlockEntityType<SuperconductingCableBlockEntity> SUPERCONDUCTING_WIRE_BLOCK_ENTITY;
-    public static BlockEntityType<ButtonBlockEntity> BUTTON_BLOCK_ENTITY;
+    public static BlockEntityType<PushButtonBlockEntity> PUSH_BUTTON_BLOCK_ENTITY;
 
     // Screen handlers
     public static ScreenHandlerType<BoxScreenHandler> BOX_SCREEN_HANDLER;
@@ -107,7 +107,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .name("basic_push_button")
                 .block(new BasicPushButtonBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
-                .blockEntityName("button_block_entity")
+                .blockEntityName("push_button_block_entity")
         );
 
         addBlock(new BlockWrapper()
@@ -191,8 +191,8 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "inductor_block", "inductor_block_entity", InductorBlockEntity::new);
         SCOPE_BLOCK_ENTITY = (BlockEntityType<ScopeBlockEntity>)getRegisteredBlockEntity(
                 "scope_block", "scope_block_entity", ScopeBlockEntity::new);
-        BUTTON_BLOCK_ENTITY = (BlockEntityType<ButtonBlockEntity>)getRegisteredBlockEntity(
-                "button_block", "button_block_entity", ButtonBlockEntity::new);
+        PUSH_BUTTON_BLOCK_ENTITY = (BlockEntityType<PushButtonBlockEntity>)getRegisteredBlockEntity(
+                "push_button_block", "push_button_block_entity", PushButtonBlockEntity::new);
 
         SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingCableBlockEntity>)getRegisteredBlockEntity(
                 "superconducting_cable_block", "superconducting_cable_block_entity", SuperconductingCableBlockEntity::new);

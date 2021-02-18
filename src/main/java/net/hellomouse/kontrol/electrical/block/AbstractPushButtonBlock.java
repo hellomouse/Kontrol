@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.electrical.block;
 
-import net.hellomouse.kontrol.electrical.block.entity.ButtonBlockEntity;
+import net.hellomouse.kontrol.electrical.block.entity.PushButtonBlockEntity;
+import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -22,9 +23,16 @@ import java.util.List;
 import java.util.Random;
 
 
+/**
+ * Abstract PushButtonBlock
+ * @author Bowserinator
+ */
 @SuppressWarnings({"deprecation"})
 public abstract class AbstractPushButtonBlock extends AbstractPolarizedElectricalBlock {
     public static final BooleanProperty PRESSED = BooleanProperty.of("pressed");
+
+    // Ticks to stay down when pushed
+    protected int pushTime = CircuitValues.DEFAULT_PUSH_BUTTON_PUSH_TIME;
 
     public AbstractPushButtonBlock(AbstractBlock.Settings settings) {
         super(settings, true);
@@ -32,71 +40,61 @@ public abstract class AbstractPushButtonBlock extends AbstractPolarizedElectrica
     }
 
     @Override
-    public BlockEntity createBlockEntity(BlockView blockView) {
-        return new ButtonBlockEntity();
-    }
+    public BlockEntity createBlockEntity(BlockView blockView) { return new PushButtonBlockEntity().pushTime(pushTime); }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!player.abilities.allowModifyWorld)
             return ActionResult.PASS;
         else {
-            ButtonBlockEntity entity = (ButtonBlockEntity) world.getBlockEntity(pos);
-            entity.press();
-            entity.onUpdate();
-            System.out.println("PRESS " + entity.getResistance());
-
+            press(world, pos);
             return ActionResult.success(world.isClient);
         }
-        //  return super.onUse(state, world, pos, player, hand, hit);
+    }
+
+    @Override
+    public void onSteppedOn(World world, BlockPos pos, Entity entity) {
+        press(world, pos);
+        super.onSteppedOn(world, pos, entity);
+    }
+
+    @Override
+    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        if (state.get(PRESSED))
+            this.tryPowerWithProjectiles(state, world, pos);
+    }
+
+    @Override
+    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+        if (!world.isClient && !(Boolean)state.get(PRESSED))
+            this.tryPowerWithProjectiles(state, world, pos);
+    }
+
+    private void tryPowerWithProjectiles(BlockState state, World world, BlockPos pos) {
+        List<? extends Entity> list = world.getNonSpectatingEntities(PersistentProjectileEntity.class, state.getOutlineShape(world, pos).getBoundingBox().offset(pos));
+        boolean entityFound = !list.isEmpty();
+        boolean isPressed = state.get(PRESSED);
+
+        if (entityFound != isPressed && !world.isClient) {
+            world.setBlockState(pos, state.with(PRESSED, entityFound), 3);
+            // this.playClickSound((PlayerEntity)null, world, pos, bl);
+        }
+
+        if (isPressed)
+            press(world, pos);
+        if (entityFound)
+            world.getBlockTickScheduler().schedule(new BlockPos(pos), this, (int)Math.max(1, pushTime - 1));
+    }
+
+    private void press(World world, BlockPos pos) {
+        PushButtonBlockEntity pushButtonBlockEntity = (PushButtonBlockEntity) world.getBlockEntity(pos);
+        if (pushButtonBlockEntity != null)
+            pushButtonBlockEntity.press();
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
         super.appendProperties(stateManager);
         stateManager.add(PRESSED);
-    }
-
-
-
-    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if ((Boolean)state.get(PRESSED)) {
-            this.tryPowerWithProjectiles(state, world, pos);
-        }
-    }
-
-    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-        if (!world.isClient && !(Boolean)state.get(PRESSED)) {
-            this.tryPowerWithProjectiles(state, world, pos);
-        }
-    }
-
-    @Override
-    public void onSteppedOn(World world, BlockPos pos, Entity entity) {
-        ButtonBlockEntity entity2 = (ButtonBlockEntity) world.getBlockEntity(pos);
-        entity2.press();
-
-        super.onSteppedOn(world, pos, entity);
-    }
-
-    private void tryPowerWithProjectiles(BlockState state, World world, BlockPos pos) {
-        List<? extends Entity> list = world.getNonSpectatingEntities(PersistentProjectileEntity.class, state.getOutlineShape(world, pos).getBoundingBox().offset(pos));
-        boolean bl = !list.isEmpty();
-        boolean bl2 = (Boolean) state.get(PRESSED);
-        if (bl != bl2 && !world.isClient) {
-            // TODO: also update the entity data
-
-            world.setBlockState(pos, (BlockState) state.with(PRESSED, bl), 3);
-            // this.playClickSound((PlayerEntity)null, world, pos, bl);
-        }
-
-        if (bl2) {
-            ButtonBlockEntity entity = (ButtonBlockEntity) world.getBlockEntity(pos);
-            entity.press();
-        }
-
-        if (bl) {
-            world.getBlockTickScheduler().schedule(new BlockPos(pos), this, 10); // TODO
-        }
     }
 }

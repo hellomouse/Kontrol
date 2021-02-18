@@ -1,5 +1,6 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
+import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
@@ -18,7 +19,7 @@ public class SwitchBlockEntity extends ResistorBlockEntity {
         if (nodalVoltages.size() != 2)
             return;
 
-        ((VirtualResistor)internalCircuit.getComponents().get(0)).setResistance(open ? 1e9 : resistance);
+        ((VirtualResistor)internalCircuit.getComponents().get(0)).setResistance(open ? CircuitValues.HIGH_RESISTANCE : resistance);
     }
 
     public void toggle() {

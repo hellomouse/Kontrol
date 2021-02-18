@@ -1,16 +1,28 @@
 package net.hellomouse.kontrol.electrical.block.entity;
 
 import net.hellomouse.kontrol.electrical.block.BasicPushButtonBlock;
+import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundTag;
 
-public class ButtonBlockEntity extends ResistorBlockEntity {
-    private int tickCooldown = 0;
 
-    public ButtonBlockEntity() {
-        super(ElectricalBlockRegistry.BUTTON_BLOCK_ENTITY);
+/**
+ * Push button block entity.
+ * @author Bowserinator
+ */
+public class PushButtonBlockEntity extends ResistorBlockEntity {
+    private int tickCooldown = 0;
+    private int pushTime = CircuitValues.DEFAULT_PUSH_BUTTON_PUSH_TIME;
+
+    public PushButtonBlockEntity() {
+        super(ElectricalBlockRegistry.PUSH_BUTTON_BLOCK_ENTITY);
         setRotate(true);
+    }
+
+    public PushButtonBlockEntity pushTime(int pushTime) {
+        this.pushTime = pushTime;
+        return this;
     }
 
     @Override
@@ -18,8 +30,9 @@ public class ButtonBlockEntity extends ResistorBlockEntity {
         if (tickCooldown > 0) {
             tickCooldown--;
             if (tickCooldown == 0) {
-                setResistance(1e9);
-                world.setBlockState(pos, world.getBlockState(pos).with(BasicPushButtonBlock.PRESSED, false));
+                setResistance(CircuitValues.HIGH_RESISTANCE);
+                if (world != null)
+                    world.setBlockState(pos, world.getBlockState(pos).with(BasicPushButtonBlock.PRESSED, false));
                 if (circuit != null)
                     circuit.markDirty();
             }
@@ -28,13 +41,16 @@ public class ButtonBlockEntity extends ResistorBlockEntity {
 
     public void press() {
         if (world != null && world.isClient) return;
+
+        // If already down when pressed no state change occurs, only refresh the tickCooldown
         boolean shouldMarkDirty = tickCooldown == 0;
-        tickCooldown = 15;
-        setResistance(1.0);
+
+        tickCooldown = pushTime;
+        setResistance(CircuitValues.LOW_RESISTANCE);
         world.setBlockState(pos, world.getBlockState(pos).with(BasicPushButtonBlock.PRESSED, true));
-        if (this.circuit != null && shouldMarkDirty) {
+
+        if (this.circuit != null && shouldMarkDirty)
             circuit.markDirty();
-        }
     }
 
     @Override
