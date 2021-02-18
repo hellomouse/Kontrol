@@ -5,7 +5,6 @@ import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 
 /**
@@ -54,7 +53,7 @@ public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractEle
             if (!(state.getBlock() instanceof AbstractPolarizedElectricalBlock))
                 throw new IllegalStateException("Invalid block entity: block state's block does not extend AbstractPolarizedElectricalBlock, rather it is " + state.getBlock());
 
-            Direction dir = state.get(Properties.HORIZONTAL_FACING);
+            Direction dir = state.get(AbstractPolarizedElectricalBlock.FACING);
             positiveTerminal = dir;
         }
         return positiveTerminal;

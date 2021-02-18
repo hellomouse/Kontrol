@@ -5,7 +5,6 @@ import net.hellomouse.kontrol.util.VoxelShapeUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -29,7 +28,7 @@ public class BasicSwitchBlock extends AbstractSwitchBlock {
 
     @Override
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPos, ShapeContext context) {
-        Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
+        Direction facing = blockState.get(AbstractPolarizedElectricalBlock.FACING);
         return VoxelShapeUtil.rotateShape(facing, CUBOID_BASE);
     }
 }

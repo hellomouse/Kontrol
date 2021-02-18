@@ -12,7 +12,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -34,7 +33,7 @@ public class CreativeInductorBlock extends AbstractPolarizedElectricalBlock {
 
     @Override
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPos, ShapeContext context) {
-        Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
+        Direction facing = blockState.get(AbstractPolarizedElectricalBlock.FACING);
         boolean NS = facing == Direction.NORTH || facing == Direction.SOUTH;
 
         VoxelShape base = NS ?

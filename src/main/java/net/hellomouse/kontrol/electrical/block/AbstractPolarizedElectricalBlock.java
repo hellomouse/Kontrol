@@ -7,6 +7,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -15,7 +16,7 @@ import net.minecraft.world.WorldAccess;
 
 /**
  * A polarized electrical block (has a positive and negative terminal). By default:
- * - Block will have Properties.HORIZONTAL_FACING
+ * - Block will have FACING
  * - The positive terminal is HORIZONTAL_FACING direction
  * - The negative terminal is opposite of positive terminal
  * - Waterlogging logic is included by default
@@ -24,6 +25,8 @@ import net.minecraft.world.WorldAccess;
  */
 @SuppressWarnings({"deprecation"})
 public abstract class AbstractPolarizedElectricalBlock extends AbstractElectricalBlock {
+    public static DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+
     public final boolean waterloggable;
     public final boolean rotateWhenPlacing;
 
@@ -40,7 +43,7 @@ public abstract class AbstractPolarizedElectricalBlock extends AbstractElectrica
         // TODO: voxel shape calculates water spread hmm add a note
         this.rotateWhenPlacing = rotateWhenPlacing;
 
-        setDefaultState(getStateManager().getDefaultState().with(Properties.HORIZONTAL_FACING, Direction.NORTH).with(Properties.WATERLOGGED, false));
+        setDefaultState(getStateManager().getDefaultState().with(FACING, Direction.NORTH).with(Properties.WATERLOGGED, false));
        // if (waterloggable)
        //     state = state.with(Properties.WATERLOGGED, false);
         // setDefaultState(state);
@@ -58,7 +61,7 @@ public abstract class AbstractPolarizedElectricalBlock extends AbstractElectrica
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
         super.appendProperties(stateManager);
-        stateManager.add(Properties.HORIZONTAL_FACING);
+        stateManager.add(FACING);
         if (true || waterloggable)
             stateManager.add(Properties.WATERLOGGED);
     }
@@ -76,7 +79,7 @@ public abstract class AbstractPolarizedElectricalBlock extends AbstractElectrica
         if (state == null)
             return null;
 
-        state = state.with(Properties.HORIZONTAL_FACING, rotateWhenPlacing ?
+        state = state.with(FACING, rotateWhenPlacing ?
                 ctx.getPlayerFacing().rotateYCounterclockwise() : ctx.getPlayerFacing());
 
         if (waterloggable) {

@@ -36,7 +36,7 @@ public class BasicLightBlock extends AbstractPolarizedElectricalBlock {
 
     @Override
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPos, ShapeContext context) {
-        Direction facing = blockState.get(Properties.HORIZONTAL_FACING);
+        Direction facing = blockState.get(AbstractPolarizedElectricalBlock.FACING);
         return (facing == Direction.NORTH || facing == Direction.SOUTH) ?
                 createCuboidShape(2, 0, 0, 14, 16, 16) :
                 createCuboidShape(0, 0, 2, 16, 16, 14);
