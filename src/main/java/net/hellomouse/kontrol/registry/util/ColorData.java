@@ -2,7 +2,6 @@ package net.hellomouse.kontrol.registry.util;
 
 import net.minecraft.block.MaterialColor;
 
-import java.awt.*;
 import java.util.HashMap;
 
 
@@ -102,5 +101,16 @@ public class ColorData {
         G = Math.min(255, G);
         B = Math.min(255, B);
         return R * (0x10000) + G * (0x100) + B;
+    }
+
+    /**
+     * Interpolate between 2 colors
+     * @param value1 Hex int in 0xRRGGBB format
+     * @param value2 Hex int in 0xRRGGBB format
+     * @param percent Percentage to transition between 0.0 and 1.0. 0.0 = value1, 1.0 = color2
+     * @return Interpolated int
+     */
+    public static int interpolate(int value1, int value2, float percent) {
+        return (int)(value1 + (value2 - value1) * percent);
     }
 }

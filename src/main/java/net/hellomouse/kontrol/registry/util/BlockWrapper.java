@@ -2,6 +2,8 @@ package net.hellomouse.kontrol.registry.util;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
+import net.minecraft.client.color.block.BlockColorProvider;
+import net.minecraft.client.color.item.ItemColorProvider;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -43,6 +45,9 @@ public class BlockWrapper {
     private ColorData.COLOR_STRING color = null;
     private String blockEntityName = null;
     private RenderLayer renderLayer = null;
+
+    private ItemColorProvider itemColorProvider;
+    private BlockColorProvider blockColorProvider;
 
     /* Additional properties - no getter / setter */
     private boolean finalizedProperties = false;
@@ -173,6 +178,32 @@ public class BlockWrapper {
         return this;
     }
 
+    /**
+     * Set color item provider for the block, overrides the default tint rules set
+     * by .color. Should be a method that returns an 0xRRGGBB hex int taking parameters
+     * of type ItemStack stack, int tintIndex
+     *
+     * @param itemColorProvider ItemColorProvider
+     * @return this
+     */
+    public BlockWrapper itemColorProvider(ItemColorProvider itemColorProvider) {
+        this.itemColorProvider = itemColorProvider;
+        return this;
+    }
+
+    /**
+     * Set color block provider for the block, overrides the default tint rules set
+     * by .color. Should be a method that returns an 0xRRGGBB hex int taking parameters
+     * of type BlockState state, BlockRenderView view, BlockPos pos, int tintIndex
+     *
+     * @param blockColorProvider BlockColorProvider
+     * @return this
+     */
+    public BlockWrapper blockColorProvider(BlockColorProvider blockColorProvider) {
+        this.blockColorProvider = blockColorProvider;
+        return this;
+    }
+
     /** Returns block */
     public Block getBlock() { return block; }
 
@@ -190,6 +221,16 @@ public class BlockWrapper {
 
     /** Returns render layer */
     public RenderLayer getRenderLayer() { return renderLayer; }
+
+    /** Returns item color provider */
+    public ItemColorProvider getItemColorProvider() {
+        return itemColorProvider;
+    }
+
+    /** Returns block item provider */
+    public BlockColorProvider getBlockColorProvider() {
+        return blockColorProvider;
+    }
 
     /**
      * Helper method to throw exception if trying to mutate when properties

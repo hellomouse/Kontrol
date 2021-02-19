@@ -60,13 +60,19 @@ public abstract class AbstractBlockRegistry {
     public static void registerClient() {
         for (BlockWrapper wrapper : coloredBlocks) {
             ColorData.COLOR_STRING color = wrapper.getColor();
-            ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
-            ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getBlock());
+            if (wrapper.getItemColorProvider() == null)
+                ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());
+            if (wrapper.getBlockColorProvider() == null)
+                ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getBlock());
         }
 
         for (BlockWrapper wrapper : blocks) {
             if (wrapper.getRenderLayer() != null)
                 BlockRenderLayerMap.INSTANCE.putBlock(wrapper.getBlock(), wrapper.getRenderLayer());
+            if (wrapper.getItemColorProvider() != null)
+                ColorProviderRegistry.ITEM.register(wrapper.getItemColorProvider(), wrapper.getItem());
+            if (wrapper.getBlockColorProvider() != null)
+                ColorProviderRegistry.BLOCK.register(wrapper.getBlockColorProvider(), wrapper.getBlock());
         }
     }
 

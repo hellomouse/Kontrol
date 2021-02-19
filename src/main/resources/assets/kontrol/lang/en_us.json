@@ -18,6 +18,7 @@
 	
 	"block.kontrol.basic_push_button": "Basic Push Button",
 	"block.kontrol.basic_switch": "Basic Switch",
+	"block.kontrol.basic_led": "Basic LED",
 	
 	"block.kontrol.furnace_generator": "Furnace Generator",
 	"block.kontrol.electrical_ground": "Ground Node",

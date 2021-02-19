@@ -22,9 +22,4 @@ public class BasicLEDBlock extends AbstractLightBlock {
         // TODO: note http://www1.futureelectronics.com/doc/EVERLIGHT%C2%A0/334-15__T1C1-4WYA.pdf
         return (int)(current * 600);
     }
-
-    @Override
-    public int getColor() {
-        return 0xFF0000; // TODO: colored LED function
-    }
 }

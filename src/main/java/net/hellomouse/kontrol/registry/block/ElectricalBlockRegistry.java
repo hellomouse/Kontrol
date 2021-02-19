@@ -22,6 +22,7 @@ import net.hellomouse.kontrol.util.specific.ResistorUtil;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
@@ -117,8 +118,11 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .name("basic_led")
                 .block(new BasicLEDBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)
-                        .luminance(blockState -> blockState.get(BasicLightBlock.BRIGHTNESS))))
+                        .luminance(blockState -> blockState.get(AbstractLightBlock.BRIGHTNESS))))
                 .blockEntityName("led_block_entity")
+                .blockColorProvider((state, world, pos, tintIndex) -> ColorData.interpolate(0x660000, 0xeb4d42, (float)state.get(AbstractLightBlock.BRIGHTNESS) / 15))
+                .itemColorProvider((stack, tintIndex) -> 0xFF0000)
+                .renderLayer(RenderLayer.getTranslucent())
         );
 
 

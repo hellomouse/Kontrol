@@ -30,12 +30,6 @@ public abstract class AbstractLightBlock extends AbstractPolarizedElectricalBloc
      */
     public abstract int getBrightness(double voltage, double current, double power, double temperature);
 
-    /**
-     * Get tint color (for item / default)
-     * @return 0xRRGGBB hex color
-     */
-    public abstract int getColor();
-
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
         super.appendProperties(stateManager);
