@@ -15,8 +15,8 @@ import net.minecraft.state.property.Properties;
 public abstract class AbstractLightBlock extends AbstractPolarizedElectricalBlock {
     public static final IntProperty BRIGHTNESS = Properties.POWER;
 
-    public AbstractLightBlock(AbstractBlock.Settings settings) {
-        super(settings, true);
+    public AbstractLightBlock(AbstractBlock.Settings settings, boolean rotateWhenPlacing) {
+        super(settings, rotateWhenPlacing);
         setDefaultState(getStateManager().getDefaultState().with(BRIGHTNESS, 0));
     }
 

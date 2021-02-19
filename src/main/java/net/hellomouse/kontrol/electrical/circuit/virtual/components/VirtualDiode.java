@@ -21,6 +21,16 @@ public class VirtualDiode extends VirtualVoltageSource {
     public void setVForward(double V) { V_forward = V; }
     public double getVForward() { return V_forward; }
 
+    public boolean shouldBeHiZ() {
+        // Voltage drops when HiZ, and rises when voltage source, so getVoltage() is not consistent
+        double V = circuit.getNodalVoltage(node1) - circuit.getNodalVoltage(node2);
+        double I = getCurrent();
+
+        // Enable diode if forward voltage reached
+        // Multiply voltage by very small leeway to account for floating point errors
+        return V * 1.00001 < getVForward() || I < 0;
+    }
+
     // Solving logic is in VirtualCircuit
     @Override
     public boolean isNonLinear() { return true; }

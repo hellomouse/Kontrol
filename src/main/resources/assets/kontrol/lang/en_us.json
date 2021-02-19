@@ -18,7 +18,14 @@
 	
 	"block.kontrol.basic_push_button": "Basic Push Button",
 	"block.kontrol.basic_switch": "Basic Switch",
-	"block.kontrol.basic_led": "Basic LED",
+	
+	"block.kontrol.white_basic_led": "White LED",
+	"block.kontrol.red_basic_led": "Red LED",
+	"block.kontrol.green_basic_led": "Green LED",
+	"block.kontrol.blue_basic_led": "Blue LED",
+	"block.kontrol.yellow_basic_led": "Yellow LED",
+	"block.kontrol.purple_basic_led": "Purple LED",
+	"block.kontrol.cyan_basic_led": "Cyan LED",
 	
 	"block.kontrol.furnace_generator": "Furnace Generator",
 	"block.kontrol.electrical_ground": "Ground Node",

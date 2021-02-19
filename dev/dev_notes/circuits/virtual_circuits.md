@@ -46,9 +46,7 @@ In addition:
 
 **Auto-ground assignment:**  If the circuit contains an energy source but no fixed node (for example, a ground node), a random energy source will have it's negative terminal assigned to ground. This is so circuits which should be possible in real life such as a resistor across a battery cannot be solved since there's no explicitly defined ground node.
 
-**Diode reset:**  When solving diodes, we consider them "OFF" by default, then check if the guess was correct, and repeat. This is because diodes are modelled as voltage sources, so only by making the diode Hi-Z can we check the voltage. 
-
-As an optimization we only reset the diodes to be OFF every n ticks (defined by `settings.resetDiodesEveryNTicks`), assuming most of the time diodes will not change state rapidly. This may cause problems in fast changing circuits.
+**Diode check:**  When solving diodes, check if voltage across meets forward voltage and current is in correct direction. If the diode is not in the correct state, we toggle it and re-solve.
 
 
 
@@ -201,7 +199,7 @@ Diodes are modelled as an ideal diode in series with a voltage source (non-ideal
 
 ![Diode](https://i.imgur.com/ZriJCnq.png)
 
-The circuit is re-solved until a max iteration count is reached, or an equilibrium is reached. Diodes are set on or off, all starting in an OFF state. If a diode is OFF but the voltage across it is exceeds the forward voltage, it becomes ON. If a diode is ON but its current is reverse biased, it becomes OFF.
+The circuit is re-solved until a max iteration count is reached, or an equilibrium is reached. If a diode is OFF but the voltage across it is exceeds the forward voltage, it becomes ON. If a diode is ON but its current is reverse biased, it becomes OFF.
 
 
 
@@ -257,6 +255,12 @@ Finally, when we invalidate elements, we must set them as a high value resistor 
 
 - Having to re-construct the matrix as nodal connections have changed
 - Having floating nodes, ie imagine A, B, C are in series. If A and C are disabled, then B has two nodes going to nowhere, which is an unsolvable condition.
+
+
+
+### Diode current
+
+Diodes have a lower Hi-impedance impedance than other components like switches which should always override diodes (to avoid the voltage divider effect from being too noticeable). Thus some small current will leak through (which you may argue makes it somewhat more realistic).
 
 
 

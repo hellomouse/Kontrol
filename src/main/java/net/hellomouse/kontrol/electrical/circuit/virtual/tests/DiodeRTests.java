@@ -1,7 +1,10 @@
 package net.hellomouse.kontrol.electrical.circuit.virtual.tests;
 
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.*;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualDiode;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualGround;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualVoltageSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -77,6 +80,5 @@ class DiodeRTests {
         assertEquals(0.0, D1.getCurrent(), EPSILON);
         assertEquals(0.0, D2.getCurrent(), EPSILON);
         assertEquals(0.0, R1.getCurrent(), EPSILON);
-        assertEquals(0.0, R1.getVoltage(), EPSILON);
     }
 }

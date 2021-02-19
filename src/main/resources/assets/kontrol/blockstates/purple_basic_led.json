@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/light/basic_led",
+			"y": 90
+		},
+		"facing=north": {
+			"model": "kontrol:block/light/basic_led"
+		},
+		"facing=south": {
+			"model": "kontrol:block/light/basic_led",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "kontrol:block/light/basic_led",
+			"y": 270
+		}
+	}
+}

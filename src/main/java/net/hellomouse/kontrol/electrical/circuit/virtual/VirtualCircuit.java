@@ -1,6 +1,8 @@
 package net.hellomouse.kontrol.electrical.circuit.virtual;
 
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.*;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualDiode;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualGround;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.ICurrentCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
@@ -106,12 +108,6 @@ public class VirtualCircuit {
                 addComponent(new VirtualGround(), comps.get(0).getNode2(), comps.get(0).getNode2());
         }
 
-        // Reset diodes to OFF by default
-        if (ticks % settings.resetDiodesEveryNTicks == 0) {
-            for (AbstractVirtualComponent comp : nonLinearComponents)
-                comp.setHiZ(true);
-        }
-
         nodalVoltages = solveHelper(false);
         recomputeSpecialCases();
     }
@@ -122,17 +118,16 @@ public class VirtualCircuit {
      * in future resolves, which for most (hopefully) circuits is a short amount of time.
      */
     private void recomputeSpecialCases() {
-        for (int i = 1; i < settings.maxIterations; i++) {
+        if (nonLinearComponents.size() == 0)
+            return;
+        for (int i = 0; i < settings.maxIterations; i++) {
             boolean recompute = false;
 
             // Diode computations
             for (AbstractVirtualComponent comp : nonLinearComponents) {
                 if (comp instanceof VirtualDiode) {
-                    // Enable diode if forward voltage reached
-                    double V = comp.getVoltage();
-                    double I = comp.getCurrent();
                     boolean oldState = comp.isHiZ();
-                    boolean newState = !(-V >= ((VirtualDiode) comp).getVForward() && I > 0);
+                    boolean newState = ((VirtualDiode) comp).shouldBeHiZ();
 
                     if (oldState != newState) {
                         recompute = true; // Always recompute diodes
@@ -390,11 +385,10 @@ public class VirtualCircuit {
      */
     public static class VirtualCircuitSettings {
         private final int maxIterations; // Default only solve() twice
-        private final int resetDiodesEveryNTicks ; // Reset diode states to Hi-Z for proper solving every 2 iterations
 
         /** Construct settings with default values */
         public VirtualCircuitSettings() {
-            this(2, 2);
+            this(2);
         }
 
         /**
@@ -402,13 +396,9 @@ public class VirtualCircuit {
          * @param maxIterations Max iterations to try to solve non-linear components per solve()
          *                      High numbers may result in lots of circuit re-solves which can impact performance
          *                      Low numbers may cause circuits with lots of non-linear components to converge very slowly
-         * @param resetDiodesEveryNTicks Every n ticks diodes will be reset to Hi-Z to re-solve properly
-         *                               Setting this too low will result in unnecessary re-solves, while setting it too high
-         *                               will result in improper diode behavior for fast changing circuits
          */
-        public VirtualCircuitSettings(int maxIterations, int resetDiodesEveryNTicks) {
+        public VirtualCircuitSettings(int maxIterations) {
             this.maxIterations = maxIterations;
-            this.resetDiodesEveryNTicks = resetDiodesEveryNTicks;
         }
     }
 }

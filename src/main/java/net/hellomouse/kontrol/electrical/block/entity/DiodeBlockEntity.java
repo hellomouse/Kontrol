@@ -54,6 +54,15 @@ public class DiodeBlockEntity extends AbstractPolarizedElectricalBlockEntity {
     public double getForwardVoltage() { return forwardVoltage; }
 
     @Override
+    public void onUpdate() {
+        if (canSafelyMeasureCircuit()) {
+            VirtualDiode diode = (VirtualDiode)internalCircuit.getComponents().get(1);
+            if (diode.shouldBeHiZ() != diode.isHiZ())
+                circuit.markDirty();
+        }
+    }
+
+    @Override
     public VirtualCircuit getInternalCircuit() {
         internalCircuit.clear();
         if (normalizedOutgoingNodes.size() == 2) {
