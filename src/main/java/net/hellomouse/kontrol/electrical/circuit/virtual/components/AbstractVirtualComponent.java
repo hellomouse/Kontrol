@@ -48,6 +48,7 @@ public abstract class AbstractVirtualComponent implements IBaseCondition {
     public boolean isNonLinear() { return false; }
 
     public double getHiZR() { return VirtualCircuitConstants.OPEN_CIRCUIT_R; }
+    public boolean isMonoNode() { return false; }
 
 
     // --- Energy source count syncing --- \\

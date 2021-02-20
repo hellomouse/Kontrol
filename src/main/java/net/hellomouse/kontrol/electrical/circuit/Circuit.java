@@ -3,7 +3,6 @@ package net.hellomouse.kontrol.electrical.circuit;
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
-import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -330,7 +329,10 @@ public class Circuit {
                 else { node2 = seenNodes.get(node2); }
             }
 
-            circuit.addComponent(comp, node1, node2);
+            // Necessary check so 2-node components with superconductors across don't get added
+            // because solver can't solve resistors that loop back onto themselves
+            if (node1 != node2 || comp.isMonoNode())
+                circuit.addComponent(comp, node1, node2);
         }
         return currentNodeID;
     }

@@ -57,4 +57,7 @@ public class VirtualFixedNode extends AbstractVirtualComponent implements IFixed
         updateEnergySourcesOnStateChange(disabled, disabled, this.hiZ, hiZ, voltage);
         super.setHiZ(hiZ);
     }
+
+    @Override
+    public boolean isMonoNode() { return true; }
 }

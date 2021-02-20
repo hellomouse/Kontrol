@@ -34,4 +34,7 @@ public class VirtualGround extends AbstractVirtualComponent implements IFixedVol
 
     @Override
     public double getEnergy() { return 0.0; }
+
+    @Override
+    public boolean isMonoNode() { return true; }
 }
