@@ -25,18 +25,24 @@ public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractEle
     }
 
     public MultimeterReading getReading() {
-        if (nodalVoltages.size() < 2)
-            return super.getReading().error();
+        if (!canSafelyMeasureCircuit())
+            return super.getReading().voltage(0.0).current(0.0).power(0.0);
 
         // Doesn't use internal component because can have internal resistors
-        double voltage = nodalVoltages.get(0) - nodalVoltages.get(1);
-        double current = internalCircuit.getComponents().get(0).getCurrent();
-        return super.getReading()
-                .voltage(voltage)
-                .current(current)
-                .power(Math.abs(voltage * current))
-                .polarity(normalizedNodeToDir.get(normalizedOutgoingNodes.get(0)),
-                          normalizedNodeToDir.get(normalizedOutgoingNodes.get(1)));
+        try {
+            double voltage = nodalVoltages.get(0) - nodalVoltages.get(1);
+            double current = internalCircuit.getComponents().get(0).getCurrent();
+            return super.getReading()
+                    .voltage(voltage)
+                    .current(current)
+                    .power(Math.abs(voltage * current))
+                    .polarity(normalizedNodeToDir.get(normalizedOutgoingNodes.get(0)),
+                            normalizedNodeToDir.get(normalizedOutgoingNodes.get(1)));
+        }
+        catch(IndexOutOfBoundsException e) {
+            // Can occur when component is skipped when adding
+            return super.getReading().voltage(0.0).current(0.0).power(0.0);
+        }
     }
 
     @Override
@@ -53,8 +59,7 @@ public abstract class AbstractPolarizedElectricalBlockEntity extends AbstractEle
             if (!(state.getBlock() instanceof AbstractPolarizedElectricalBlock))
                 throw new IllegalStateException("Invalid block entity: block state's block does not extend AbstractPolarizedElectricalBlock, rather it is " + state.getBlock());
 
-            Direction dir = state.get(AbstractPolarizedElectricalBlock.FACING);
-            positiveTerminal = dir;
+            positiveTerminal = state.get(AbstractPolarizedElectricalBlock.FACING);
         }
         return positiveTerminal;
     }
