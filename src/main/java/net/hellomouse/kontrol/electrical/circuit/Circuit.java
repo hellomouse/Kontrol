@@ -64,6 +64,8 @@ public class Circuit {
      * Checks for any changes and solves / re-constructs if required
      */
     public void postTick() {
+        if (world.isClient) return;
+
         // Scheduled to be deleted, don't do any solving
         if (deleted) return;
 
@@ -103,6 +105,10 @@ public class Circuit {
             solve();
             dirty = false;
         }
+
+        // Thermal sim
+        for (AbstractElectricalBlockEntity blockEntity : blockEntities)
+            blockEntity.thermalSim();
     }
 
     /**

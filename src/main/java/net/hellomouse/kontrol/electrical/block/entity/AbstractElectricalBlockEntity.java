@@ -4,6 +4,7 @@ import net.hellomouse.kontrol.electrical.circuit.Circuit;
 import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
 import net.hellomouse.kontrol.electrical.circuit.thermal.ThermalComponent;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -79,11 +80,12 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
 
     public double getDissipatedPower() {
         try {
-            if (internalCircuit.getComponents().size() > 0)
-                return (internalCircuit.getComponents().get(0).getPower());
-            return 0.0;
+            double power = 0.0;
+            for (AbstractVirtualComponent comp : internalCircuit.getComponents())
+                power += comp.getPower();
+            return power;
         }
-        catch(Exception e) {
+        catch(IndexOutOfBoundsException e) {
             return 0.0;
         }
     }
@@ -141,7 +143,6 @@ public abstract class AbstractElectricalBlockEntity extends BlockEntity implemen
             // TODO: why?
            // computedConnectedSides = false;
 
-            thermalSim();
             markDirty(); // For thermal sim
 
             // ALL THIS TODO

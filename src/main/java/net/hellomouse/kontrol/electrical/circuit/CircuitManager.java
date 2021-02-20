@@ -1,6 +1,9 @@
 package net.hellomouse.kontrol.electrical.circuit;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -22,7 +25,7 @@ public class CircuitManager {
         for (UUID id : idsToDelete)
             circuitMap.remove(id);
         idsToDelete.clear();
-;
+
         for (Circuit circuit : circuitMap.values())
             circuit.postTick();
     }
