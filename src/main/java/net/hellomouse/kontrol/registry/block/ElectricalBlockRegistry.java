@@ -47,6 +47,7 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
     public static BlockEntityType<PushButtonBlockEntity> PUSH_BUTTON_BLOCK_ENTITY;
     public static BlockEntityType<LightBlockEntity> LIGHT_BLOCK_ENTITY;
     public static BlockEntityType<LEDBlockEntity> LED_BLOCK_ENTITY;
+    public static BlockEntityType<BuzzerBlockEntity> BUZZER_BLOCK_ENTITY;
 
 
     // Screen handlers
@@ -112,6 +113,13 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 .block(new BasicSwitchBlock(FabricBlockSettings
                         .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
                 .blockEntityName("switch_block_entity")
+        );
+
+        addBlock(new BlockWrapper()
+                .name("basic_buzzer")
+                .block(new BasicBuzzerBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
+                .blockEntityName("buzzer_block_entity")
         );
 
         for (LEDBlockEntity.LEDData color : LEDBlockEntity.COLORS) {
@@ -218,6 +226,9 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
                 "led_block", "led_block_entity", LEDBlockEntity::new);
         DIODE_BLOCK_ENTITY = (BlockEntityType<DiodeBlockEntity>)getRegisteredBlockEntity(
                 "diode_block", "diode_block_entity", DiodeBlockEntity::new);
+        BUZZER_BLOCK_ENTITY =  (BlockEntityType<BuzzerBlockEntity>)getRegisteredBlockEntity(
+                "buzzer_block", "buzzer_block_entity", BuzzerBlockEntity::new);
+
 
         SUPERCONDUCTING_WIRE_BLOCK_ENTITY = (BlockEntityType<SuperconductingCableBlockEntity>)getRegisteredBlockEntity(
                 "superconducting_cable_block", "superconducting_cable_block_entity", SuperconductingCableBlockEntity::new);

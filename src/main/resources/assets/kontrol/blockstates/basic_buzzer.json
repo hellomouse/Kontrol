@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/basic_buzzer",
+			"y": 90
+		},
+		"facing=north": {
+			"model": "kontrol:block/basic_buzzer"
+		},
+		"facing=south": {
+			"model": "kontrol:block/basic_buzzer",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "kontrol:block/basic_buzzer",
+			"y": 270
+		}
+	}
+}

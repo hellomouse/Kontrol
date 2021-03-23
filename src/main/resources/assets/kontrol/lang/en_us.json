@@ -18,6 +18,7 @@
 	
 	"block.kontrol.basic_push_button": "Basic Push Button",
 	"block.kontrol.basic_switch": "Basic Switch",
+	"block.kontrol.basic_buzzer": "Basic Buzzer",
 	
 	"block.kontrol.white_basic_led": "White LED",
 	"block.kontrol.red_basic_led": "Red LED",
