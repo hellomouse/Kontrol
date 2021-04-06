@@ -10,5 +10,6 @@
     "injectors": {
         "defaultRequire": 1
     },
+    "compatibilityLevel": "JAVA_14",
     "package": "net.hellomouse.kontrol.electrical.mixin"
 }

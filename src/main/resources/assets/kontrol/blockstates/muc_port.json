@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"in=false,out=false": {
+			"model": "kontrol:block/microcontroller/muc_port_00"
+		},
+		"in=true,out=false": {
+			"model": "kontrol:block/microcontroller/muc_port_10"
+		},
+		"in=false,out=true": {
+			"model": "kontrol:block/microcontroller/muc_port_01"
+		},
+		"in=true,out=true": {
+			"model": "kontrol:block/microcontroller/muc_port_11"
+		}
+	}
+}

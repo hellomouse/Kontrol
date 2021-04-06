@@ -3,6 +3,11 @@ plugins {
 	id 'maven-publish'
 }
 
+compileJava {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -23,6 +28,8 @@ dependencies {
 
 	// https://ejml.org/wiki/index.php?title=Download
 	compile group: 'org.ejml', name: 'ejml-all', version: '0.40'
+
+	compile "org.antlr:antlr4-runtime:4.9.1"
 }
 
 processResources {

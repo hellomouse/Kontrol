@@ -31,6 +31,11 @@
 	"block.kontrol.furnace_generator": "Furnace Generator",
 	"block.kontrol.electrical_ground": "Ground Node",
 	
+	"block.kontrol.muc_port": "Microcontroller Port",
+	"block.kontrol.c8051_core": "M8051F020 Core",
+	
+	"block.kontrol.muc_maker": "Microcontroller Maker",
+	
 	"block.kontrol.basic_light": "Basic Light",
 	
 	"block.kontrol.creative_battery": "Creative Battery",
@@ -67,6 +72,15 @@
 	"item.kontrol.thermometer.tooltip": "Measures temperature",
 	
 	"item.kontrol.omnimeter": "Omnimeter",
-	"item.kontrol.omnimeter.tooltip": "Measures all properties (Creative only)"
+	"item.kontrol.omnimeter.tooltip": "Measures all properties (Creative only)",
+	
+	"muc_maker.side_length": "Side length",
+	"muc_maker.port_low": "Port lower",
+	"muc_maker.port_high": "Port higher",
+	"muc_maker.rotation": "Rotation",
+	"muc_maker.prev": "Prev.",
+	"muc_maker.next": "Next.",
+	
+	"microcontroller.c8051": "M8051F020"
 	
 }

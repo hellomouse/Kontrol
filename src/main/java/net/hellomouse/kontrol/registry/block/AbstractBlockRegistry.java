@@ -109,6 +109,10 @@ public abstract class AbstractBlockRegistry {
             Registry.register(Registry.BLOCK, new Identifier(Kontrol.MOD_ID, name), wrapper.getBlock());
             Registry.register(Registry.ITEM,  new Identifier(Kontrol.MOD_ID, name), wrapper.getItem());
         }
+
+        // Clear to avoid re-definition when another registry registers
+        // The next registry will populate blocks again
+        blocks.clear();
     }
 
     /**
