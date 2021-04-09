@@ -5,7 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCList;
+import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -91,7 +91,7 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
         if (client == null) return;
 
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        MUCList.MUCData currentMUCPair = MUCList.CHOICES.get(currentMUC);
+        MUCStatic.MUCData currentMUCPair = MUCStatic.CHOICES.get(currentMUC);
         client.getTextureManager().bindTexture(currentMUCPair.texture);
 
         drawTexture(matrices,this.width / 2 - 4 - 139, 50, this.getZOffset(), 0, 0, 128, 128, 128, 128);
@@ -135,8 +135,8 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
         super.init();
         titleX = (backgroundWidth - textRenderer.getWidth(title)) / 2;
 
-        this.buttonDone = this.addButton(new ButtonWidget(this.width / 2 + 4, 210, 150, 20, ScreenTexts.DONE, (buttonWidget) -> { this.done(); }));
-        this.buttonCancel = this.addButton(new ButtonWidget(this.width / 2 - 4 - 150, 210, 150, 20, ScreenTexts.CANCEL, (buttonWidget) -> { this.close(); }));
+        this.buttonDone = this.addButton(new ButtonWidget(this.width / 2 + 4, 210, 150, 20, ScreenTexts.DONE, (buttonWidget) -> this.done()));
+        this.buttonCancel = this.addButton(new ButtonWidget(this.width / 2 - 4 - 150, 210, 150, 20, ScreenTexts.CANCEL, (buttonWidget) -> this.close()));
 
         // Port inputs are hex
         this.inputPortLower = new TextFieldWidget(this.textRenderer, this.width / 2 + 4 + 16, 140, 44, 20, new TranslatableText("muc_maker.port_low")) {
@@ -164,7 +164,7 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
                 this.inputPortUpper.setEditableColor(ERROR_COLOR);
             }
             else {
-                boolean isValid = inputPortUpper.getText().matches("[0-9a-fA-F]+") && Integer.parseInt(inputPortUpper.getText(), 16) < MUCList.CHOICES.get(currentMUC).maxPorts;
+                boolean isValid = inputPortUpper.getText().matches("[0-9a-fA-F]+") && Integer.parseInt(inputPortUpper.getText(), 16) < MUCStatic.CHOICES.get(currentMUC).maxPorts;
                 this.inputPortUpper.setEditableColor(isValid ? 0xE0E0E0 : ERROR_COLOR);
                 isValid = inputPortLower.getText().matches("[0-9a-fA-F]+");
                 this.inputPortLower.setEditableColor(isValid ? 0xE0E0E0 : ERROR_COLOR);
@@ -175,12 +175,10 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
         this.inputPortUpper.setChangedListener(portChecker);
 
         // Microcontroller selection buttons
-        this.buttonPrev = this.addButton(new ButtonWidget(this.width / 2 - 150 - 4, 180, 70, 20, new TranslatableText("muc_maker.prev"), (buttonWidget) -> {
-            currentMUC = (currentMUC + MUCList.CHOICES.size() - 1) % MUCList.CHOICES.size(); // Don't -1 because java mod is stupid and will return negative values
-        }));
-        this.buttonNext = this.addButton(new ButtonWidget(this.width / 2 - 70 - 4, 180, 70, 20, new TranslatableText("muc_maker.next"), (buttonWidget) -> {
-            currentMUC = (currentMUC + 1) % MUCList.CHOICES.size();
-        }));
+        this.buttonPrev = this.addButton(new ButtonWidget(this.width / 2 - 150 - 4, 180, 70, 20, new TranslatableText("muc_maker.prev"), (buttonWidget) ->
+            currentMUC = (currentMUC + MUCStatic.CHOICES.size() - 1) % MUCStatic.CHOICES.size())); // Don't -1 because java mod is stupid and will return negative values
+        this.buttonNext = this.addButton(new ButtonWidget(this.width / 2 - 70 - 4, 180, 70, 20, new TranslatableText("muc_maker.next"), (buttonWidget) ->
+            currentMUC = (currentMUC + 1) % MUCStatic.CHOICES.size()));
 
         this.inputSideLength = new TextFieldWidget(this.textRenderer, this.width / 2 + 4, 100, 80, 20, new TranslatableText("muc_maker.side_length")) {
             public boolean charTyped(char chr, int keyCode) {
@@ -188,7 +186,7 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
             }
         };
         this.inputSideLength.setChangedListener(text -> {
-            boolean isValid = text.matches("\\d+") && Integer.parseInt(text) <= MUCList.MAX_SIDE_LENGTH && Integer.parseInt(text) > 0;
+            boolean isValid = text.matches("\\d+") && Integer.parseInt(text) <= MUCStatic.MAX_SIDE_LENGTH && Integer.parseInt(text) > 0;
             this.inputSideLength.setEditableColor(isValid ? 0xE0E0E0 : ERROR_COLOR);
         });
         this.inputSideLength.setMaxLength(3);
@@ -213,7 +211,7 @@ public class CreativeMUCMakerScreen extends HandledScreen<ScreenHandler> {
         }));
 
         // Only 1 choice, no prev / next needed
-        if (MUCList.CHOICES.size() <= 1) {
+        if (MUCStatic.CHOICES.size() <= 1) {
             this.buttonNext.active = false;
             this.buttonPrev.active = false;
         }

@@ -16,6 +16,7 @@ import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCM
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreen;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
+import net.minecraft.block.Block;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -28,6 +29,9 @@ import net.minecraft.util.math.BlockPos;
 
 
 public class MUCBlockRegistry extends AbstractBlockRegistry {
+    // Blocks
+    public static final Block MUC_PORT_BLOCK = new MUCPortBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f));
+
     // Block entities
     public static BlockEntityType<MUCPortBlockEntity> MUC_PORT_ENTITY;
     public static BlockEntityType<CreativeMUCMakerBlockEntity> MUC_MAKER_BLOCK_ENTITY;
@@ -44,7 +48,7 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
         // Blocks
         addBlock(new BlockWrapper()
                 .name("muc_port")
-                .block(new MUCPortBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
+                .block(MUC_PORT_BLOCK)
                 .blockEntityName("muc_port_entity"));
 
         addBlock(new BlockWrapper()

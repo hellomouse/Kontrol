@@ -25,6 +25,8 @@ public class Interpreter {
         this.settings = settings;
     }
 
+    public InterpreterState getState() { return state; }
+
     public void injectFunction(String name, Function<Variable[], IRuntimeConstant> function) {
         state.injectedFunctionMap.put(name, function);
     }

@@ -2,7 +2,7 @@ package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCList;
+import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;
@@ -17,6 +17,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 
 public class CreativeMUCMakerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, BlockEntityClientSerializable {
     private int rotationIndex = 0;
@@ -27,6 +28,83 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
 
     public CreativeMUCMakerBlockEntity() {
         super(MUCBlockRegistry.MUC_MAKER_BLOCK_ENTITY);
+    }
+
+    /**
+     * Get the coordinates for the corners of the bounding box
+     * where the ports will be constructed <b>as a relative offset</b>
+     * to the current microcontroller
+     * @return Coordinates {x1, y1, z1, x2, y2, z2}
+     */
+    public int[] getBoundingCoordinates() {
+        int x1 = 0, y1 = 0, z1 = 0;
+        int x2, y2 = 1, z2;
+
+        Pair<Integer, Integer> boxSize = getBoundingBoxSize();
+        int xSize = boxSize.getLeft();
+        int zSize = boxSize.getRight();
+
+        BlockRotation rotation = getRotation();
+
+        // Switch statement won't run with BlockRotation enum
+        // if you can figure it out pls fix
+        if (rotation == BlockRotation.NONE) {
+            z1 = 1;
+            x2 = xSize;
+            z2 = 1 + zSize;
+        }
+        else if (rotation == BlockRotation.CLOCKWISE_90) {
+            x2 = -zSize;
+            z2 = xSize;
+        }
+        else if (rotation == BlockRotation.CLOCKWISE_180) {
+            x1 = 1;
+            x2 = 1 - xSize;
+            z2 = -zSize;
+        }
+        else {
+            x1 = z1 = 1;
+            x2 = zSize + 1;
+            z2 = 1 - xSize;
+        }
+
+        return new int[]{ x1, y1, z1, x2, y2, z2 };
+    }
+
+    /** Generate all the ports, call when powered */
+    public void create() {
+        if (world == null) return;
+
+        int[] coords = getBoundingCoordinates();
+        int x1 = coords[0], y1 = coords[1], z1 = coords[2], x2 = coords[3], y2 = coords[4], z2 = coords[5];
+
+        if (x1 > x2) {
+            int temp = x2;
+            x2 = x1;
+            x1 = temp;
+        }
+        if (z1 > z2) {
+            int temp = z2;
+            z2 = z1;
+            z1 = temp;
+        }
+        int currentPort = portLower;
+
+        loop:
+        for (int x = x1; x < x2; x++) {
+            for (int z = z1; z < z2; z++) {
+                BlockPos blockPos = new BlockPos(pos.getX() + x, pos.getY(), pos.getZ() + z);
+                world.setBlockState(blockPos, MUCBlockRegistry.MUC_PORT_BLOCK.getDefaultState(), 3);
+
+                BlockEntity blockEntity = world.getBlockEntity(blockPos);
+                if (blockEntity instanceof MUCPortBlockEntity)
+                    ((MUCPortBlockEntity)blockEntity).setPortId(currentPort);
+                currentPort++;
+
+                if (currentPort > portUpper)
+                    break loop;
+            }
+        }
     }
 
     @Override
@@ -59,9 +137,9 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
             portLower = this.portLower;
             portUpper = this.portUpper;
         }
-        if (sideLength > MUCList.MAX_SIDE_LENGTH) sideLength = this.sideLength;
-        if (currentMUC < 0 || currentMUC >= MUCList.CHOICES.size()) currentMUC = 0;
-        if (portUpper >= MUCList.CHOICES.get(currentMUC).maxPorts) portUpper = this.portUpper;
+        if (sideLength > MUCStatic.MAX_SIDE_LENGTH) sideLength = this.sideLength;
+        if (currentMUC < 0 || currentMUC >= MUCStatic.CHOICES.size()) currentMUC = 0;
+        if (portUpper >= MUCStatic.CHOICES.get(currentMUC).maxPorts) portUpper = this.portUpper;
 
         this.rotationIndex = rotationIndex;
         this.sideLength = sideLength;

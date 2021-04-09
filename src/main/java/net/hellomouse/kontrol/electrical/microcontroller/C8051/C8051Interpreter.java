@@ -48,7 +48,7 @@ public class C8051Interpreter {
                 if (typeName.equals("sbit")) {      // Single bit (single port)
                     System.out.println("Hello world " + variable.getValue() + " " + variable.getName());
 
-                    state.sbitMap.put(variable.getName(), ((ConstantValue)variable.getValue()).getBigIntegerValue().intValue());
+                    state.sbitMap.put(variable.getName(), ((ConstantValue)variable.getValue().runtimeEval(interpreter.getState())).getBigIntegerValue().intValue());
                 }
                 else if (typeName.equals("sfr")) {  // Entire port group
                     state.hardwareState.put(variable.getName(), 0);

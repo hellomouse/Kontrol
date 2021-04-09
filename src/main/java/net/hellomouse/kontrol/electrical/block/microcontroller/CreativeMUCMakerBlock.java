@@ -1,12 +1,19 @@
 package net.hellomouse.kontrol.electrical.block.microcontroller;
 
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCMakerBlockEntity;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -14,13 +21,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-// TODO: I guess it needs an entity for MUC selection
-// save what MUC is selected
+import java.util.Random;
 
 @SuppressWarnings("deprecation")
 public class CreativeMUCMakerBlock extends BlockWithEntity {
+    public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
+
     public CreativeMUCMakerBlock(Settings settings) {
         super(settings);
+        this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false));
     }
 
     @Override
@@ -41,5 +50,41 @@ public class CreativeMUCMakerBlock extends BlockWithEntity {
                 player.openHandledScreen(screenHandlerFactory);
         }
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
+        boolean bl = world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up());
+        boolean bl2 = state.get(TRIGGERED);
+        if (bl && !bl2) {
+            world.getBlockTickScheduler().schedule(pos, this, 4);
+            world.setBlockState(pos, state.with(TRIGGERED, true), 4);
+        } else if (!bl && bl2) {
+            world.setBlockState(pos, state.with(TRIGGERED, false), 4);
+        }
+    }
+
+    @Override
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
+        boolean bl = world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up());
+        boolean bl2 = state.get(TRIGGERED);
+        if (bl && !bl2) {
+            world.getBlockTickScheduler().schedule(pos, this, 4);
+            world.setBlockState(pos, state.with(TRIGGERED, true), 4);
+        } else if (!bl && bl2) {
+            world.setBlockState(pos, state.with(TRIGGERED, false), 4);
+        }
+    }
+
+    @Override
+    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof CreativeMUCMakerBlockEntity)
+            ((CreativeMUCMakerBlockEntity)blockEntity).create();
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(TRIGGERED);
     }
 }

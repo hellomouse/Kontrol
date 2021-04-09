@@ -11,9 +11,16 @@ import java.util.ArrayList;
  * Data for the list of all microcontrollers, used for instance in the MUCMaker block
  * @author Bowserinator
  */
-public class MUCList {
+public class MUCStatic {
     // Max side length of ports when constructing, inclusive
     public static final int MAX_SIDE_LENGTH = 127;
+
+    // Defaults for MUC Maker
+    public static final int rotationIndex = 0;
+    public static final int sideLength = 10;
+    public static final int portLower = 0;
+    public static final int portUpper = 16;
+    public static final int currentMUC = 0;
 
     // All scrollable microcontrollers
     // Pair is name of microcontroller, identifier of texture to render

@@ -1,5 +1,6 @@
 package net.hellomouse.kontrol.electrical.screen;
 
+import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -9,11 +10,11 @@ import net.minecraft.util.math.BlockPos;
 
 public class CreativeMUCMakerScreenHandler extends ScreenHandler {
     private BlockPos pos;
-    private int rotationIndex = 0;
-    private int sideLength = 10;
-    private int portLower = 0;
-    private int portUpper = 16;
-    private int currentMUC = 0; // TODO: defaults
+    private int rotationIndex = MUCStatic.rotationIndex;
+    private int sideLength = MUCStatic.sideLength;
+    private int portLower = MUCStatic.portLower;
+    private int portUpper = MUCStatic.portUpper;
+    private int currentMUC = MUCStatic.currentMUC;
 
     public CreativeMUCMakerScreenHandler(int syncId, PlayerInventory playerInventory) {
         super(MUCBlockRegistry.MUC_MAKER_SCREEN_HANDLER, syncId);

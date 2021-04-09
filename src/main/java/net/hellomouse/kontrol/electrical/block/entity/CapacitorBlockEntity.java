@@ -68,15 +68,18 @@ public class CapacitorBlockEntity extends AbstractPolarizedElectricalBlockEntity
         return super.toTag(tag);
     }
 
+    @Override
     public void fromClientTag(CompoundTag tag) {
         setCapacitance(tag.getDouble("Capacitance"), false);
     }
 
+    @Override
     public CompoundTag toClientTag(CompoundTag tag) {
         tag.putDouble("Capacitance", capacitance);
         return tag;
     }
 
+    @Override
     public MultimeterReading getReading() {
         ArrayList<Text> text = new ArrayList<>();
         text.add(new LiteralText("C = " + capacitance));

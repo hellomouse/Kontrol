@@ -34,7 +34,7 @@
 	"block.kontrol.muc_port": "Microcontroller Port",
 	"block.kontrol.c8051_core": "M8051F020 Core",
 	
-	"block.kontrol.muc_maker": "Microcontroller Maker",
+	"block.kontrol.muc_maker": "Microcontroller Port Maker",
 	
 	"block.kontrol.basic_light": "Basic Light",
 	
