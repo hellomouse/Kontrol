@@ -2,6 +2,7 @@ package net.hellomouse.kontrol.electrical.mixin;
 
 import net.hellomouse.kontrol.electrical.circuit.CircuitManager;
 import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCNetworkManager;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,5 +36,6 @@ public abstract class CircuitTickMixin implements IHasCircuitManager {
         // (also a start tick thread that begins solve)
         // TODO keep track of profiler
         circuitManager.postTick();
+        MUCNetworkManager.tick();
     }
 }

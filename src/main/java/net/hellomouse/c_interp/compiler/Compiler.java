@@ -70,7 +70,7 @@ public class Compiler {
                 parse(tree);
         }
 
-        // instructions.printInstructions();
+        instructions.printInstructions();
     }
 
     /**

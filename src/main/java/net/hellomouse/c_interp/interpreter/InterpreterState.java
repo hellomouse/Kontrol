@@ -134,7 +134,7 @@ public class InterpreterState {
         }
 
         // Check injected functions
-        Function<Variable[], IRuntimeConstant> injectedFunc = injectedFunctionMap.get(funcName);
+        Function<Variable[], IRuntimeConstant> injectedFunc = injectedFunctionMap.getOrDefault(funcName, null);
 
         frames.push(new StackFrame(getInstructionPointer(), parameters));
         isRunning = true;

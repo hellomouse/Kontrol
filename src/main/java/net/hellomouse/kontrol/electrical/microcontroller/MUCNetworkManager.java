@@ -22,4 +22,9 @@ public class MUCNetworkManager {
         networks.add(network);
         networkId++;
     }
+
+    public static void tick() {
+        for (AbstractMUCNetwork network : networks)
+            network.tick();
+    }
 }

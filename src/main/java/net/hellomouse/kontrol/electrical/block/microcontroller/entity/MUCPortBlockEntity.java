@@ -3,8 +3,11 @@ package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualFixedNode;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
+import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.entity.BlockEntity;
@@ -32,11 +35,37 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
     }
 
     public double getPortVoltage() {
+        boolean temp = setIoMode(false);
+        if (temp) circuit.markDirty();
         return fixedNode.getVoltage();
     }
 
     public void setPortVoltage(double voltage) {
+        boolean temp = setIoMode(true);
         fixedNode.setVoltage(voltage);
+        if (temp) circuit.markDirty();
+    }
+
+    private boolean setIoMode(boolean output) {
+        // Input: Inf R, hiZ
+        // Output: 0 R, not hi Z
+        double resistance = output ? CircuitValues.LOW_RESISTANCE : CircuitValues.HIGH_RESISTANCE;
+        boolean returned = fixedNode.isHiZ() == !output;
+
+        for (AbstractVirtualComponent component : internalCircuit.getComponents()) {
+            if (component instanceof IResistanceCondition)
+                ((IResistanceCondition) component).setResistance(resistance);
+            else if (component instanceof IFixedVoltageCondition)
+                component.setHiZ(!output);
+        }
+        return returned;
+    }
+
+    @Override
+    public boolean canConnectTo(Direction dir, BlockEntity otherEntity) {
+        if (otherEntity instanceof MUCPortBlockEntity)
+            return false;
+        return super.canConnectTo(dir, otherEntity);
     }
 
     @Override
@@ -67,5 +96,4 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
 
     @Override
     public boolean canStartFloodfill() { return true; }
-
 }

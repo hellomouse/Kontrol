@@ -18,6 +18,7 @@ public abstract class AbstractMUCNetwork {
 
     public final int id;
 
+    private World world;
     private final HashMap<Integer, MUCPortBlockEntity> portEntityMap = new HashMap<>();
 
     public AbstractMUCNetwork(int id) {
@@ -25,6 +26,8 @@ public abstract class AbstractMUCNetwork {
     }
 
     public void setPortVoltage(int portId, double voltage) {
+        if (world.isClient) return;
+
         if (!portExists(portId)) return;
         portEntityMap.get(portId).setPortVoltage(voltage);
     }
@@ -34,11 +37,13 @@ public abstract class AbstractMUCNetwork {
         return portEntityMap.get(portId).getPortVoltage();
     }
 
+    public abstract void tick();
+
     public boolean portExists(int portId) {
         if (!portEntityMap.containsKey(portId))
             return false;
 
-        if (!portEntityMap.get(portId).isRemoved()) {
+        if (portEntityMap.get(portId).isRemoved()) {
             portEntityMap.remove(portId);
             return false;
         }
@@ -46,6 +51,9 @@ public abstract class AbstractMUCNetwork {
     }
 
     public void createNetwork(BlockPos pos, World world) {
+        this.world = world;
+        if (world.isClient) return;
+
         Queue<BlockPos> toVisit = new LinkedList<>();
         HashSet<BlockPos> visited = new HashSet<>();
         toVisit.add(pos);
@@ -54,15 +62,18 @@ public abstract class AbstractMUCNetwork {
 
         while (toVisit.size() > 0) {
             BlockPos p = toVisit.remove();
+
+            if (visited.contains(p))
+                continue;
+
             visited.add(p);
 
             // Check if port, add
             BlockEntity blockEntity = world.getBlockEntity(p);
             if (blockEntity instanceof MUCPortBlockEntity) {
-                System.out.println("Port at " + p);
-
                 MUCPortBlockEntity portBlockEntity = (MUCPortBlockEntity)blockEntity;
                 portEntityMap.put(portBlockEntity.getPortId(), portBlockEntity);
+                System.out.println(portBlockEntity.getPortId() + " at " + portBlockEntity.getPos());
             }
 
             // Floodfill

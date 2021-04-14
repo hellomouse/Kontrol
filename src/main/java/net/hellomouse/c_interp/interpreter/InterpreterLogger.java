@@ -22,8 +22,8 @@ public class InterpreterLogger {
         LOGGER.setLevel(Level.ALL);
 
         Handler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
-       // handler.setLevel(Level.OFF);
+        // handler.setLevel(Level.ALL);
+        handler.setLevel(Level.OFF);
 
         handler.setFormatter(new SimpleFormatter() {
             private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s %n";

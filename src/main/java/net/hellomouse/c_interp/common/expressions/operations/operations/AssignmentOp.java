@@ -45,7 +45,6 @@ public class AssignmentOp extends AbstractBinaryOperation {
 
         ConstantValue val1 = (ConstantValue)var.getValue();
         ConstantValue val2 = (ConstantValue)operands.get(1).runtimeEval(state);
-        state.interpreter.listeners.onVariableChange(var);
 
         switch (op) {
             case ASSIGN -> var.setValue(val2);
@@ -61,6 +60,7 @@ public class AssignmentOp extends AbstractBinaryOperation {
             case ASSIGN_RSHIFT -> var.setValue(val1.shiftRight(val2));
         };
 
+        state.interpreter.listeners.onVariableChange(var);
         return ((ConstantValue)var.getValue()).postOperation(var.getType());
     }
 
