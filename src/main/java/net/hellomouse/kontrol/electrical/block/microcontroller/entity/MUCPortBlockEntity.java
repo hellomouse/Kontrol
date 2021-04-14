@@ -10,7 +10,9 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.I
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Direction;
@@ -34,22 +36,43 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         return portId;
     }
 
+    @Override
+    public void fromTag(BlockState state, CompoundTag tag) {
+        super.fromTag(state, tag);
+        this.portId = tag.getInt("portId");
+    }
+
+    @Override
+    public CompoundTag toTag(CompoundTag tag) {
+        tag.putInt("portId", portId);
+        return super.toTag(tag);
+    }
+
     public double getPortVoltage() {
+        if (this.circuit == null) return 0.0; // TODO: why is this null
+
         boolean temp = setIoMode(false);
         if (temp) circuit.markDirty();
+
+        if (nodalVoltages.size() > 0)
+            return nodalVoltages.get(0);
         return fixedNode.getVoltage();
     }
 
     public void setPortVoltage(double voltage) {
+        if (this.circuit == null) return;
+
         boolean temp = setIoMode(true);
+        double orgVoltage = fixedNode.getVoltage();
+
         fixedNode.setVoltage(voltage);
-        if (temp) circuit.markDirty();
+        if (temp || Math.abs(orgVoltage - voltage) > 0.01) circuit.markDirty();
     }
 
     private boolean setIoMode(boolean output) {
         // Input: Inf R, hiZ
         // Output: 0 R, not hi Z
-        double resistance = output ? CircuitValues.LOW_RESISTANCE : CircuitValues.HIGH_RESISTANCE;
+        double resistance = output ? CircuitValues.LOW_RESISTANCE : CircuitValues.PORT_RESISTANCE;
         boolean returned = fixedNode.isHiZ() == !output;
 
         for (AbstractVirtualComponent component : internalCircuit.getComponents()) {
@@ -72,7 +95,7 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
     public VirtualCircuit getInternalCircuit() {
         internalCircuit.clear();
         for (int outNode : normalizedOutgoingNodes)
-            internalCircuit.addComponent(new VirtualResistor(CircuitValues.HIGH_RESISTANCE), -1, outNode);
+            internalCircuit.addComponent(new VirtualResistor(CircuitValues.PORT_RESISTANCE), -1, outNode);
         internalCircuit.addComponent(fixedNode, -1, -1);
         return internalCircuit;
     }

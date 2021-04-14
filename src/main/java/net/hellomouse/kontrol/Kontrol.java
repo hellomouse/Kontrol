@@ -2,6 +2,7 @@ package net.hellomouse.kontrol;
 
 import net.fabricmc.api.ModInitializer;
 import net.hellomouse.kontrol.config.KontrolConfig;
+import net.hellomouse.kontrol.registry.block.AbstractBlockRegistry;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.hellomouse.kontrol.registry.item.ElectricalItemRegistry;
@@ -66,6 +67,7 @@ public class Kontrol implements ModInitializer {
         ElectricalItemRegistry.register();
 
         MUCBlockRegistry.register();
+        AbstractBlockRegistry.register();
 
         System.out.println("LOADED");
 

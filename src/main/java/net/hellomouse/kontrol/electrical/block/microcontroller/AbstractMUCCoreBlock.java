@@ -40,6 +40,12 @@ public abstract class AbstractMUCCoreBlock extends Block {
     // TODO: on delete
 
     @Override
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        MUCNetworkManager.delete(pos);
+        super.onStateReplaced(state, world, pos, newState, moved);
+    }
+
+    @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
         super.onPlaced(world, pos, state, placer, itemStack);
         MUCNetworkManager.create(pos, world, C8051Network::new);

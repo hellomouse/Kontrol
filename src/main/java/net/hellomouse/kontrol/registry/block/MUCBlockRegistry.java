@@ -86,13 +86,9 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
                     ((CreativeMUCMakerBlockEntity)blockEntity).writePacketData(rotationIndex, sideLength, portLower, portUpper, currentMUC);
             });
         });
-
-        // Goes at end, register blocks added
-        AbstractBlockRegistry.register();
     }
 
     public static void registerClient() {
-        AbstractBlockRegistry.registerClient();
         ScreenRegistry.register(MUC_MAKER_SCREEN_HANDLER, CreativeMUCMakerScreen::new);
         BlockEntityRendererRegistry.INSTANCE.register(MUC_MAKER_BLOCK_ENTITY, CreativeMUCMakerBlockEntityRenderer::new);
     }

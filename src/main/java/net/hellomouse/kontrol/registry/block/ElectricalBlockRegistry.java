@@ -236,13 +236,9 @@ public class ElectricalBlockRegistry extends AbstractBlockRegistry {
 
         // Screen Handlers
         BOX_SCREEN_HANDLER = ScreenHandlerRegistry.registerSimple(new Identifier(Kontrol.MOD_ID, "box_block"), BoxScreenHandler::new);
-
-        // Goes at end, register blocks added
-        AbstractBlockRegistry.register();
     }
 
     public static void registerClient() {
-        AbstractBlockRegistry.registerClient();
 
         // TODO: color by proper color
         //  ColorProviderRegistry.ITEM.register((stack, tintIndex) -> ColorData.DYEABLE_COLORS.get(color), wrapper.getItem());

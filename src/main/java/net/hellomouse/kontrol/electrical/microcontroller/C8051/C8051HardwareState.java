@@ -42,7 +42,7 @@ public class C8051HardwareState {
                 }
                 // Input enabled bit
                 else {
-                    pinOut[portId] = network.readPortVoltage(portId) > 0.0;
+                    pinOut[portId] = network.readPortVoltage(portId) > 2.5;
                 }
 
             }
@@ -94,7 +94,7 @@ public class C8051HardwareState {
             int outEnabled = mdoutPorts[portNum]; // TODO bounds check
 
             if (portBit > -1 && ((outEnabled >> portBit) & 1) != 0) {
-                pinOut[portNum * 8 + portBit] = ((ConstantValue)variable.getValue()).getBigIntegerValue().intValue() > 0;
+                pinOut[portNum * 8 + portBit] = ((ConstantValue)variable.getValue()).getBigIntegerValue().intValue() != 0;
             }
             else {
                 int value = ((ConstantValue)variable.getValue()).getBigIntegerValue().intValue();
@@ -111,6 +111,31 @@ public class C8051HardwareState {
      * @param variable Variable to modify
      */
     public void processVariableAccess(Variable variable) {
+        String typeName = variable.getType().getFullName();
 
+
+        int portNum = -1;
+        int portBit = 0; // -1 = entire port is modified
+
+        if (typeName.equals("sbit")) {      // Single bit (single port)
+            Pair<Integer, Integer> portAndBit = C8051PortUtil.getPortAndBitFromAddress(sbitMap.get(variable.getName()));
+            portNum = portAndBit.getLeft();
+            portBit = portAndBit.getRight();
+        }
+
+        if (portNum > -1) {
+            int outEnabled = mdoutPorts[portNum]; // TODO bounds check
+
+            if (portBit > -1 && ((outEnabled >> portBit) & 1) == 0) {
+                variable.setValue(pinOut[portNum * 8 + portBit]  ? ConstantValue.ONE : ConstantValue.ZERO);
+            }
+            else {
+                int value = ((ConstantValue)variable.getValue()).getBigIntegerValue().intValue();
+                for (int i = 0; i < 8; i++) {
+                    //if (((outEnabled << i) & 1) != 0)
+                   //     pinOut[portNum * 8 + i] = ((value << i) & 1) != 0;
+                }
+            }
+        }
     }
 }

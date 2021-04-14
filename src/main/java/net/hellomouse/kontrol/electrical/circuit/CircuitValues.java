@@ -7,6 +7,8 @@ public class CircuitValues {
     public static final double LOW_RESISTANCE = 0.01;
     public static final double HIGH_RESISTANCE = 1e9;
 
+    public static final double PORT_RESISTANCE = 1e6;
+
     // Push buttons
     public static final int DEFAULT_PUSH_BUTTON_PUSH_TIME = 15;
 
