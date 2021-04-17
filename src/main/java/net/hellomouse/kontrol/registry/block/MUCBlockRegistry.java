@@ -53,7 +53,8 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
 
         addBlock(new BlockWrapper()
                 .name("c8051_core")
-                .block(new C8051CoreBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f))));
+                .block(new C8051CoreBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
+                .item(BlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.RARE)));
 
         addBlock(new BlockWrapper()
                 .name("muc_maker")

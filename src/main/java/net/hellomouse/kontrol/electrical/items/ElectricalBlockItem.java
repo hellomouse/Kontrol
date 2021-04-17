@@ -54,7 +54,6 @@ public class ElectricalBlockItem extends BlockItem {
         if (tag == null)
             return;
 
-
         if (TooltipUtil.shiftTooltip(tooltip)) {
             tooltip.add(new LiteralText("Reeee"));
         }
