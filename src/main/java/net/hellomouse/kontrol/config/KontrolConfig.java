@@ -25,6 +25,9 @@ public class KontrolConfig {
     private boolean batteryAging = true;
     private boolean generateOres = true;
 
+    private int maxMUCFloodfill = 512;
+    private int maxMUCNetworks = 1024;
+
     private KontrolConfig() {}
 
     /**
@@ -65,4 +68,7 @@ public class KontrolConfig {
     public boolean getElectricalHeating() { return electricalHeating; }
     public boolean getBatteryAging() { return batteryAging; }
     public boolean getGenerateOres() { return generateOres; }
+
+    public int getMaxMUCFloodfill() { return maxMUCFloodfill; }
+    public int getMaxMUCNetworks() { return maxMUCNetworks; }
 }

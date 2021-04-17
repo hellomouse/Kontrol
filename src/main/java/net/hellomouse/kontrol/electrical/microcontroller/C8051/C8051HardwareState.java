@@ -6,6 +6,10 @@ import net.minecraft.util.Pair;
 
 import java.util.HashMap;
 
+/**
+ * The current hardware state of the microcontroller
+ * @author Bowserinator
+ */
 public class C8051HardwareState {
     // TODO: implement all hardware state lmao
     public int P0MDOUT, P1MDOUT, P2MDOUT, P3MDOUT, P74OUT, P3IF, P1MDIN;
@@ -44,7 +48,6 @@ public class C8051HardwareState {
                 else {
                     pinOut[portId] = network.readPortVoltage(portId) > 2.5;
                 }
-
             }
         }
 

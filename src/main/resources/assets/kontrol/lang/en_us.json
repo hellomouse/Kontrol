@@ -81,6 +81,8 @@
 	"muc_maker.prev": "Prev.",
 	"muc_maker.next": "Next.",
 	
+	"muc_core.max_networks": "§cNetwork limit has been reached, max is ",
+	
 	"microcontroller.c8051": "M8051F020"
 	
 }

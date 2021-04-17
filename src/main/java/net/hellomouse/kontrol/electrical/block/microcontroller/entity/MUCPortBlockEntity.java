@@ -1,6 +1,7 @@
 package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 
 import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
+import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortBlock;
 import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
@@ -28,28 +29,16 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         fixedNode = new VirtualFixedNode(0.0);
     }
 
-    public void setPortId(int portId) {
-        this.portId = portId;
-    }
-
-    public int getPortId() {
-        return portId;
-    }
-
-    @Override
-    public void fromTag(BlockState state, CompoundTag tag) {
-        super.fromTag(state, tag);
-        this.portId = tag.getInt("portId");
-    }
-
-    @Override
-    public CompoundTag toTag(CompoundTag tag) {
-        tag.putInt("portId", portId);
-        return super.toTag(tag);
-    }
-
+    /**
+     * Read the current port voltage. Returns 0 V if not connected
+     * to a circuit. Will update the internal resistance of the port
+     * to be HiZ and disable any voltage output, as well as mark the circuit
+     * as dirty if connected.
+     * @return Voltage read
+     */
     public double getPortVoltage() {
-        if (this.circuit == null) return 0.0; // TODO: why is this null
+        // Circuit may not be connected at time of reading
+        if (this.circuit == null) return 0.0;
 
         boolean temp = setIoMode(false);
         if (temp) circuit.markDirty();
@@ -59,6 +48,13 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         return fixedNode.getVoltage();
     }
 
+    /**
+     * Set the port's output voltage if connected to a circuit. Does nothing
+     * if not connected. Will update the internal resistance of the port
+     * to be very low and enable voltage output, as well as mark the circuit
+     * as dirty if output voltage differs from the previous.
+     * @param voltage Voltage to set
+     */
     public void setPortVoltage(double voltage) {
         if (this.circuit == null) return;
 
@@ -69,6 +65,12 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         if (temp || Math.abs(orgVoltage - voltage) > 0.01) circuit.markDirty();
     }
 
+    /**
+     * Updates internal resistances and fixed node hiZ state for a given
+     * output / input enable state.
+     * @param output Set to output mode? false = input
+     * @return Has the output mode changed after calling this?
+     */
     private boolean setIoMode(boolean output) {
         // Input: Inf R, hiZ
         // Output: 0 R, not hi Z
@@ -81,7 +83,33 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
             else if (component instanceof IFixedVoltageCondition)
                 component.setHiZ(!output);
         }
+
+        if (returned && world != null && !world.isClient) {
+            BlockState state = world.getBlockState(pos);
+            world.setBlockState(pos, output ?
+                    state.with(MUCPortBlock.OUT, true).with(MUCPortBlock.IN, false) :
+                    state.with(MUCPortBlock.IN, true).with(MUCPortBlock.OUT, false));
+        }
+
         return returned;
+    }
+
+    /** Set the current port ID, should be non-negative */
+    public void setPortId(int portId) { this.portId = portId; }
+
+    /** Get the current port id */
+    public int getPortId() { return portId; }
+
+    @Override
+    public void fromTag(BlockState state, CompoundTag tag) {
+        super.fromTag(state, tag);
+        this.portId = tag.getInt("portId");
+    }
+
+    @Override
+    public CompoundTag toTag(CompoundTag tag) {
+        tag.putInt("portId", portId);
+        return super.toTag(tag);
     }
 
     @Override

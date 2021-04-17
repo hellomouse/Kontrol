@@ -127,29 +127,6 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         packetByteBuf.writeInt(currentMUC);
     }
 
-    public void writePacketData(int rotationIndex, int sideLength, int portLower, int portUpper, int currentMUC) {
-        // Ignore any invalid inputs
-        if (rotationIndex < 0 || rotationIndex >= BlockRotation.values().length) rotationIndex = this.rotationIndex;
-        if (sideLength <= 0) this.sideLength = sideLength;
-        if (portLower < 0) portLower = this.portLower;
-
-        if (portLower > portUpper) {
-            portLower = this.portLower;
-            portUpper = this.portUpper;
-        }
-        if (sideLength > MUCStatic.MAX_SIDE_LENGTH) sideLength = this.sideLength;
-        if (currentMUC < 0 || currentMUC >= MUCStatic.CHOICES.size()) currentMUC = 0;
-        if (portUpper >= MUCStatic.CHOICES.get(currentMUC).maxPorts) portUpper = this.portUpper;
-
-        this.rotationIndex = rotationIndex;
-        this.sideLength = sideLength;
-        this.portLower = portLower;
-        this.portUpper = portUpper;
-        this.currentMUC = currentMUC;
-        this.markDirty();
-        this.sync();
-    }
-
     @Override
     public void fromTag(BlockState state, CompoundTag tag) {
         super.fromTag(state, tag);
@@ -186,6 +163,39 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         tag.putInt("portLower", portLower);
         tag.putInt("portUpper", portUpper);
         return tag;
+    }
+
+    /**
+     * Update the MUC Maker with data from a C2S packet. If any value given is invalid it will be ignored and
+     * the current value will take its place (for that specific value)
+     *
+     * @param rotationIndex Mew rotation packet
+     * @param sideLength Length of 1 side
+     * @param portLower Lower port range
+     * @param portUpper Upper port range
+     * @param currentMUC Current MUC index
+     */
+    public void writePacketData(int rotationIndex, int sideLength, int portLower, int portUpper, int currentMUC) {
+        // Ignore any invalid inputs
+        if (rotationIndex < 0 || rotationIndex >= BlockRotation.values().length) rotationIndex = this.rotationIndex;
+        if (sideLength <= 0) this.sideLength = sideLength;
+        if (portLower < 0) portLower = this.portLower;
+
+        if (portLower > portUpper) {
+            portLower = this.portLower;
+            portUpper = this.portUpper;
+        }
+        if (sideLength > MUCStatic.MAX_SIDE_LENGTH) sideLength = this.sideLength;
+        if (currentMUC < 0 || currentMUC >= MUCStatic.CHOICES.size()) currentMUC = 0;
+        if (portUpper >= MUCStatic.CHOICES.get(currentMUC).maxPorts) portUpper = this.portUpper;
+
+        this.rotationIndex = rotationIndex;
+        this.sideLength = sideLength;
+        this.portLower = portLower;
+        this.portUpper = portUpper;
+        this.currentMUC = currentMUC;
+        this.markDirty();
+        this.sync();
     }
 
     /**
