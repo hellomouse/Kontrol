@@ -1,0 +1,22 @@
+{
+	"parent": "block/cube",
+	"textures": {
+		"0": "kontrol:block/microcontroller/redstone-port-1-on",
+		"1": "kontrol:block/microcontroller/port-in",
+		"particle": "kontrol:block/microcontroller/redstone-port-1-on"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "rotation": 180, "texture": "#0", "cullface": "north"},
+				"east": {"uv": [0, 0, 16, 16], "rotation": 270, "texture": "#0", "cullface": "east"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#0", "cullface": "south"},
+				"west": {"uv": [0, 0, 16, 16], "rotation": 90, "texture": "#0", "cullface": "west"},
+				"up": {"uv": [0, 0, 16, 16], "rotation": 180, "texture": "#1", "cullface": "up"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#0", "cullface": "down"}
+			}
+		}
+	]
+}

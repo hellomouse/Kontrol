@@ -7,11 +7,10 @@ import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.hellomouse.kontrol.Kontrol;
-import net.hellomouse.kontrol.electrical.block.microcontroller.C8051CoreBlock;
-import net.hellomouse.kontrol.electrical.block.microcontroller.CreativeMUCMakerBlock;
-import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortBlock;
+import net.hellomouse.kontrol.electrical.block.microcontroller.*;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCMakerBlockEntity;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCPortBlockEntity;
+import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCRedstonePortBlockEntity;
 import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCMakerBlockEntityRenderer;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreen;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
@@ -34,6 +33,7 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
 
     // Block entities
     public static BlockEntityType<MUCPortBlockEntity> MUC_PORT_ENTITY;
+    public static BlockEntityType<MUCRedstonePortBlockEntity> MUC_REDSTONE_PORT_ENTITY;
     public static BlockEntityType<CreativeMUCMakerBlockEntity> MUC_MAKER_BLOCK_ENTITY;
 
     // Networking
@@ -64,9 +64,27 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
                 .item(BlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
         );
 
+        addBlock(new BlockWrapper()
+                .name("muc_port_connector")
+                .block(new MUCPortConnectorBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque()
+                        .strength(3.5f, 3.5f)))
+        );
+
+        addBlock(new BlockWrapper()
+                .name("muc_redstone_port_1")
+                .block(new MUCRedstonePortBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque()
+                        .strength(3.5f, 3.5f)
+                        .luminance(state -> state.get(MUCRedstonePortBlock.POWERING) ? 7 : 0)))
+                .blockEntityName("muc_redstone_port_entity")
+        );
+
         // Block entities
         MUC_PORT_ENTITY = (BlockEntityType<MUCPortBlockEntity>)getRegisteredBlockEntity(
                 "muc_port", "muc_port_entity", MUCPortBlockEntity::new);
+        MUC_REDSTONE_PORT_ENTITY = (BlockEntityType<MUCRedstonePortBlockEntity>)getRegisteredBlockEntity(
+                "muc_redstone_port", "muc_redstone_port_entity", MUCRedstonePortBlockEntity::new);
         MUC_MAKER_BLOCK_ENTITY = (BlockEntityType<CreativeMUCMakerBlockEntity>)getRegisteredBlockEntity(
                 "muc_maker", "muc_maker_entity", CreativeMUCMakerBlockEntity::new);
 

@@ -1,0 +1,17 @@
+{
+	"variants": {
+		"facing=down,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off", "x": 180 },
+		"facing=up,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off" },
+		"facing=north,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off", "x": 90 },
+		"facing=south,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off", "x": 90, "y": 180 },
+		"facing=west,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off", "x": 90, "y": 270 },
+		"facing=east,powering=false": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_off", "x": 90, "y": 90 },
+		"facing=down,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on", "x": 180 },
+		
+		"facing=up,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on" },
+		"facing=north,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on", "x": 90 },
+		"facing=south,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on", "x": 90, "y": 180 },
+		"facing=west,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on", "x": 90, "y": 270 },
+		"facing=east,powering=true": { "model": "kontrol:block/microcontroller/muc_redstone_port_1_on", "x": 90, "y": 90 }
+	}
+}

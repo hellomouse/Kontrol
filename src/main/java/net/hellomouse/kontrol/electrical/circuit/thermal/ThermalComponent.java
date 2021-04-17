@@ -54,8 +54,8 @@ public class ThermalComponent {
 
     /**
      * Construct a thermal component
-     * @param thermalR Thermal resistance
-     * @param thermalC Thermal capacitance
+     * @param thermalR Thermal resistance (K/W)
+     * @param thermalC Thermal capacitance (J/W)
      */
     public ThermalComponent(double thermalR, double thermalC) {
         this.thermalR = thermalR;
