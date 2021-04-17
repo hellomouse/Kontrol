@@ -3,7 +3,7 @@ package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
-import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
+import net.hellomouse.kontrol.electrical.screen.CreativeMUCPortMakerScreenHandler;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -16,13 +16,18 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 
-public class CreativeMUCMakerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, BlockEntityClientSerializable {
-    private int currentMUC = 0;
+public class CreativeMUCPortMakerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, BlockEntityClientSerializable {
     private int rotationIndex = 0;
+    private int sideLength = 10;
+    private int portLower = 0;
+    private int portUpper = 16;
+    private int currentMUC = 0;
 
-    public CreativeMUCMakerBlockEntity() {
-        super(MUCBlockRegistry.MUC_MAKER_BLOCK_ENTITY);
+    public CreativeMUCPortMakerBlockEntity() {
+        super(MUCBlockRegistry.MUC_PORT_MAKER_BLOCK_ENTITY);
     }
 
     /**
@@ -35,8 +40,9 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         int x1 = 0, y1 = 0, z1 = 0;
         int x2, y2 = 1, z2;
 
-        int xSize = 10;
-        int zSize = 20;
+        Pair<Integer, Integer> boxSize = getBoundingBoxSize();
+        int xSize = boxSize.getLeft();
+        int zSize = boxSize.getRight();
 
         BlockRotation rotation = getRotation();
 
@@ -72,11 +78,38 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         int[] coords = getBoundingCoordinates();
         int x1 = coords[0], y1 = coords[1], z1 = coords[2], x2 = coords[3], y2 = coords[4], z2 = coords[5];
 
+        if (x1 > x2) {
+            int temp = x2;
+            x2 = x1;
+            x1 = temp;
+        }
+        if (z1 > z2) {
+            int temp = z2;
+            z2 = z1;
+            z1 = temp;
+        }
+        int currentPort = portLower;
+
+        loop:
+        for (int x = x1; x < x2; x++) {
+            for (int z = z1; z < z2; z++) {
+                BlockPos blockPos = new BlockPos(pos.getX() + x, pos.getY(), pos.getZ() + z);
+                world.setBlockState(blockPos, MUCBlockRegistry.MUC_PORT_BLOCK.getDefaultState(), 3);
+
+                BlockEntity blockEntity = world.getBlockEntity(blockPos);
+                if (blockEntity instanceof MUCPortBlockEntity)
+                    ((MUCPortBlockEntity)blockEntity).setPortId(currentPort);
+                currentPort++;
+
+                if (currentPort > portUpper)
+                    break loop;
+            }
+        }
     }
 
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return new CreativeMUCMakerScreenHandler(syncId, playerInventory);
+        return new CreativeMUCPortMakerScreenHandler(syncId, playerInventory);
     }
 
     @Override
@@ -88,6 +121,9 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
         packetByteBuf.writeBlockPos(pos);
         packetByteBuf.writeInt(rotationIndex);
+        packetByteBuf.writeInt(sideLength);
+        packetByteBuf.writeInt(portLower);
+        packetByteBuf.writeInt(portUpper);
         packetByteBuf.writeInt(currentMUC);
     }
 
@@ -95,6 +131,9 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     public void fromTag(BlockState state, CompoundTag tag) {
         super.fromTag(state, tag);
         rotationIndex = tag.getInt("rotationIndex");
+        sideLength = tag.getInt("sideLength");
+        portLower = tag.getInt("portLower");
+        portUpper = tag.getInt("portUpper");
         currentMUC = tag.getInt("currentMUC");
     }
 
@@ -102,6 +141,9 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     public CompoundTag toTag(CompoundTag tag) {
         super.toTag(tag);
         tag.putInt("rotationIndex", rotationIndex);
+        tag.putInt("sideLength", sideLength);
+        tag.putInt("portLower", portLower);
+        tag.putInt("portUpper", portUpper);
         tag.putInt("currentMUC", currentMUC);
         return tag;
     }
@@ -109,11 +151,17 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     @Override
     public void fromClientTag(CompoundTag tag) {
         rotationIndex = tag.getInt("rotationIndex");
+        sideLength = tag.getInt("sideLength");
+        portLower = tag.getInt("portLower");
+        portUpper = tag.getInt("portUpper");
     }
 
     @Override
     public CompoundTag toClientTag(CompoundTag tag) {
         tag.putInt("rotationIndex", rotationIndex);
+        tag.putInt("sideLength", sideLength);
+        tag.putInt("portLower", portLower);
+        tag.putInt("portUpper", portUpper);
         return tag;
     }
 
@@ -122,17 +170,41 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
      * the current value will take its place (for that specific value)
      *
      * @param rotationIndex Mew rotation packet
+     * @param sideLength Length of 1 side
+     * @param portLower Lower port range
+     * @param portUpper Upper port range
      * @param currentMUC Current MUC index
      */
-    public void writePacketData(int rotationIndex, int currentMUC) {
+    public void writePacketData(int rotationIndex, int sideLength, int portLower, int portUpper, int currentMUC) {
         // Ignore any invalid inputs
         if (rotationIndex < 0 || rotationIndex >= BlockRotation.values().length) rotationIndex = this.rotationIndex;
+        if (sideLength <= 0) this.sideLength = sideLength;
+        if (portLower < 0) portLower = this.portLower;
+
+        if (portLower > portUpper) {
+            portLower = this.portLower;
+            portUpper = this.portUpper;
+        }
+        if (sideLength > MUCStatic.MAX_SIDE_LENGTH) sideLength = this.sideLength;
         if (currentMUC < 0 || currentMUC >= MUCStatic.CHOICES.size()) currentMUC = 0;
+        if (portUpper >= MUCStatic.CHOICES.get(currentMUC).maxPorts) portUpper = this.portUpper;
 
         this.rotationIndex = rotationIndex;
+        this.sideLength = sideLength;
+        this.portLower = portLower;
+        this.portUpper = portUpper;
         this.currentMUC = currentMUC;
         this.markDirty();
         this.sync();
+    }
+
+    /**
+     * Get the x and z side lengths of the bounding box
+     * computed from port range and side length
+     * @return Pair of x side length, z side length
+     */
+    public Pair<Integer, Integer> getBoundingBoxSize() {
+        return new Pair<>(sideLength, (int)Math.ceil((float)(portUpper - portLower) / sideLength));
     }
 
     /**

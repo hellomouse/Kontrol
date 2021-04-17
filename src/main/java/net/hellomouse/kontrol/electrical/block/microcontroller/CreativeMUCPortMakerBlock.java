@@ -1,6 +1,5 @@
 package net.hellomouse.kontrol.electrical.block.microcontroller;
 
-import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCMakerBlockEntity;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCPortMakerBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -25,17 +24,17 @@ import net.minecraft.world.World;
 import java.util.Random;
 
 @SuppressWarnings("deprecation")
-public class CreativeMUCMakerBlock extends BlockWithEntity {
+public class CreativeMUCPortMakerBlock extends BlockWithEntity {
     public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
 
-    public CreativeMUCMakerBlock(Settings settings) {
+    public CreativeMUCPortMakerBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false));
     }
 
     @Override
     public BlockEntity createBlockEntity(BlockView world) {
-        return new CreativeMUCMakerBlockEntity();
+        return new CreativeMUCPortMakerBlockEntity();
     }
 
     @Override
@@ -81,7 +80,7 @@ public class CreativeMUCMakerBlock extends BlockWithEntity {
     public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof CreativeMUCPortMakerBlockEntity)
-            ((CreativeMUCMakerBlockEntity)blockEntity).create();
+            ((CreativeMUCPortMakerBlockEntity)blockEntity).create();
     }
 
     @Override

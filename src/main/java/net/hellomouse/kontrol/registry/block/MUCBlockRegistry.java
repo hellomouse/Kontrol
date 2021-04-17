@@ -9,11 +9,15 @@ import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.electrical.block.microcontroller.*;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCMakerBlockEntity;
+import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCPortMakerBlockEntity;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCPortBlockEntity;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCRedstonePortBlockEntity;
 import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCMakerBlockEntityRenderer;
+import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCPortMakerBlockEntityRenderer;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreen;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
+import net.hellomouse.kontrol.electrical.screen.CreativeMUCPortMakerScreen;
+import net.hellomouse.kontrol.electrical.screen.CreativeMUCPortMakerScreenHandler;
 import net.hellomouse.kontrol.registry.util.BlockWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
@@ -29,17 +33,23 @@ import net.minecraft.util.math.BlockPos;
 
 public class MUCBlockRegistry extends AbstractBlockRegistry {
     // Blocks
-    public static final Block MUC_PORT_BLOCK = new MUCPortBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f));
+    public static final Block MUC_PORT_BLOCK = new MUCPortBlock
+            (FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)
+             .emissiveLighting((state, world, pos) -> true));
 
     // Block entities
     public static BlockEntityType<MUCPortBlockEntity> MUC_PORT_ENTITY;
     public static BlockEntityType<MUCRedstonePortBlockEntity> MUC_REDSTONE_PORT_ENTITY;
+    public static BlockEntityType<CreativeMUCPortMakerBlockEntity> MUC_PORT_MAKER_BLOCK_ENTITY;
     public static BlockEntityType<CreativeMUCMakerBlockEntity> MUC_MAKER_BLOCK_ENTITY;
 
     // Networking
+    public static final Identifier MUC_PORT_MAKER_PACKET_ID = new Identifier(Kontrol.MOD_ID, "muc_port_maker");
     public static final Identifier MUC_MAKER_PACKET_ID = new Identifier(Kontrol.MOD_ID, "muc_maker");
 
     // Screens
+    public static final ScreenHandlerType<CreativeMUCPortMakerScreenHandler> MUC_PORT_MAKER_SCREEN_HANDLER =
+            ScreenHandlerRegistry.registerExtended(new Identifier(Kontrol.MOD_ID, "muc_port_maker"), CreativeMUCPortMakerScreenHandler::new);
     public static final ScreenHandlerType<CreativeMUCMakerScreenHandler> MUC_MAKER_SCREEN_HANDLER =
             ScreenHandlerRegistry.registerExtended(new Identifier(Kontrol.MOD_ID, "muc_maker"), CreativeMUCMakerScreenHandler::new);
 
@@ -55,6 +65,15 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
                 .name("c8051_core")
                 .block(new C8051CoreBlock(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)))
                 .item(BlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.RARE)));
+
+        addBlock(new BlockWrapper()
+                .name("muc_port_maker")
+                .block(new CreativeMUCPortMakerBlock(FabricBlockSettings
+                        .of(Material.METAL).nonOpaque()
+                        .strength(-1.0f, 3600000.0f).dropsNothing()))
+                .blockEntityName("muc_port_maker_entity")
+                .item(BlockItem::new, new FabricItemSettings().group(ItemGroup.REDSTONE).rarity(Rarity.EPIC))
+        );
 
         addBlock(new BlockWrapper()
                 .name("muc_maker")
@@ -86,28 +105,52 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
                 "muc_port", "muc_port_entity", MUCPortBlockEntity::new);
         MUC_REDSTONE_PORT_ENTITY = (BlockEntityType<MUCRedstonePortBlockEntity>)getRegisteredBlockEntity(
                 "muc_redstone_port", "muc_redstone_port_entity", MUCRedstonePortBlockEntity::new);
+        MUC_PORT_MAKER_BLOCK_ENTITY = (BlockEntityType<CreativeMUCPortMakerBlockEntity>)getRegisteredBlockEntity(
+                "muc_port_maker", "muc_port_maker_entity", CreativeMUCPortMakerBlockEntity::new);
         MUC_MAKER_BLOCK_ENTITY = (BlockEntityType<CreativeMUCMakerBlockEntity>)getRegisteredBlockEntity(
                 "muc_maker", "muc_maker_entity", CreativeMUCMakerBlockEntity::new);
 
         //noinspection deprecation
-        ServerSidePacketRegistry.INSTANCE.register(MUC_MAKER_PACKET_ID, (packetContext, attachedData) -> {
-            BlockPos pos = attachedData.readBlockPos();
-            int rotationIndex = attachedData.readInt();
-            int sideLength = attachedData.readInt();
-            int portLower = attachedData.readInt();
-            int portUpper = attachedData.readInt();
-            int currentMUC = attachedData.readInt();
+        ServerSidePacketRegistry.INSTANCE.register(MUC_PORT_MAKER_PACKET_ID, (packetContext, attachedData) -> {
+            try {
+                BlockPos pos = attachedData.readBlockPos();
+                int rotationIndex = attachedData.readInt();
+                int sideLength = attachedData.readInt();
+                int portLower = attachedData.readInt();
+                int portUpper = attachedData.readInt();
+                int currentMUC = attachedData.readInt();
 
-            packetContext.getTaskQueue().execute(() -> {
-                BlockEntity blockEntity = packetContext.getPlayer().world.getBlockEntity(pos);
-                if (blockEntity instanceof CreativeMUCMakerBlockEntity && packetContext.getPlayer().world.canSetBlock(pos))
-                    // Type checking done here
-                    ((CreativeMUCMakerBlockEntity)blockEntity).writePacketData(rotationIndex, sideLength, portLower, portUpper, currentMUC);
-            });
+                packetContext.getTaskQueue().execute(() -> {
+                    BlockEntity blockEntity = packetContext.getPlayer().world.getBlockEntity(pos);
+                    if (blockEntity instanceof CreativeMUCPortMakerBlockEntity && packetContext.getPlayer().world.canSetBlock(pos))
+                        // Type checking done here
+                        ((CreativeMUCPortMakerBlockEntity)blockEntity).writePacketData(rotationIndex, sideLength, portLower, portUpper, currentMUC);
+                });
+            }
+            catch(IndexOutOfBoundsException ignored) {}
+        });
+
+        //noinspection deprecation
+        ServerSidePacketRegistry.INSTANCE.register(MUC_MAKER_PACKET_ID, (packetContext, attachedData) -> {
+            try {
+                BlockPos pos = attachedData.readBlockPos();
+                int rotationIndex = attachedData.readInt();
+                int currentMUC = attachedData.readInt();
+
+                packetContext.getTaskQueue().execute(() -> {
+                    BlockEntity blockEntity = packetContext.getPlayer().world.getBlockEntity(pos);
+                    if (blockEntity instanceof CreativeMUCMakerBlockEntity && packetContext.getPlayer().world.canSetBlock(pos))
+                        // Type checking done here
+                        ((CreativeMUCMakerBlockEntity)blockEntity).writePacketData(rotationIndex, currentMUC);
+                });
+            }
+            catch(IndexOutOfBoundsException ignored) {}
         });
     }
 
     public static void registerClient() {
+        ScreenRegistry.register(MUC_PORT_MAKER_SCREEN_HANDLER, CreativeMUCPortMakerScreen::new);
+        BlockEntityRendererRegistry.INSTANCE.register(MUC_PORT_MAKER_BLOCK_ENTITY, CreativeMUCPortMakerBlockEntityRenderer::new);
         ScreenRegistry.register(MUC_MAKER_SCREEN_HANDLER, CreativeMUCMakerScreen::new);
         BlockEntityRendererRegistry.INSTANCE.register(MUC_MAKER_BLOCK_ENTITY, CreativeMUCMakerBlockEntityRenderer::new);
     }

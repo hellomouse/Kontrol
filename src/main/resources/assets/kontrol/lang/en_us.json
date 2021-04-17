@@ -40,7 +40,8 @@
 	
 	"block.kontrol.muc_redstone_port_1": "BOG07 MUC Redstone Port",
 	
-	"block.kontrol.muc_maker": "Microcontroller Port Maker",
+	"block.kontrol.muc_port_maker": "Microcontroller Port Maker",
+	"block.kontrol.muc_maker": "Microcontroller Maker",
 	
 	"block.kontrol.basic_light": "Basic Light",
 	

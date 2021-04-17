@@ -103,7 +103,7 @@ public abstract class AbstractMUCNetwork {
     /** Called when network is deleted */
     public void onDelete() {
         for (MUCPortBlockEntity blockEntity : portEntityMap.values())
-            world.setBlockState(blockEntity.getPos(), world.getBlockState(blockEntity.getPos()).with(MUCPortBlock.IN, false).with(MUCPortBlock.OUT, false));
+            world.setBlockState(blockEntity.getPos(), world.getBlockState(blockEntity.getPos()).with(MUCPortBlock.IN, false).with(MUCPortBlock.OUT, false).with(MUCPortBlock.BRIGHTNESS, 0));
     }
 
     /**

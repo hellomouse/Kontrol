@@ -21,6 +21,8 @@ import net.minecraft.util.math.Direction;
 import java.util.ArrayList;
 
 public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
+    public static final int PORT_ON_BRIGHTNESS = 7;
+
     private int portId;
     private final VirtualFixedNode fixedNode;
 
@@ -45,6 +47,9 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
 
         if (nodalVoltages.size() > 0)
             return nodalVoltages.get(0);
+
+        double voltage = fixedNode.getVoltage();
+        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.BRIGHTNESS, Math.abs(voltage) > 0.1 ? PORT_ON_BRIGHTNESS : 0));
         return fixedNode.getVoltage();
     }
 
@@ -61,6 +66,7 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         boolean temp = setIoMode(true);
         double orgVoltage = fixedNode.getVoltage();
 
+        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.BRIGHTNESS, Math.abs(voltage) > 0.1 ? PORT_ON_BRIGHTNESS : 0));
         fixedNode.setVoltage(voltage);
         if (temp || Math.abs(orgVoltage - voltage) > 0.01) circuit.markDirty();
     }
