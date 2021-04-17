@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:block/cube_all",
 	"textures": {
-		"all": "kontrol:block/microcontroller/port-in-out"
+		"all": "kontrol:block/microcontroller/port_in_out"
 	}
 }
