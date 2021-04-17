@@ -2,6 +2,7 @@ package net.hellomouse.kontrol.electrical.microcontroller;
 
 import net.hellomouse.kontrol.config.KontrolConfig;
 import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortBlock;
+import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortConnectorBlock;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCPortBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
@@ -144,7 +145,9 @@ public abstract class AbstractMUCNetwork {
                 if (iterations == 0 && !coreCanFloodfillDir(dir))
                     continue;
 
-                if (world.getBlockEntity(p.offset(dir)) instanceof MUCPortBlockEntity && !visited.contains(p.offset(dir))) {
+                if ((world.getBlockEntity(p.offset(dir)) instanceof MUCPortBlockEntity ||
+                     world.getBlockState(p.offset(dir)).getBlock() instanceof MUCPortConnectorBlock) &&
+                        !visited.contains(p.offset(dir))) {
                     toVisit.add(p.offset(dir));
                     visited.add(p.offset(dir));
                 }

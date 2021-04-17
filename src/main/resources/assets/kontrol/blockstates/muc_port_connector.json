@@ -1,0 +1,7 @@
+{
+	"variants": {
+		"": {
+			"model": "kontrol:block/microcontroller/muc_port_connector"
+		}
+	}
+}

@@ -34,6 +34,9 @@
 	"block.kontrol.muc_port": "Microcontroller Port",
 	"block.kontrol.c8051_core": "M8051F020 Core",
 	"block.kontrol.c8051_core.tooltip": "§7Not a C8051 ripoff!",
+
+	"block.kontrol.muc_port_connector": "Microcontroller Port Connector",
+	"block.kontrol.muc_port_connector.tooltip": "§7Connects MUC Ports for floodfill",
 	
 	"block.kontrol.muc_redstone_port_1": "BOG07 MUC Redstone Port",
 	
