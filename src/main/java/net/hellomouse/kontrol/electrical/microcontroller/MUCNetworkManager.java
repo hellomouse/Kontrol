@@ -1,6 +1,6 @@
 package net.hellomouse.kontrol.electrical.microcontroller;
 
-import net.hellomouse.kontrol.config.KontrolConfig;
+import net.hellomouse.kontrol.Kontrol;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -30,7 +30,7 @@ public class MUCNetworkManager {
     public static boolean create(BlockPos pos, World world, Function<Integer, AbstractMUCNetwork> constructor) {
         if (world.isClient) return false;
 
-        if (networks.size() + 1 > KontrolConfig.getConfig().getMaxMUCNetworks()) {
+        if (networks.size() + 1 > Kontrol.CONFIG.getMaxMUCNetworks()) {
             // TODO: warn client
             return false;
         }

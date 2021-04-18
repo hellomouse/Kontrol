@@ -1,7 +1,6 @@
 package net.hellomouse.kontrol.electrical.block.microcontroller;
 
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCMakerBlockEntity;
-import net.hellomouse.kontrol.electrical.block.microcontroller.entity.CreativeMUCPortMakerBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -80,7 +79,7 @@ public class CreativeMUCMakerBlock extends BlockWithEntity {
     @Override
     public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof CreativeMUCPortMakerBlockEntity)
+        if (blockEntity instanceof CreativeMUCMakerBlockEntity)
             ((CreativeMUCMakerBlockEntity)blockEntity).create();
     }
 

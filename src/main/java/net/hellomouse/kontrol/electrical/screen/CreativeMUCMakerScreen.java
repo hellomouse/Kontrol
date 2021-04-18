@@ -3,7 +3,7 @@ package net.hellomouse.kontrol.electrical.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;

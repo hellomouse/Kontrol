@@ -1,6 +1,6 @@
 package net.hellomouse.kontrol.electrical.screen;
 
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;

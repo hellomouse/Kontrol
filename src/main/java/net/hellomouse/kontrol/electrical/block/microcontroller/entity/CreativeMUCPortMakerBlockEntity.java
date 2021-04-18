@@ -2,7 +2,7 @@ package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCPortMakerScreenHandler;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;

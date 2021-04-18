@@ -1,6 +1,6 @@
 package net.hellomouse.kontrol.electrical.block.microcontroller;
 
-import net.hellomouse.kontrol.config.KontrolConfig;
+import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.electrical.microcontroller.C8051.C8051Network;
 import net.hellomouse.kontrol.electrical.microcontroller.MUCNetworkManager;
 import net.minecraft.block.Block;
@@ -56,7 +56,7 @@ public abstract class AbstractMUCCoreBlock extends Block {
         if (!MUCNetworkManager.create(pos, world, C8051Network::new) && placer instanceof PlayerEntity)
             ((PlayerEntity)placer).sendMessage(
                     new TranslatableText("muc_core.max_networks")
-                            .append(new LiteralText(Formatting.RED + "" + KontrolConfig.getConfig().getMaxMUCNetworks()))
+                            .append(new LiteralText(Formatting.RED + "" + Kontrol.CONFIG.getMaxMUCNetworks()))
                             .append(new LiteralText(Formatting.RESET + "")), true);
     }
 }

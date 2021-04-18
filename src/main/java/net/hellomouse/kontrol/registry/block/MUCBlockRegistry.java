@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.electrical.block.microcontroller.*;
@@ -14,6 +16,7 @@ import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCPortBlo
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCRedstonePortBlockEntity;
 import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCMakerBlockEntityRenderer;
 import net.hellomouse.kontrol.electrical.client.render.block.entity.CreativeMUCPortMakerBlockEntityRenderer;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreen;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCPortMakerScreen;
@@ -25,10 +28,16 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.math.BlockPos;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 
 public class MUCBlockRegistry extends AbstractBlockRegistry {
@@ -36,6 +45,9 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
     public static final Block MUC_PORT_BLOCK = new MUCPortBlock
             (FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)
              .emissiveLighting((state, world, pos) -> true));
+    public static final Block MUC_PORT_CONNECTOR_BLOCK = new MUCPortConnectorBlock(FabricBlockSettings
+            .of(Material.METAL).nonOpaque()
+            .strength(3.5f, 3.5f));
 
     // Block entities
     public static BlockEntityType<MUCPortBlockEntity> MUC_PORT_ENTITY;
@@ -53,8 +65,46 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
     public static final ScreenHandlerType<CreativeMUCMakerScreenHandler> MUC_MAKER_SCREEN_HANDLER =
             ScreenHandlerRegistry.registerExtended(new Identifier(Kontrol.MOD_ID, "muc_maker"), CreativeMUCMakerScreenHandler::new);
 
+    // Resources
+    public static final String MUC_BLUEPRINTS = "muc_schematics";
+
     @SuppressWarnings("unchecked")
     public static void register() {
+        // Resource listeners
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+            @Override
+            public Identifier getFabricId() { return new Identifier(Kontrol.MOD_ID, MUC_BLUEPRINTS); }
+
+            @Override
+            public void apply(ResourceManager manager) {
+                MUCStatic.MUCBlueprints.clear();
+
+                for (Identifier id : manager.findResources(MUC_BLUEPRINTS, path -> path.endsWith(".muc"))) {
+                    try {
+                        InputStream stream = manager.getResource(id).getInputStream();
+                        Scanner scanner = new Scanner(stream);
+                        String name = scanner.nextLine();
+                        ArrayList<String[]> blueprint = new ArrayList<>();
+                        int width = 0;
+
+                        while (scanner.hasNextLine()) {
+                            String line = scanner.nextLine();
+                            String[] ports = line.split("\\s");
+
+                            if (width > 0 && ports.length != width)
+                                throw new IllegalStateException("MUC schematic must be rectangular");
+                            width = ports.length;
+                            blueprint.add(ports);
+                        }
+
+                        MUCStatic.MUCBlueprints.put(name, blueprint);
+                    } catch(Exception e) {
+                        Kontrol.LOG.error("Error occurred while loading resource json " + id.toString(), e);
+                    }
+                }
+            }
+        });
+
         // Blocks
         addBlock(new BlockWrapper()
                 .name("muc_port")
@@ -86,9 +136,7 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
 
         addBlock(new BlockWrapper()
                 .name("muc_port_connector")
-                .block(new MUCPortConnectorBlock(FabricBlockSettings
-                        .of(Material.METAL).nonOpaque()
-                        .strength(3.5f, 3.5f)))
+                .block(MUC_PORT_CONNECTOR_BLOCK)
         );
 
         addBlock(new BlockWrapper()

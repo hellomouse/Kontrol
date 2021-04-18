@@ -5,7 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;

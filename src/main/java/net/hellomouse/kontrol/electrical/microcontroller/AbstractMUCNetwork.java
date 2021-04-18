@@ -1,6 +1,6 @@
 package net.hellomouse.kontrol.electrical.microcontroller;
 
-import net.hellomouse.kontrol.config.KontrolConfig;
+import net.hellomouse.kontrol.Kontrol;
 import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortBlock;
 import net.hellomouse.kontrol.electrical.block.microcontroller.MUCPortConnectorBlock;
 import net.hellomouse.kontrol.electrical.block.microcontroller.entity.MUCPortBlockEntity;
@@ -137,7 +137,7 @@ public abstract class AbstractMUCNetwork {
             }
 
             if (ports > maxPorts()) return;
-            if (iterations > KontrolConfig.getConfig().getMaxMUCFloodfill()) return;
+            if (iterations > Kontrol.CONFIG.getMaxMUCFloodfill()) return;
 
             // Floodfill
             for (Direction dir : Direction.values()) {

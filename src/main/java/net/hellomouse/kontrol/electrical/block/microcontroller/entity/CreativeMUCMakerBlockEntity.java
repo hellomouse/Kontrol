@@ -2,7 +2,7 @@ package net.hellomouse.kontrol.electrical.block.microcontroller.entity;
 
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.hellomouse.kontrol.electrical.microcontroller.C8051.MUCStatic;
+import net.hellomouse.kontrol.electrical.microcontroller.MUCStatic;
 import net.hellomouse.kontrol.electrical.screen.CreativeMUCMakerScreenHandler;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;
@@ -16,10 +16,14 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.ArrayList;
 
 public class CreativeMUCMakerBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, BlockEntityClientSerializable {
     private int currentMUC = 0;
     private int rotationIndex = 0;
+    private ArrayList<String[]> blueprint = null;
 
     public CreativeMUCMakerBlockEntity() {
         super(MUCBlockRegistry.MUC_MAKER_BLOCK_ENTITY);
@@ -35,8 +39,11 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         int x1 = 0, y1 = 0, z1 = 0;
         int x2, y2 = 1, z2;
 
-        int xSize = 10;
-        int zSize = 20;
+        if (blueprint == null)
+            return new int[]{0, 0, 0, 1, 1, 1};
+
+        int xSize = blueprint.size();
+        int zSize = blueprint.get(0).length;
 
         BlockRotation rotation = getRotation();
 
@@ -68,10 +75,66 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     /** Generate all the ports, call when powered */
     public void create() {
         if (world == null) return;
+        if (blueprint == null) return;
 
         int[] coords = getBoundingCoordinates();
-        int x1 = coords[0], y1 = coords[1], z1 = coords[2], x2 = coords[3], y2 = coords[4], z2 = coords[5];
+        int x1 = coords[0], z1 = coords[2], x2 = coords[3], z2 = coords[5];
+        int xSize = blueprint.size();
+        int zSize = blueprint.get(0).length;
+        if (x1 > x2) {
+            int temp = x2;
+            x2 = x1;
+            x1 = temp;
+        }
+        if (z1 > z2) {
+            int temp = z2;
+            z2 = z1;
+            z1 = temp;
+        }
 
+        for (int x = x1; x < x2; x++) {
+            for (int z = z1; z < z2; z++) {
+                // Rotation 0:   +x +z
+                int blueprintRow = x;
+                int blueprintCol = z - 1;
+                BlockRotation rotation = getRotation();
+
+                // Rotation 270: +z +x
+                if (rotation == BlockRotation.COUNTERCLOCKWISE_90) {
+                    blueprintRow = xSize + z - 1;
+                    blueprintCol = zSize - x;
+                }
+                // Rotation 90:  -z -x
+                else if (rotation == BlockRotation.CLOCKWISE_90) {
+                    blueprintRow = xSize - z - 1;
+                    blueprintCol = zSize + x;
+                }
+                // Rotation 180: -x -z
+                else if (rotation == BlockRotation.CLOCKWISE_180) {
+                    blueprintRow = xSize + x - 1;
+                    blueprintCol = zSize + z;
+                }
+
+                System.out.println(x + ", " + z + "  = " + blueprintRow + ", " + blueprintCol);
+
+                String blueprintBlock = blueprint.get(blueprintRow)[blueprintCol];
+                BlockPos blockPos = new BlockPos(pos.getX() + x, pos.getY(), pos.getZ() + z);
+
+                if (blueprintBlock.equals(".."))
+                    continue;
+                else if (blueprintBlock.equals("CO"))
+                    world.setBlockState(blockPos, MUCBlockRegistry.MUC_PORT_CONNECTOR_BLOCK.getDefaultState(), 3);
+                else {
+                    try {
+                        int value = Integer.parseInt(blueprintBlock);
+                        world.setBlockState(blockPos, MUCBlockRegistry.MUC_PORT_BLOCK.getDefaultState(), 3);
+                        BlockEntity blockEntity = world.getBlockEntity(blockPos);
+                        if (blockEntity instanceof MUCPortBlockEntity)
+                            ((MUCPortBlockEntity)blockEntity).setPortId(value);
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
     }
 
     @Override
@@ -96,6 +159,7 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
         super.fromTag(state, tag);
         rotationIndex = tag.getInt("rotationIndex");
         currentMUC = tag.getInt("currentMUC");
+        blueprint = MUCStatic.MUCBlueprints.get(MUCStatic.CHOICES.get(currentMUC).id);
     }
 
     @Override
@@ -109,11 +173,14 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
     @Override
     public void fromClientTag(CompoundTag tag) {
         rotationIndex = tag.getInt("rotationIndex");
+        currentMUC = tag.getInt("currentMUC");
+        blueprint = MUCStatic.MUCBlueprints.get(MUCStatic.CHOICES.get(currentMUC).id);
     }
 
     @Override
     public CompoundTag toClientTag(CompoundTag tag) {
         tag.putInt("rotationIndex", rotationIndex);
+        tag.putInt("currentMUC", currentMUC);
         return tag;
     }
 
@@ -131,6 +198,8 @@ public class CreativeMUCMakerBlockEntity extends BlockEntity implements Extended
 
         this.rotationIndex = rotationIndex;
         this.currentMUC = currentMUC;
+        blueprint = MUCStatic.MUCBlueprints.get(MUCStatic.CHOICES.get(currentMUC).id);
+
         this.markDirty();
         this.sync();
     }
