@@ -5,6 +5,7 @@ import net.hellomouse.kontrol.electrical.circuit.IHasCircuitManager;
 import net.hellomouse.kontrol.electrical.circuit.thermal.ThermalComponent;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.AbstractVirtualComponent;
+import net.hellomouse.kontrol.electrical.items.multimeters.IMultimeterReadable;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -24,7 +25,7 @@ import java.util.UUID;
  * Block entity for an electrical block
  * @author Bowserinator
  */
-public abstract class AbstractElectricalBlockEntity extends BlockEntity implements Tickable {
+public abstract class AbstractElectricalBlockEntity extends BlockEntity implements Tickable, IMultimeterReadable {
     // Node ids assigned to each face as a temporary step. Not normalized, nor will all node ids be used
     // Use normalizedOutgoingNodes unless you know what you're doing
     protected ArrayList<Integer> outgoingNodes = new ArrayList<>();

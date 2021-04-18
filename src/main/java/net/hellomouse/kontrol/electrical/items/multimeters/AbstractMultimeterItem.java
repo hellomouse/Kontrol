@@ -1,7 +1,6 @@
 package net.hellomouse.kontrol.electrical.items.multimeters;
 
 import net.hellomouse.kontrol.Kontrol;
-import net.hellomouse.kontrol.electrical.block.entity.AbstractElectricalBlockEntity;
 import net.hellomouse.kontrol.util.TooltipUtil;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.*;
@@ -54,8 +53,8 @@ public class AbstractMultimeterItem extends MiningToolItem {
             ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
             BlockEntity entity = world.getBlockEntity(context.getBlockPos());
 
-            if (entity instanceof AbstractElectricalBlockEntity) {
-                ArrayList<Text> result = ((AbstractElectricalBlockEntity) entity).getReading().parse(flags, precision);
+            if (entity instanceof IMultimeterReadable) {
+                ArrayList<Text> result = ((IMultimeterReadable) entity).getReading().parse(flags, precision);
                 MultimeterReading.damageLines(result, (float)stack.getDamage() / stack.getMaxDamage());
 
                 for (int i = 0; i < result.size(); i++) {
