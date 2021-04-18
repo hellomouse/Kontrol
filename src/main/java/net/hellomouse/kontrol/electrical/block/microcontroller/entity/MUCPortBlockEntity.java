@@ -45,11 +45,11 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         boolean temp = setIoMode(false);
         if (temp) circuit.markDirty();
 
-        if (nodalVoltages.size() > 0)
-            return nodalVoltages.get(0);
-
-        double voltage = fixedNode.getVoltage();
-        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.BRIGHTNESS, Math.abs(voltage) > 0.1 ? PORT_ON_BRIGHTNESS : 0));
+        if (nodalVoltages.size() > 0) {
+            double voltage = nodalVoltages.get(0);
+            world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, Math.abs(voltage) > 0.1));
+            return voltage;
+        }
         return fixedNode.getVoltage();
     }
 
@@ -66,7 +66,7 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         boolean temp = setIoMode(true);
         double orgVoltage = fixedNode.getVoltage();
 
-        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.BRIGHTNESS, Math.abs(voltage) > 0.1 ? PORT_ON_BRIGHTNESS : 0));
+        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, Math.abs(voltage) > 0.1));
         fixedNode.setVoltage(voltage);
         if (temp || Math.abs(orgVoltage - voltage) > 0.01) circuit.markDirty();
     }
@@ -141,6 +141,9 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
 
         ArrayList<Text> text = new ArrayList<>();
         text.add(new LiteralText("Id = 0x" + String.format("%02X", portId)));
+
+        if (fixedNode.isHiZ() && nodalVoltages.size() > 0)
+            return super.getReading().misc(text).absoluteVoltage(nodalVoltages.get(0));
         return super.getReading().misc(text).absoluteVoltage(fixedNode.getVoltage());
     }
 

@@ -3,14 +3,20 @@
 		"in=false,out=false": {
 			"model": "kontrol:block/microcontroller/muc_port_00"
 		},
-		"in=true,out=false": {
-			"model": "kontrol:block/microcontroller/muc_port_10"
+		"in=true,out=false,on=true": {
+			"model": "kontrol:block/microcontroller/muc_port_10_on"
 		},
-		"in=false,out=true": {
-			"model": "kontrol:block/microcontroller/muc_port_01"
+		"in=false,out=true,on=true": {
+			"model": "kontrol:block/microcontroller/muc_port_01_on"
+		},
+		"in=true,out=false,on=false": {
+			"model": "kontrol:block/microcontroller/muc_port_10_off"
+		},
+		"in=false,out=true,on=false": {
+			"model": "kontrol:block/microcontroller/muc_port_01_off"
 		},
 		"in=true,out=true": {
-			"model": "kontrol:block/microcontroller/muc_port_11"
+			"model": "kontrol:block/microcontroller/muc_port_00"
 		}
 	}
 }

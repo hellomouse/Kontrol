@@ -44,7 +44,7 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
     // Blocks
     public static final Block MUC_PORT_BLOCK = new MUCPortBlock
             (FabricBlockSettings.of(Material.METAL).nonOpaque().strength(3.5f, 3.5f)
-             .emissiveLighting((state, world, pos) -> true));
+             .luminance(state -> state.get(MUCPortBlock.ON) ? MUCPortBlockEntity.PORT_ON_BRIGHTNESS : 0));
     public static final Block MUC_PORT_CONNECTOR_BLOCK = new MUCPortConnectorBlock(FabricBlockSettings
             .of(Material.METAL).nonOpaque()
             .strength(3.5f, 3.5f));

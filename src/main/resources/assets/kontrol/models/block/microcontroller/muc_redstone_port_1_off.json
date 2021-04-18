@@ -1,7 +1,7 @@
 {
 	"parent": "block/cube",
 	"textures": {
-		"1": "kontrol:block/microcontroller/port_in",
+		"1": "kontrol:block/microcontroller/port_in_off",
 		"2": "kontrol:block/microcontroller/redstone_port_1_off",
 		"particle": "kontrol:block/microcontroller/redstone_port_1_off"
 	},
