@@ -6,14 +6,21 @@ import net.hellomouse.kontrol.electrical.circuit.CircuitValues;
 import net.hellomouse.kontrol.electrical.circuit.virtual.VirtualCircuit;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResistor;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
+import net.hellomouse.kontrol.electrical.items.product_scanner.IProductScanable;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Direction;
 
-public class MUCRedstonePortBlockEntity extends AbstractElectricalBlockEntity {
+import java.util.ArrayList;
+
+public class MUCRedstonePortBlockEntity extends AbstractElectricalBlockEntity implements IProductScanable {
     private double lowThreshold = 0.0;
 
     public MUCRedstonePortBlockEntity() {
@@ -63,6 +70,16 @@ public class MUCRedstonePortBlockEntity extends AbstractElectricalBlockEntity {
         if (normalizedOutgoingNodes.size() == 0)
             return super.getReading().error();
         return super.getReading().absoluteVoltage(getVoltage());
+    }
+
+    @Override
+    public ArrayList<Text> productInfo() {
+        ArrayList<Text> returned = new ArrayList<>();
+
+        // TODO: save what model?
+        returned.add(new TranslatableText("block.kontrol.muc_redstone_port_1").formatted(Formatting.BOLD));
+        returned.add(new LiteralText("V_on = " + lowThreshold + " V " + Formatting.GRAY + "  |  " + Formatting.RED + "Rs = " + (getVoltage() > lowThreshold ? "15" : "0")));
+        return returned;
     }
 
     @Override

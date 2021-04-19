@@ -6,6 +6,7 @@ import net.hellomouse.kontrol.registry.block.AbstractBlockRegistry;
 import net.hellomouse.kontrol.registry.block.ElectricalBlockRegistry;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.hellomouse.kontrol.registry.item.ElectricalItemRegistry;
+import net.hellomouse.kontrol.registry.item.MUCItemRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,12 +21,11 @@ public class Kontrol implements ModInitializer {
     public void onInitialize() {
         ElectricalBlockRegistry.register();
         ElectricalItemRegistry.register();
+        MUCItemRegistry.register();
 
         MUCBlockRegistry.register();
         AbstractBlockRegistry.register();
 
         System.out.println("LOADED");
-
-
     }
 }

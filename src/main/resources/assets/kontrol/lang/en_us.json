@@ -32,6 +32,12 @@
 	"block.kontrol.electrical_ground": "Ground Node",
 	
 	"block.kontrol.muc_port": "Microcontroller Port",
+	"block.kontrol.muc_port.on": "§l§aON§r",
+	"block.kontrol.muc_port.off": "§l§cOFF§r",
+	"block.kontrol.muc_port.disable": "§l§7Disabled§r",
+	"block.kontrol.muc_port.in": "§l§bIN§r",
+	"block.kontrol.muc_port.out": "§l§cOUT§r",
+
 	"block.kontrol.c8051_core": "M8051F020 Core",
 	"block.kontrol.c8051_core.tooltip": "§7Not a C8051 ripoff!",
 
@@ -56,6 +62,9 @@
 	"item.kontrol.tooltip.shift": "§7§o<Press shift>",
 	
 	"item.kontrol.electrical.tooltip": "Rating: [V] V / [P] W",
+
+	"item.kontrol.product_scanner": "Product State Scanner",
+	"item.kontrol.product_scanner.tooltip.usage": "Scan electrical component & state information",
 
 	"item.kontrol.multimeter.nodal_voltages": "§lNodal voltages: §r",
 	"item.kontrol.multimeter.nodal_ids": "§lNode IDs: §r",

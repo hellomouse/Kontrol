@@ -27,8 +27,4 @@ public class ElectricalItemRegistry {
         Registry.register(Registry.ITEM, new Identifier(Kontrol.MOD_ID, "ultimate_multimeter"), ULTIMATE_MULTIMETER_ITEM);
         Registry.register(Registry.ITEM, new Identifier(Kontrol.MOD_ID, "omnimeter"), OMNIMETER_ITEM);
     }
-
-    public static void registerClient() {
-
-    }
 }

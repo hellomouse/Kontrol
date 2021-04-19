@@ -10,17 +10,20 @@ import net.hellomouse.kontrol.electrical.circuit.virtual.components.VirtualResis
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IFixedVoltageCondition;
 import net.hellomouse.kontrol.electrical.circuit.virtual.components.conditions.IResistanceCondition;
 import net.hellomouse.kontrol.electrical.items.multimeters.MultimeterReading;
+import net.hellomouse.kontrol.electrical.items.product_scanner.IProductScanable;
 import net.hellomouse.kontrol.registry.block.MUCBlockRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Direction;
 
 import java.util.ArrayList;
 
-public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
+public class MUCPortBlockEntity extends AbstractElectricalBlockEntity implements IProductScanable {
     public static final int PORT_ON_BRIGHTNESS = 7;
 
     private int portId;
@@ -145,6 +148,26 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity {
         if (fixedNode.isHiZ() && nodalVoltages.size() > 0)
             return super.getReading().misc(text).absoluteVoltage(nodalVoltages.get(0));
         return super.getReading().misc(text).absoluteVoltage(fixedNode.getVoltage());
+    }
+
+    @Override
+    public ArrayList<Text> productInfo() {
+        ArrayList<Text> returned = new ArrayList<>();
+        returned.add(new TranslatableText("block.kontrol.muc_port").formatted(Formatting.BOLD));
+
+        String dataStr = "ID = 0x" + String.format("%02X", portId) + Formatting.GRAY + "  |  ";
+        BlockState state = world.getBlockState(pos);
+
+        if (state.get(MUCPortBlock.IN))       dataStr += new TranslatableText("block.kontrol.muc_port.in").getString();
+        else if (state.get(MUCPortBlock.OUT)) dataStr += new TranslatableText("block.kontrol.muc_port.out").getString();
+        else                                  dataStr += new TranslatableText("block.kontrol.muc_port.disable").getString();
+
+        dataStr += Formatting.GRAY + "  |  " + (state.get(MUCPortBlock.ON) ?
+                new TranslatableText("block.kontrol.muc_port.on").getString() :
+                new TranslatableText("block.kontrol.muc_port.off").getString());
+
+        returned.add(new LiteralText(dataStr));
+        return returned;
     }
 
     @Override

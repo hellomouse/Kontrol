@@ -55,7 +55,7 @@ public class ElectricalBlockItem extends BlockItem {
             return;
 
         if (TooltipUtil.shiftTooltip(tooltip)) {
-            tooltip.add(new LiteralText("Reeee"));
+            // TODO: add desc for resistors and such
         }
     }
 }
