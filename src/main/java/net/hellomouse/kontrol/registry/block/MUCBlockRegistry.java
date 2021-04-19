@@ -141,10 +141,10 @@ public class MUCBlockRegistry extends AbstractBlockRegistry {
 
         addBlock(new BlockWrapper()
                 .name("muc_redstone_port_1")
-                .block(new MUCRedstonePortBlock(FabricBlockSettings
+                .block(new MUCRedstonePortBlockBOG07(FabricBlockSettings
                         .of(Material.METAL).nonOpaque()
                         .strength(3.5f, 3.5f)
-                        .luminance(state -> state.get(MUCRedstonePortBlock.POWERING) ? 7 : 0)))
+                        .luminance(state -> state.get(MUCRedstonePortBlockBOG07.POWERING) ? 7 : 0)))
                 .blockEntityName("muc_redstone_port_entity")
         );
 

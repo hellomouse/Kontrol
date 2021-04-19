@@ -16,11 +16,11 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 @SuppressWarnings("deprecation")
-public class MUCRedstonePortBlock extends AbstractElectricalBlock {
+public class MUCRedstonePortBlockBOG07 extends AbstractElectricalBlock {
     public static final BooleanProperty POWERING = BooleanProperty.of("powering");
     public static final DirectionProperty FACING = Properties.FACING;
 
-    public MUCRedstonePortBlock(Settings settings) {
+    public MUCRedstonePortBlockBOG07(Settings settings) {
         super(settings);
         setDefaultState(getStateManager().getDefaultState().with(POWERING, false).with(FACING, Direction.NORTH));
     }
@@ -33,7 +33,7 @@ public class MUCRedstonePortBlock extends AbstractElectricalBlock {
 
     @Override
     public BlockEntity createBlockEntity(BlockView blockView) {
-        return new MUCRedstonePortBlockEntity().voltageToRedstoneFunction(voltage -> voltage > 0.7);
+        return new MUCRedstonePortBlockEntity().lowThreshold(0.7);
     }
 
     @Override
