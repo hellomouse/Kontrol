@@ -21,9 +21,10 @@ public class C8051HardwareState {
     public HashMap<String, Integer> hardwareState = new HashMap<>();
     public HashMap<String, Integer> sbitMap = new HashMap<>();
 
-    public int[] mdoutPorts = new int[4];
+    private double groundVoltage = 0.0;
+    private double powerVoltage = 0.0;
 
-
+    public final int[] mdoutPorts = new int[4];
     public final boolean[] pinOut = new boolean[32];
 
     public HashMap<String, Variable> variableMap = new HashMap<>();
@@ -36,17 +37,21 @@ public class C8051HardwareState {
 
 
     public void updatePorts(C8051Network network) {
+        powerVoltage  = network.readPortVoltage(7); // 7 = 3.3V
+        groundVoltage = network.readPortVoltage(1); // 1 = DGND
+
         for (int port = 0; port < 4; port++) {
             for (int bit = 0; bit < 8; bit++) {
                 int portId = port * 8 + bit;
+                int physicalPortId = C8051PortUtil.getMdoutPortIdFromPortAndBitOffset(portId);
 
                 // Output enabled bit
                 if (((mdoutPorts[port] >> bit) & 1) != 0) {
-                    network.setPortVoltage(portId, pinOut[portId] ? 5.0 : 0.0); // TODO: dont hard code
+                    network.setPortVoltage(physicalPortId, pinOut[portId] ? powerVoltage : groundVoltage);
                 }
                 // Input enabled bit
                 else {
-                    pinOut[portId] = network.readPortVoltage(portId) > 2.5;
+                    pinOut[portId] = network.readPortVoltage(physicalPortId) > groundVoltage + (powerVoltage - groundVoltage) / 2;
                 }
             }
         }

@@ -44,4 +44,53 @@ public class C8051PortUtil {
         return new Pair<>(-1, -1);
         // throw new IllegalStateException("Unknown sbit port"); // TODO: other sbits for P4-P7
     }
+
+    public static final int getMdoutPortIdFromPortAndBitOffset(int virtualPortId) {
+        switch (virtualPortId) {
+            // 1.X
+            case 8 * 1 + 6: return 4;
+            case 8 * 1 + 4: return 6;
+            case 8 * 1 + 2: return 10;
+            case 8 * 1 + 0: return 12;
+
+            case 8 * 1 + 7: return 5;
+            case 8 * 1 + 5: return 9;
+            case 8 * 1 + 3: return 11;
+            case 8 * 1 + 1: return 13;
+
+            // 0.X
+            case 6: return 14;
+            case 4: return 16;
+            case 2: return 18;
+            case 0: return 20;
+
+            case 7: return 15;
+            case 5: return 17;
+            case 3: return 19;
+            case 1: return 21;
+
+            // 2.X
+            case 8 * 2 + 6: return 22;
+            case 8 * 2 + 4: return 24;
+            case 8 * 2 + 3: return 28;
+            case 8 * 2 + 1: return 30;
+
+            case 8 * 2 + 7: return 23;
+            case 8 * 2 + 5: return 25;
+            case 8 * 2 + 2: return 27;
+            case 8 * 2 + 0: return 29;
+
+            // 3.X
+            case 8 * 3 + 7: return 32;
+            case 8 * 3 + 5: return 34;
+            case 8 * 3 + 3: return 36;
+            case 8 * 3 + 0: return 38;
+
+            case 8 * 3 + 6: return 31;
+            case 8 * 3 + 4: return 33;
+            case 8 * 3 + 2: return 35;
+            case 8 * 3 + 1: return 37;
+        }
+        return -1;
+    }
 }
