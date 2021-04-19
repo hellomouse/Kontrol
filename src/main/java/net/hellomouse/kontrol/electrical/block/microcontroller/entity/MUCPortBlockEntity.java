@@ -43,7 +43,10 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity implements
      */
     public double getPortVoltage() {
         // Circuit may not be connected at time of reading
-        if (this.circuit == null) return 0.0;
+        if (this.circuit == null) {
+            world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, false));
+            return 0.0;
+        }
 
         boolean temp = setIoMode(false);
         if (temp) circuit.markDirty();
@@ -53,6 +56,7 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity implements
             world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, Math.abs(voltage) > 0.1));
             return voltage;
         }
+        world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, false));
         return fixedNode.getVoltage();
     }
 
@@ -64,7 +68,10 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity implements
      * @param voltage Voltage to set
      */
     public void setPortVoltage(double voltage) {
-        if (this.circuit == null) return;
+        if (this.circuit == null) {
+            world.setBlockState(pos, world.getBlockState(pos).with(MUCPortBlock.ON, false));
+            return;
+        }
 
         boolean temp = setIoMode(true);
         double orgVoltage = fixedNode.getVoltage();
@@ -155,7 +162,7 @@ public class MUCPortBlockEntity extends AbstractElectricalBlockEntity implements
         ArrayList<Text> returned = new ArrayList<>();
         returned.add(new TranslatableText("block.kontrol.muc_port").formatted(Formatting.BOLD));
 
-        String dataStr = "ID = 0x" + String.format("%02X", portId) + Formatting.GRAY + "  |  ";
+        String dataStr = "ID = " + portId + " (0x" + String.format("%02X", portId) + ")" + Formatting.GRAY + "  |  ";
         BlockState state = world.getBlockState(pos);
 
         if (state.get(MUCPortBlock.IN))       dataStr += new TranslatableText("block.kontrol.muc_port.in").getString();
