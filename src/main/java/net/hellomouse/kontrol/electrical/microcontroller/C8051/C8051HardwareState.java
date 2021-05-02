@@ -12,21 +12,25 @@ import java.util.HashMap;
  */
 public class C8051HardwareState {
     // TODO: implement all hardware state lmao
-    public int P0MDOUT, P1MDOUT, P2MDOUT, P3MDOUT, P74OUT, P3IF, P1MDIN;
-    public int P1, P2, P3, P4, P5, P6, P7;
     public int XBRO, XBR1, XBR2;
-    public int CKCON, TMOD, TCON, IE, E1E1;
+    public int TMOD, TCON, IE, E1E1;
     public int PCA0CN, PCA0MD, PCA0CPM0, PCA0CPM1, PCA0CPM2, PCA0CPM3, PCA0MP4;
 
-    public HashMap<String, Integer> hardwareState = new HashMap<>();
+    // Map sbit variable -> port
     public HashMap<String, Integer> sbitMap = new HashMap<>();
 
+    // I/O voltages
     private double groundVoltage = 0.0;
     private double powerVoltage = 0.0;
 
+    // MDOUT
     public final int[] mdoutPorts = new int[4];
     public final boolean[] pinOut = new boolean[32];
 
+    // Timer state
+    private int CKCON = 0;
+
+    // Variable name -> variable for hardware linked variables
     public HashMap<String, Variable> variableMap = new HashMap<>();
 
     private final C8051Interpreter interpreter;

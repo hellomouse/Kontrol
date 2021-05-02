@@ -14,7 +14,7 @@ public class C8051Network extends AbstractMUCNetwork {
     @Override
     public void tick() {
         interpreter.state.updatePorts(this);
-        interpreter.interpreter.interpret(1);
+        interpreter.interpreter.interpret(20000); // 20k instr / tick ~ 15 mspt TODO solution lower SYSCLCK?
     }
 
     @Override

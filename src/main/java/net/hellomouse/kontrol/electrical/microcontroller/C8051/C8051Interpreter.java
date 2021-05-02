@@ -47,7 +47,6 @@ public class C8051Interpreter {
                     state.variableMap.put(variable.getName(), variable);
                 }
                 else if (typeName.equals("sfr")) {  // Entire port group
-                    state.hardwareState.put(variable.getName(), 0);
                     state.variableMap.put(variable.getName(), variable);
                 }
 

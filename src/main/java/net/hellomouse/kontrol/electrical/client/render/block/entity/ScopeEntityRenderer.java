@@ -42,22 +42,20 @@ public class ScopeEntityRenderer extends BlockEntityRenderer<ScopeBlockEntity> {
             matrices.translate(-128, -128, -0.1);
 
             Direction facing = blockEntity.getWorld().getBlockState(blockEntity.getPos()).get(Properties.HORIZONTAL_FACING);
-            switch(facing) {
-                case SOUTH: {
-                    matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90.0f));
-                    matrices.translate(-128, 0, -0.1);
-                    break;
-                }
-                case NORTH: {
-                    matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(270.0f));
-                    matrices.translate(0, 0, -128.1);
-                    break;
-                }
-                case WEST: {
-                    matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0f));
-                    matrices.translate(-128, 0, -128.2);
-                    break;
-                }
+            if (facing == Direction.SOUTH) {
+                matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90.0f));
+                matrices.translate(-128, 0, 8);
+            }
+            else if (facing == Direction.NORTH) {
+                matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(270.0f));
+                matrices.translate(0, 0, -128.1 + 8);
+            }
+            else if (facing == Direction.WEST) {
+                matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0f));
+                matrices.translate(-128, 0, -128.2 + 8);
+            }
+            else if (facing == Direction.EAST) {
+                matrices.translate(0, 0, 8);
             }
 
             if (state.requiresUpdate()) {

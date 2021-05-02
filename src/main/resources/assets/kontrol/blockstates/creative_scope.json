@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "kontrol:block/creative_scope"
+		},
+		"facing=north": {
+			"model": "kontrol:block/creative_scope",
+			"y": 270
+		},
+		"facing=south": {
+			"model": "kontrol:block/creative_scope",
+			"y": 90
+		},
+		"facing=west": {
+			"model": "kontrol:block/creative_scope",
+			"y": 180
+		}
+	}
+}
